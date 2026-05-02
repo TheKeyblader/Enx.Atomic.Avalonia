@@ -1,0 +1,6 @@
+<Solution>
+  <Folder Name="/Sources/">
+    <Project Path="Enx.Atomic.Avalonia/Enx.Atomic.Avalonia.csproj" />
+  </Folder>
+  <Project Path="Sandbox/Sandbox.csproj" />
+</Solution>
