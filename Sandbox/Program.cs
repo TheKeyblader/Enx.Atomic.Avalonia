@@ -18,6 +18,8 @@ var configuration = new AtomicConfiguration<MiniTheme>
     ]
 };
 
+var generator = new AtomicGenerator<MiniTheme>(configuration);
+
 
 public class MiniTheme
 {
