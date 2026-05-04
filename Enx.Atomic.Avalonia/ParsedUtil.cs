@@ -1,6 +1,6 @@
 namespace Enx.Atomic.Avalonia;
 
-internal record ParsedUtil
+public record ParsedUtil
 {
     public required int Index { get; init; }
     public required string Raw { get; init; }

@@ -3,7 +3,8 @@ using Dunet;
 
 namespace Enx.Atomic.Avalonia;
 
-public delegate IEnumerable<StyleValue> DynamicMatcher<TTheme>(MatchCollection matches);
+public delegate IEnumerable<StyleValue> DynamicMatcher<TTheme>(MatchCollection matches, RuleContext<TTheme> context)
+    where TTheme : class;
 
 [Union]
 public abstract partial record Rule<TTheme>
