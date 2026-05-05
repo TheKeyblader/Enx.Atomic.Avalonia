@@ -161,13 +161,13 @@ public class AtomicGenerator<TTheme>
         return [result];
     }
 
-    public ParsedUtil[] ParseUtil(string input, RuleContext<TTheme> context)
+    private ParsedUtil[] ParseUtil(string input, RuleContext<TTheme> context)
     {
         var variantResults = MatchVariants(input);
         return variantResults.Select(v => ParseUtil(v, context)).SelectMany(x => x).ToArray();
     }
 
-    public ParsedUtil[] ParseUtil(VariantMatchedResult<TTheme> matched, RuleContext<TTheme> context)
+    private ParsedUtil[] ParseUtil(VariantMatchedResult<TTheme> matched, RuleContext<TTheme> context)
     {
         var raw = matched.Raw;
         var processed = matched.Current;
@@ -197,7 +197,7 @@ public class AtomicGenerator<TTheme>
         return [];
     }
 
-    public ParsedUtil[] ResolveStylingResult(
+    private ParsedUtil[] ResolveStylingResult(
         string raw,
         IEnumerable<StyleValue> styleValues,
         Rule<TTheme> rule,
@@ -225,7 +225,7 @@ public class AtomicGenerator<TTheme>
         return [.. parsedUtils];
     }
 
-    public StringifiedUtil<TTheme>[] StringifyUtils(ParsedUtil parsed, RuleContext<TTheme> context)
+    private StringifiedUtil<TTheme>[] StringifyUtils(ParsedUtil parsed, RuleContext<TTheme> context)
     {
         var utilities = ApplyVariants(parsed);
         List<StringifiedUtil<TTheme>> result = [];
@@ -250,7 +250,7 @@ public class AtomicGenerator<TTheme>
         return [.. result];
     }
 
-    public UtilObject[] ApplyVariants(
+    private UtilObject[] ApplyVariants(
         ParsedUtil parsed,
         VariantHandlerBase[]? variantHanders = null,
         string? raw = null

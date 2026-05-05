@@ -2,7 +2,7 @@ using Avalonia.Styling;
 
 namespace Enx.Atomic.Avalonia;
 
-public record UtilObject
+internal record UtilObject
 {
     public required Selector Selector { get; set; }
     public StyleQuery? ContainerQuery { get; set; }
