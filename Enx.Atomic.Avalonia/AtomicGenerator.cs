@@ -246,7 +246,6 @@ public class AtomicGenerator<TTheme>
                     Index = parsed.Index,
                     Metadata = parsed.Metadata,
                     ContainerQuery = util.ContainerQuery,
-                    ThemeVariant = util.ThemeVariant,
                 }
             );
         }
@@ -309,7 +308,6 @@ public class AtomicGenerator<TTheme>
             {
                 Selector = selector,
                 ContainerQuery = containerQuery,
-                ThemeVariant = variantContextResult.ThemeVariant,
                 Entries = variantContextResult.Entries,
                 Sort = variantContextResult.Sort,
             },
