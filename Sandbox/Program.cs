@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Linq.Expressions;
+using System.Text.RegularExpressions;
 using Avalonia;
 using Avalonia.Styling;
 using Enx.Atomic.Avalonia;
@@ -71,11 +72,20 @@ public record VariantBreakpoints : VariantBase<MiniTheme>
             Func<VariantHandlerContext, VariantHandlerContext> next
         )
         {
+            Expression containerQuery;
+            if (Max)
+            {
+                if (input.ContainerQuery is ParameterExpression)
+                    containerQuery = Expression.Call(typeof(StyleQueries), nameof(StyleQueries.Width), Type.EmptyTypes, [input.ContainerQuery, Expression.Constant(StyleQueryComparisonOperator.LessThan), Expression.Constant(Size)]);
+                else if(input.ContainerQuery is MethodCallExpression)
+                    containerQuery = Expression.Call(typeof(StyleQueries))
+            }
+
             var context = input with
             {
                 ContainerQuery = Max
                     ? input.ContainerQuery.Width(
-                        StyleQueryComparisonOperator.LessThan,
+                        ,
                         Size
                     )
                     : input.ContainerQuery.Width(StyleQueryComparisonOperator.GreaterThanOrEquals, Size),

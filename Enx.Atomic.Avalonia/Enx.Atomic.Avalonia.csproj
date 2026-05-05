@@ -8,15 +8,12 @@
 
     <ItemGroup>
       <PackageReference Include="Avalonia" Version="12.0.2" />
+      <PackageReference Include="AvantiPoint.CodeGenHelpers" Version="2.0.30-pre" />
       <PackageReference Include="Dunet" Version="1.16.2" />
       <PackageReference Include="Roslynator.Analyzers" Version="4.15.0">
         <PrivateAssets>all</PrivateAssets>
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       </PackageReference>
-    </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="Emitter\" />
     </ItemGroup>
 
 </Project>

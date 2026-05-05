@@ -1,4 +1,6 @@
 using Avalonia.Styling;
+using System.Linq.Expressions;
+using System.Reflection;
 
 namespace Enx.Atomic.Avalonia;
 
@@ -71,14 +73,14 @@ public class AtomicGenerator<TTheme>
         var variantResults = MatchVariants(raw, current);
         var result = variantResults.SelectMany(HandleVariantResult);
 
-        return _cache[cacheKey] = result.ToArray();
+        return _cache[cacheKey] = [.. result];
 
         StringifiedUtil<TTheme>[] HandleVariantResult(VariantMatchedResult<TTheme> matched)
         {
             var context = MakeContext(raw, matched);
 
             var parsed = ParseUtil(context.Match, context);
-            return parsed.SelectMany(x => StringifyUtils(x, context)).ToArray();
+            return [.. parsed.SelectMany(x => StringifyUtils(x, context))];
         }
     }
 
@@ -146,10 +148,9 @@ public class AtomicGenerator<TTheme>
                     };
                 });
 
-                return subMatchings
+                return [.. subMatchings
                     .Select(c => MatchVariants(c, context))
-                    .SelectMany(x => x)
-                    .ToArray();
+                    .SelectMany(x => x)];
             }
             if (!applied)
                 break;
@@ -164,10 +165,13 @@ public class AtomicGenerator<TTheme>
     private ParsedUtil[] ParseUtil(string input, RuleContext<TTheme> context)
     {
         var variantResults = MatchVariants(input);
-        return variantResults.Select(v => ParseUtil(v, context)).SelectMany(x => x).ToArray();
+        return [.. variantResults.Select(v => ParseUtil(v, context)).SelectMany(x => x)];
     }
 
-    private ParsedUtil[] ParseUtil(VariantMatchedResult<TTheme> matched, RuleContext<TTheme> context)
+    private ParsedUtil[] ParseUtil(
+        VariantMatchedResult<TTheme> matched,
+        RuleContext<TTheme> context
+    )
     {
         var raw = matched.Raw;
         var processed = matched.Current;
@@ -235,9 +239,8 @@ public class AtomicGenerator<TTheme>
                 new StringifiedUtil<TTheme>
                 {
                     Selector = util.Selector,
-                    Body = util
-                        .Entries.Select(x => new Setter(x.UntypedProperty, x.UntypedValue))
-                        .ToArray<SetterBase>(),
+                    Body = [.. util
+                        .Entries.Select(x => new Setter(x.UntypedProperty, x.UntypedValue))],
                     Context = context,
                     Index = parsed.Index,
                     Metadata = parsed.Metadata,
@@ -264,31 +267,37 @@ public class AtomicGenerator<TTheme>
             .Aggregate<VariantHandlerBase, Func<VariantHandlerContext, VariantHandlerContext>>(
                 x => x,
                 (previous, v) =>
-                    (
-                        (input) =>
-                        {
-                            var entries = input.Entries;
-                            return v.Handle(input with { Entries = entries }, previous);
-                        }
-                    )
+                    (input) =>
+                    {
+                        var entries = input.Entries;
+                        return v.Handle(input with { Entries = entries }, previous);
+                    }
             );
+
+        var selectorParameter = Expression.Parameter(typeof(Selector), "selector");
+        var selectorExp = Expression.Call(typeof(Selectors), nameof(Selectors.Is), [parsed.StyleEntries[0].UntypedProperty.OwnerType], [selectorParameter]);
+        selectorExp = Expression.Call(typeof(Selector), nameof(Selectors.Name), Type.EmptyTypes, [selectorExp, Expression.Constant(parsed.Raw)]);
+        var containerQueryParameter = Expression.Parameter(typeof(StyleQuery), "selector");
 
         var variantContextResult = handler(
             new VariantHandlerContext
             {
-                Selector = Selectors
-                    .OfType(null, parsed.StyleEntries[0].UntypedProperty.OwnerType)
-                    .Class(raw),
+                Selector = selectorExp,
+                ContainerQuery = containerQueryParameter,
                 Entries = parsed.StyleEntries,
             }
         );
+
+        var selector = Expression.Lambda<Func<Selector, Selector>>(variantContextResult.Selector, true, selectorParameter);
+        var containerQuery = variantContextResult.ContainerQuery == containerQueryParameter ? null :
+            Expression.Lambda<Func<StyleQuery, StyleQuery>>(variantContextResult.ContainerQuery, true, containerQueryParameter);
 
         return
         [
             new UtilObject
             {
-                Selector = variantContextResult.Selector,
-                ContainerQuery = variantContextResult.ContainerQuery,
+                Selector = selector,
+                ContainerQuery = containerQuery,
                 ThemeVariant = variantContextResult.ThemeVariant,
                 Entries = variantContextResult.Entries,
                 Sort = variantContextResult.Sort,
@@ -320,7 +329,7 @@ public class AtomicGenerator<TTheme>
             sheet.AddRange(payload);
         }
 
-        return sheet.ToArray();
+        return [.. sheet];
     }
 
     public class Options
@@ -328,5 +337,8 @@ public class AtomicGenerator<TTheme>
         public string? Id { get; init; }
     }
 
-    public class Result { }
+    public class Result
+    {
+        public string Content { get; init; }
+    }
 }

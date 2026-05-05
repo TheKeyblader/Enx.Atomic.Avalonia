@@ -8,4 +8,7 @@ public class AtomicConfiguration<TTheme>
     public List<Extractor> Extractors { get; set; } = [new SplitExtractor()];
     public List<VariantBase<TTheme>> Variants { get; set; } = [];
     public required TTheme Theme { get; set; }
+    public List<ValueEmitter> Emitters { get; set; } = [];
+    public string Namespace { get; set; } = "Enx.Atomic";
+    public string StyleClassName { get; set; } = "AtomicStyles";
 }
