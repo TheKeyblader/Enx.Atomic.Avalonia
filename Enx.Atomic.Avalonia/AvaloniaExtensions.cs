@@ -4,9 +4,13 @@ namespace Enx.Atomic.Avalonia;
 
 public static class AvaloniaExtensions
 {
-    public static StyleValue<TValue>.Literal ToLiteral<TValue>(this AvaloniaProperty<TValue> property, TValue value)
-        => new StyleValue<TValue>.Literal(value) { Property = property };
+    public static StyleValue.Literal<TValue> ToLiteral<TValue>(
+        this AvaloniaProperty<TValue> property,
+        TValue value
+    ) => new(property, value);
 
-    public static StyleValue<TValue>.Resource ToResource<TValue>(this AvaloniaProperty<TValue> property, string name)
-        => new StyleValue<TValue>.Resource(name) { Property = property };
+    public static StyleValue.Resource ToResource<TValue>(
+        this AvaloniaProperty<TValue> property,
+        string name
+    ) => new(property, name);
 }

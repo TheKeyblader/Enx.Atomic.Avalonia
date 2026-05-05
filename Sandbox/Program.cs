@@ -12,14 +12,17 @@ var configuration = new AtomicConfiguration<MiniTheme>
         new Rule<MiniTheme>.Static("visible", [Visual.IsVisibleProperty.ToLiteral(true)]),
         new Rule<MiniTheme>.Static("collapsed", [Visual.OpacityProperty.ToLiteral(0)]),
     ],
-    Variants = [],
+    Variants = [new VariantBreakpoints()],
 };
 
 var generator = new AtomicGenerator<MiniTheme>(configuration);
+var result = generator.Generate("sm:max-lg:hidden collapsed", new AtomicGenerator<MiniTheme>.Options());
+Console.WriteLine("Finish");
 
 public class MiniTheme
 {
     public string DefaultContainer { get; set; } = "main";
+
     public Dictionary<string, double> Breakpoints { get; set; } =
         new()
         {
@@ -33,26 +36,51 @@ public class MiniTheme
 
 public record VariantBreakpoints : VariantBase<MiniTheme>
 {
-    public override VariantHandlerBase[] Matcher(string matcher, VariantContext<MiniTheme> context)
+    public VariantBreakpoints()
+    {
+        MultiPass = true;
+    }
+
+    public override VariantHandlerBase[] Match(string matcher, VariantContext<MiniTheme> context)
     {
         foreach (var (name, size) in context.Theme.Breakpoints)
         {
+            var _matcher = matcher;
             var max = false;
-            if (matcher.StartsWith("max-"))
+            if (_matcher.StartsWith("max-"))
             {
                 max = true;
-                matcher = matcher[4..];
+                _matcher = matcher[4..];
             }
 
+            if (!_matcher.StartsWith(name))
+                continue;
 
+            _matcher = _matcher[(name.Length + 1)..];
+
+            return [new Handler(max, size) { Matcher = _matcher }];
         }
+
+        return [];
     }
 
-    public record Handler : VariantHandlerBase
+    public record Handler(bool Max, double Size) : VariantHandlerBase
     {
-        public override VariantHandlerContext Handle(VariantHandlerContext input, Func<VariantHandlerContext, VariantHandlerContext> next)
+        public override VariantHandlerContext Handle(
+            VariantHandlerContext input,
+            Func<VariantHandlerContext, VariantHandlerContext> next
+        )
         {
-
+            var context = input with
+            {
+                ContainerQuery = Max
+                    ? input.ContainerQuery.Width(
+                        StyleQueryComparisonOperator.LessThan,
+                        Size
+                    )
+                    : input.ContainerQuery.Width(StyleQueryComparisonOperator.GreaterThanOrEquals, Size),
+            };
+            return next(context);
         }
     }
 }

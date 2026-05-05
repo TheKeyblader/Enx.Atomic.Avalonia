@@ -6,5 +6,5 @@ public abstract record VariantBase<TTheme>
     public int Order { get; set; }
     public bool MultiPass { get; set; }
 
-    public abstract VariantHandlerBase[] Matcher(string matcher, VariantContext<TTheme> context);
+    public abstract VariantHandlerBase[] Match(string matcher, VariantContext<TTheme> context);
 }

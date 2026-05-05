@@ -7,4 +7,6 @@ public record RuleContext<TTheme>
     public required string CurrentSelector { get; init; }
     public required AtomicGenerator<TTheme> Generator { get; init; }
     public required TTheme Theme { get; init; }
+    public required VariantHandlerBase[] Handlers { get; init; }
+    public required VariantMatchedResult<TTheme> Match { get; init; }
 }
