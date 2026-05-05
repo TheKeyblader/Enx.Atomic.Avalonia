@@ -3,6 +3,7 @@ using System.Text.RegularExpressions;
 using Avalonia;
 using Avalonia.Styling;
 using Enx.Atomic.Avalonia;
+using Enx.Atomic.Avalonia.Compact;
 
 var configuration = new AtomicConfiguration<MiniTheme>
 {
@@ -17,7 +18,11 @@ var configuration = new AtomicConfiguration<MiniTheme>
 };
 
 var generator = new AtomicGenerator<MiniTheme>(configuration);
-var result = generator.Generate("sm:max-lg:hidden collapsed", new AtomicGenerator<MiniTheme>.Options());
+var result = generator.Generate(
+    "sm:max-lg:hidden collapsed",
+    new AtomicGenerator<MiniTheme>.Options()
+);
+var content = StyleEmitter.Generate(configuration, result);
 Console.WriteLine("Finish");
 
 public class MiniTheme
@@ -72,25 +77,65 @@ public record VariantBreakpoints : VariantBase<MiniTheme>
             Func<VariantHandlerContext, VariantHandlerContext> next
         )
         {
-            Expression containerQuery;
+            VariantHandlerContext newInput;
             if (Max)
             {
-                if (input.ContainerQuery is ParameterExpression)
-                    containerQuery = Expression.Call(typeof(StyleQueries), nameof(StyleQueries.Width), Type.EmptyTypes, [input.ContainerQuery, Expression.Constant(StyleQueryComparisonOperator.LessThan), Expression.Constant(Size)]);
-                else if(input.ContainerQuery is MethodCallExpression)
-                    containerQuery = Expression.Call(typeof(StyleQueries))
+                if (input.ContainerQuery is null)
+                {
+                    newInput = input with
+                    {
+                        ContainerQuery = input.ContainerQuery.Width(
+                            StyleQueryComparisonOperator.LessThan,
+                            Size
+                        ),
+                    };
+                }
+                else
+                {
+                    var widthQuery = input.ContainerQuery.Previous.Width(
+                        StyleQueryComparisonOperator.LessThan,
+                        Size
+                    );
+
+                    newInput = input with
+                    {
+                        ContainerQuery = input.ContainerQuery.Previous.And([
+                            input.ContainerQuery,
+                            widthQuery,
+                        ]),
+                    };
+                }
+            }
+            else
+            {
+                if (input.ContainerQuery is null)
+                {
+                    newInput = input with
+                    {
+                        ContainerQuery = input.ContainerQuery.Width(
+                            StyleQueryComparisonOperator.GreaterThanOrEquals,
+                            Size
+                        ),
+                    };
+                }
+                else
+                {
+                    var widthQuery = input.ContainerQuery.Previous.Width(
+                        StyleQueryComparisonOperator.GreaterThanOrEquals,
+                        Size
+                    );
+
+                    newInput = input with
+                    {
+                        ContainerQuery = input.ContainerQuery.Previous.And([
+                            input.ContainerQuery,
+                            widthQuery,
+                        ]),
+                    };
+                }
             }
 
-            var context = input with
-            {
-                ContainerQuery = Max
-                    ? input.ContainerQuery.Width(
-                        ,
-                        Size
-                    )
-                    : input.ContainerQuery.Width(StyleQueryComparisonOperator.GreaterThanOrEquals, Size),
-            };
-            return next(context);
+            return next(newInput);
         }
     }
 }

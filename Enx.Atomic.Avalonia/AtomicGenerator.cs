@@ -1,6 +1,7 @@
-using Avalonia.Styling;
 using System.Linq.Expressions;
 using System.Reflection;
+using Avalonia.Styling;
+using Enx.Atomic.Avalonia.Compact;
 
 namespace Enx.Atomic.Avalonia;
 
@@ -148,9 +149,7 @@ public class AtomicGenerator<TTheme>
                     };
                 });
 
-                return [.. subMatchings
-                    .Select(c => MatchVariants(c, context))
-                    .SelectMany(x => x)];
+                return [.. subMatchings.Select(c => MatchVariants(c, context)).SelectMany(x => x)];
             }
             if (!applied)
                 break;
@@ -239,8 +238,10 @@ public class AtomicGenerator<TTheme>
                 new StringifiedUtil<TTheme>
                 {
                     Selector = util.Selector,
-                    Body = [.. util
-                        .Entries.Select(x => new Setter(x.UntypedProperty, x.UntypedValue))],
+                    Body =
+                    [
+                        .. util.Entries.Select(x => new Setter(x.UntypedProperty, x.UntypedValue)),
+                    ],
                     Context = context,
                     Index = parsed.Index,
                     Metadata = parsed.Metadata,
@@ -274,23 +275,33 @@ public class AtomicGenerator<TTheme>
                     }
             );
 
-        var selectorParameter = Expression.Parameter(typeof(Selector), "selector");
-        var selectorExp = Expression.Call(typeof(Selectors), nameof(Selectors.Is), [parsed.StyleEntries[0].UntypedProperty.OwnerType], [selectorParameter]);
-        selectorExp = Expression.Call(typeof(Selector), nameof(Selectors.Name), Type.EmptyTypes, [selectorExp, Expression.Constant(parsed.Raw)]);
-        var containerQueryParameter = Expression.Parameter(typeof(StyleQuery), "selector");
-
         var variantContextResult = handler(
             new VariantHandlerContext
             {
-                Selector = selectorExp,
-                ContainerQuery = containerQueryParameter,
+                Selector = SelectorsExpression
+                    .Is(null, parsed.StyleEntries[0].UntypedProperty.OwnerType)
+                    .Class(parsed.Raw),
+                ContainerQuery = null,
                 Entries = parsed.StyleEntries,
             }
         );
 
-        var selector = Expression.Lambda<Func<Selector, Selector>>(variantContextResult.Selector, true, selectorParameter);
-        var containerQuery = variantContextResult.ContainerQuery == containerQueryParameter ? null :
-            Expression.Lambda<Func<StyleQuery, StyleQuery>>(variantContextResult.ContainerQuery, true, containerQueryParameter);
+        var selectorParameter = Expression.Parameter(typeof(Selector), "selector");
+        var selector = Expression.Lambda<Func<Selector, Selector>>(
+            variantContextResult.Selector.ToExpression(selectorParameter),
+            true,
+            selectorParameter
+        );
+
+        var containerQueryParameter = Expression.Parameter(typeof(StyleQuery), "query");
+        var containerQuery =
+            variantContextResult.ContainerQuery == null
+                ? null
+                : Expression.Lambda<Func<StyleQuery, StyleQuery>>(
+                    variantContextResult.ContainerQuery.ToExpression(containerQueryParameter),
+                    true,
+                    containerQueryParameter
+                );
 
         return
         [
