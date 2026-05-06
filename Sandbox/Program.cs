@@ -10,9 +10,9 @@ var configuration = new AtomicConfiguration<MiniTheme>
     Theme = new MiniTheme(),
     Rules =
     [
-        new Rule<MiniTheme>.Static("hidden", [Visual.IsVisibleProperty.ToLiteral(false)]),
-        new Rule<MiniTheme>.Static("visible", [Visual.IsVisibleProperty.ToLiteral(true)]),
-        new Rule<MiniTheme>.Static("collapsed", [Visual.OpacityProperty.ToLiteral(0)]),
+        new Rule.Static("hidden", [Visual.IsVisibleProperty.ToLiteral(false)]),
+        new Rule.Static("visible", [Visual.IsVisibleProperty.ToLiteral(true)]),
+        new Rule.Static("collapsed", [Visual.OpacityProperty.ToLiteral(0)]),
     ],
     Variants = [new VariantBreakpoints()],
 };

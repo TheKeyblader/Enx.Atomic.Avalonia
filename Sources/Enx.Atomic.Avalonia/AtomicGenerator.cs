@@ -9,7 +9,7 @@ public class AtomicGenerator<TTheme>
     where TTheme : class
 {
     public AtomicConfiguration<TTheme> Configuration { get; }
-    private readonly HashSet<Rule<TTheme>> _activatedRules = [];
+    private readonly HashSet<IRule> _activatedRules = [];
     private readonly Dictionary<string, StringifiedUtil<TTheme>[]> _cache = [];
 
     public AtomicGenerator(AtomicConfiguration<TTheme> configuration)
@@ -25,6 +25,9 @@ public class AtomicGenerator<TTheme>
         {
             rule.Metadata.Index = index++;
         }
+
+        if (!Configuration.Rules.All(r => r is IStaticRule or IDynamicRule<TTheme>))
+            throw new InvalidOperationException();
     }
 
     public HashSet<string> ApplyExtractors(
@@ -179,18 +182,18 @@ public class AtomicGenerator<TTheme>
         var scopeContext = context with { Handlers = [.. variantHandlers] };
 
         var staticRule = this
-            .Configuration.Rules.OfType<Rule<TTheme>.Static>()
+            .Configuration.Rules.OfType<IStaticRule>()
             .FirstOrDefault(s => s.Name == processed);
-        if (staticRule?.Style.Any() == true)
-            return ResolveStylingResult(raw, staticRule.Style, staticRule, scopeContext);
+        if (staticRule?.Styles.Any() == true)
+            return ResolveStylingResult(raw, staticRule.Styles, staticRule, scopeContext);
 
-        foreach (var rule in this.Configuration.Rules.OfType<Rule<TTheme>.Dynamic>())
+        foreach (var rule in this.Configuration.Rules.OfType<IDynamicRule<TTheme>>())
         {
-            var matches = rule.Regex.Matches(context.CurrentSelector);
-            if (matches.Count == 0)
+            var match = rule.Regex.Match(context.CurrentSelector);
+            if (!match.Success)
                 continue;
 
-            var result = rule.Matcher(matches, context);
+            var result = rule.Match(match, context);
             if (!result.Any())
                 continue;
 
@@ -203,7 +206,7 @@ public class AtomicGenerator<TTheme>
     private ParsedUtil[] ResolveStylingResult(
         string raw,
         IEnumerable<StyleValue> styleValues,
-        Rule<TTheme> rule,
+        IRule rule,
         RuleContext<TTheme> context
     )
     {

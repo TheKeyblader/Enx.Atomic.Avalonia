@@ -2,6 +2,8 @@
 using Avalonia;
 using Avalonia.Styling;
 using CodeGenHelpers;
+using CSharpier.Core;
+using CSharpier.Core.CSharp;
 using FastExpressionCompiler;
 using Microsoft.CodeAnalysis;
 
@@ -83,11 +85,27 @@ public static class StyleEmitter
                         );
                     }
 
-                    writer.AppendLine($"Add({varName});");
+                    if (util.ContainerQuery is not null)
+                    {
+                        var containerVarName = "container" + 1;
+                        writer.AppendLine(
+                            $"var {containerVarName} = new ContainerQuery({util.ContainerQuery.ToCSharpString()}, \"{configuration.ContainerName}\");"
+                        );
+                        writer.AppendLine($"{containerVarName}.Add({varName});");
+                        writer.AppendLine($"Add({containerVarName});");
+                    }
+                    else
+                    {
+                        writer.AppendLine($"Add({varName});");
+                    }
+
+                    writer.AppendLine("");
                 }
             });
 
-        return builder.Build();
+        var code = builder.Build();
+        var formatted = CSharpFormatter.Format(code, new CodeFormatterOptions { Width = 200 });
+        return formatted.Code;
     }
 
     private static readonly Dictionary<AvaloniaProperty, string> PropertyAccessors = [];

@@ -9,6 +9,7 @@
     <ItemGroup>
       <PackageReference Include="Avalonia" Version="12.0.2" />
       <PackageReference Include="AvantiPoint.CodeGenHelpers" Version="2.0.30-pre" />
+      <PackageReference Include="CSharpier.Core" Version="1.2.6" />
       <PackageReference Include="Dunet" Version="1.16.2" />
       <PackageReference Include="FastExpressionCompiler" Version="5.4.1" />
       <PackageReference Include="Roslynator.Analyzers" Version="4.15.0">

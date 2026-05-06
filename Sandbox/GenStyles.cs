@@ -18,17 +18,30 @@ namespace Enx.Atomic
         public AtomicStyles()
         {
             var style1 = new Style((Func<Selector, Selector>)((Selector selector) => //Selector
-                Selectors.Class(
-                    Selectors.Is<Visual>(selector),
-                    "sm:max-lg:hidden")));
-            style1.Setters.Add(new Setter(Visual.IsVisibleProperty,false));
-            Add(style1);
+    Selectors.Class(
+        Selectors.Is<Visual>(selector),
+        "sm:max-lg:hidden")));
+            style1.Setters.Add(new Setter(Visual.IsVisibleProperty, false));
+            var container1 = new ContainerQuery((Func<StyleQuery, StyleQuery>)((StyleQuery query) => //StyleQuery
+    StyleQueries.And(new StyleQuery[]{
+        StyleQueries.Width(
+            query,
+            StyleQueryComparisonOperator.GreaterThanOrEquals,
+            640),
+        StyleQueries.Width(
+            query,
+            StyleQueryComparisonOperator.LessThan,
+            1024)})), "top-level");
+            container1.Add(style1);
+            Add(container1);
+
             var style2 = new Style((Func<Selector, Selector>)((Selector selector) => //Selector
-                Selectors.Class(
-                    Selectors.Is<Visual>(selector),
-                    "collapsed")));
-            style2.Setters.Add(new Setter(Visual.OpacityProperty,0));
+    Selectors.Class(
+        Selectors.Is<Visual>(selector),
+        "collapsed")));
+            style2.Setters.Add(new Setter(Visual.OpacityProperty, 0));
             Add(style2);
+
         }
     }
 }
