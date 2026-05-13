@@ -17,31 +17,16 @@ namespace Enx.Atomic
     {
         public AtomicStyles()
         {
-            var style1 = new Style((Func<Selector, Selector>)((Selector selector) => //Selector
-    Selectors.Class(
-        Selectors.Is<Visual>(selector),
-        "sm:max-lg:hidden")));
-            style1.Setters.Add(new Setter(Visual.IsVisibleProperty, false));
-            var container1 = new ContainerQuery((Func<StyleQuery, StyleQuery>)((StyleQuery query) => //StyleQuery
-    StyleQueries.And(new StyleQuery[]{
-        StyleQueries.Width(
-            query,
-            StyleQueryComparisonOperator.GreaterThanOrEquals,
-            640),
-        StyleQueries.Width(
-            query,
-            StyleQueryComparisonOperator.LessThan,
-            1024)})), "top-level");
+            var style1 = new Style(selector => selector.Is<Visual>().Class("sm:max-lg:hidden"));
+            style1.Setters.Add(new Setter(Visual.IsVisibleProperty,false));
+            var container1 = new ContainerQuery(query => StyleQueries.And(new[] { query.Width(StyleQueryComparisonOperator.GreaterThanOrEquals, 640.0), query.Width(StyleQueryComparisonOperator.LessThan, 1024.0) }), "top-level");
             container1.Add(style1);
             Add(container1);
-
-            var style2 = new Style((Func<Selector, Selector>)((Selector selector) => //Selector
-    Selectors.Class(
-        Selectors.Is<Visual>(selector),
-        "collapsed")));
-            style2.Setters.Add(new Setter(Visual.OpacityProperty, 0));
+            
+            var style2 = new Style(selector => selector.Is<Visual>().Class("collapsed"));
+            style2.Setters.Add(new Setter(Visual.OpacityProperty,0));
             Add(style2);
-
+            
         }
     }
 }

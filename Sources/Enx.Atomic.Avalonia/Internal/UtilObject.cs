@@ -1,7 +1,7 @@
 using Avalonia.Styling;
 using System.Linq.Expressions;
 
-namespace Enx.Atomic.Avalonia;
+namespace Enx.Atomic.Avalonia.Internal;
 
 internal record UtilObject
 {

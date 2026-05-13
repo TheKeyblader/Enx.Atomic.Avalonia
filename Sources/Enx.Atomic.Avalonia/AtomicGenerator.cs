@@ -1,7 +1,7 @@
 using System.Linq.Expressions;
-using System.Reflection;
 using Avalonia.Styling;
 using Enx.Atomic.Avalonia.Compact;
+using Enx.Atomic.Avalonia.Internal;
 
 namespace Enx.Atomic.Avalonia;
 
@@ -10,7 +10,7 @@ public class AtomicGenerator<TTheme>
 {
     public AtomicConfiguration<TTheme> Configuration { get; }
     private readonly HashSet<IRule> _activatedRules = [];
-    private readonly Dictionary<string, StringifiedUtil<TTheme>[]> _cache = [];
+    private readonly Dictionary<string, StringifiedUtil[]> _cache = [];
 
     public AtomicGenerator(AtomicConfiguration<TTheme> configuration)
     {
@@ -65,7 +65,7 @@ public class AtomicGenerator<TTheme>
         };
     }
 
-    public StringifiedUtil<TTheme>[] ParseToken(string raw)
+    public StringifiedUtil[] ParseToken(string raw)
     {
         var cacheKey = $"{raw}";
 
@@ -79,7 +79,7 @@ public class AtomicGenerator<TTheme>
 
         return _cache[cacheKey] = [.. result];
 
-        StringifiedUtil<TTheme>[] HandleVariantResult(VariantMatchedResult<TTheme> matched)
+        StringifiedUtil[] HandleVariantResult(VariantMatchedResult<TTheme> matched)
         {
             var context = MakeContext(raw, matched);
 
@@ -231,21 +231,20 @@ public class AtomicGenerator<TTheme>
         return [.. parsedUtils];
     }
 
-    private StringifiedUtil<TTheme>[] StringifyUtils(ParsedUtil parsed, RuleContext<TTheme> context)
+    private StringifiedUtil[] StringifyUtils(ParsedUtil parsed, RuleContext<TTheme> context)
     {
         var utilities = ApplyVariants(parsed);
-        List<StringifiedUtil<TTheme>> result = [];
+        List<StringifiedUtil> result = [];
         foreach (var util in utilities)
         {
             result.Add(
-                new StringifiedUtil<TTheme>
+                new StringifiedUtil
                 {
                     Selector = util.Selector,
                     Body =
                     [
                         .. util.Entries.Select(x => new Setter(x.UntypedProperty, x.UntypedValue)),
                     ],
-                    Context = context,
                     Index = parsed.Index,
                     Metadata = parsed.Metadata,
                     ContainerQuery = util.ContainerQuery,
@@ -317,16 +316,16 @@ public class AtomicGenerator<TTheme>
         ];
     }
 
-    public StringifiedUtil<TTheme>[] Generate(string input, Options options)
+    public StringifiedUtil[] Generate(string input, Options options)
     {
         var tokens = ApplyExtractors(input, options.Id);
         return Generate(tokens, options);
     }
 
-    public StringifiedUtil<TTheme>[] Generate(ISet<string> tokens, Options options)
+    public StringifiedUtil[] Generate(ISet<string> tokens, Options options)
     {
         var matched = new HashSet<string>();
-        List<StringifiedUtil<TTheme>> sheet = [];
+        List<StringifiedUtil> sheet = [];
 
         foreach (var token in tokens)
         {
@@ -347,10 +346,5 @@ public class AtomicGenerator<TTheme>
     public class Options
     {
         public string? Id { get; init; }
-    }
-
-    public class Result
-    {
-        public string Content { get; init; }
     }
 }

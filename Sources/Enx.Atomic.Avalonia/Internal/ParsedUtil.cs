@@ -1,4 +1,4 @@
-namespace Enx.Atomic.Avalonia;
+namespace Enx.Atomic.Avalonia.Internal;
 
 internal record ParsedUtil
 {

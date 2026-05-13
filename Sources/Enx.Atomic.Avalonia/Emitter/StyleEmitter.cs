@@ -1,10 +1,7 @@
 ﻿using System.Reflection;
 using Avalonia;
-using Avalonia.Styling;
 using CodeGenHelpers;
-using CSharpier.Core;
-using CSharpier.Core.CSharp;
-using FastExpressionCompiler;
+using ExpressionToCodeLib;
 using Microsoft.CodeAnalysis;
 
 namespace Enx.Atomic.Avalonia;
@@ -68,7 +65,7 @@ public static class StyleEmitter
                     index++;
                     var varName = "style" + index;
                     writer.AppendLine(
-                        $"var {varName} = new Style({util.Selector.ToCSharpString()});"
+                        $"var {varName} = new Style({ExpressionToCode.ToCode(util.Selector)});"
                     );
 
                     foreach (var setter in util.Body)
@@ -89,7 +86,7 @@ public static class StyleEmitter
                     {
                         var containerVarName = "container" + 1;
                         writer.AppendLine(
-                            $"var {containerVarName} = new ContainerQuery({util.ContainerQuery.ToCSharpString()}, \"{configuration.ContainerName}\");"
+                            $"var {containerVarName} = new ContainerQuery({ExpressionToCode.ToCode(util.ContainerQuery)}, \"{configuration.ContainerName}\");"
                         );
                         writer.AppendLine($"{containerVarName}.Add({varName});");
                         writer.AppendLine($"Add({containerVarName});");
@@ -104,34 +101,8 @@ public static class StyleEmitter
             });
 
         var code = builder.Build();
-        var formatted = CSharpFormatter.Format(code, new CodeFormatterOptions { Width = 200 });
-        return formatted.Code;
+        return code;
     }
 
-    private static readonly Dictionary<AvaloniaProperty, string> PropertyAccessors = [];
 
-    public static string GetAvaloniaPropertyName(AvaloniaProperty property)
-    {
-        if (!PropertyAccessors.TryGetValue(property, out var accessor))
-        {
-            var fields = property
-                .OwnerType.GetFields(BindingFlags.Static | BindingFlags.Public)
-                .Where(f => f.IsInitOnly);
-
-            foreach (var field in fields)
-            {
-                var value = field.GetValue(null);
-                if (value == property)
-                {
-                    PropertyAccessors[property] = accessor =
-                        $"{property.OwnerType.Name}.{field.Name}";
-                    break;
-                }
-            }
-
-            if (accessor is null)
-                throw new InvalidOperationException();
-        }
-        return accessor;
-    }
 }
