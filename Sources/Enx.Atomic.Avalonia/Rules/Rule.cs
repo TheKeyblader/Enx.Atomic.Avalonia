@@ -19,7 +19,7 @@ public interface IDynamicRule<TTheme> : IRule
     where TTheme : class
 {
     Regex Regex { get; }
-    ImmutableArray<StyleValue> Match(Match matches, RuleContext<TTheme> context);
+    ImmutableArray<StyleValue> Match(Match match, RuleContext<TTheme> context);
 }
 
 public delegate ImmutableArray<StyleValue> DynamicMatcher<TTheme>(Match match, RuleContext<TTheme> context)

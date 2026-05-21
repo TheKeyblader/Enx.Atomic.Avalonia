@@ -7,26 +7,23 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-using System;
 using Avalonia;
-using Avalonia.Styling;
+using Avalonia.Controls;
 
 namespace Enx.Atomic
 {
-    public partial class AtomicStyles : Styles
+    public partial class AtomicResourceDictionary : ResourceDictionary
     {
-        public AtomicStyles()
+        public AtomicResourceDictionary()
         {
-            var style1 = new Style(selector => selector.Is<Visual>().Class("sm:max-lg:hidden"));
-            style1.Setters.Add(new Setter(Visual.IsVisibleProperty,false));
-            var container1 = new ContainerQuery(query => StyleQueries.And(new[] { query.Width(StyleQueryComparisonOperator.GreaterThanOrEquals, 640.0), query.Width(StyleQueryComparisonOperator.LessThan, 1024.0) }), "top-level");
-            container1.Add(style1);
-            Add(container1);
-            
-            var style2 = new Style(selector => selector.Is<Visual>().Class("collapsed"));
-            style2.Setters.Add(new Setter(Visual.OpacityProperty,0));
-            Add(style2);
-            
+            Add("BreakpointsSm", 640);
+            Add("BreakpointsMd", 768);
+            Add("BreakpointsLg", 1024);
+            Add("BreakpointsXl", 1280);
+            Add("Breakpoints2xl", 1536);
+            Add("DefaultGridSize", 12);
+            Add("ButtonCompactMargin", new Thickness(0,0,0,0));
+            Add("ButtonMargin", new Thickness(0,0,0,0));
         }
     }
 }

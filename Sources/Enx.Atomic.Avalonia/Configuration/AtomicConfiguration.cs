@@ -17,7 +17,5 @@ public class AtomicConfiguration<TTheme>
         new CornerRadiusEmitter(),
         new FontWeightEmitter(),
     ];
-    public string Namespace { get; set; } = "Enx.Atomic";
-    public string StyleClassName { get; set; } = "AtomicStyles";
     public string ContainerName { get; set; } = "top-level";
 }

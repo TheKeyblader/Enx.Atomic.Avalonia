@@ -1,9 +1,11 @@
 ﻿using System.Linq.Expressions;
 using System.Text.RegularExpressions;
 using Avalonia;
+using Avalonia.Media;
 using Avalonia.Styling;
 using Enx.Atomic.Avalonia;
 using Enx.Atomic.Avalonia.Compact;
+using Enx.Atomic.Avalonia.CSharp;
 
 var configuration = new AtomicConfiguration<MiniTheme>
 {
@@ -22,13 +24,24 @@ var result = generator.Generate(
     "sm:max-lg:hidden collapsed",
     new AtomicGenerator<MiniTheme>.Options()
 );
-var content = StyleEmitter.Generate(configuration, result);
+
+var csharpEmitter = new CSharpEmitter<MiniTheme>(new CSharpEmitterOptions()
+{
+
+});
+
+var content = csharpEmitter.Emit(new EmitContext<MiniTheme>()
+{
+    Configuration =  configuration,
+    Utils = result
+});
 Console.WriteLine("Finish");
 
 public class MiniTheme
 {
     public string DefaultContainer { get; set; } = "main";
 
+    [IsResourceDictionnary]
     public Dictionary<string, double> Breakpoints { get; set; } =
         new()
         {
@@ -38,6 +51,23 @@ public class MiniTheme
             { "xl", 1280 },
             { "2xl", 1536 },
         };
+
+    [IsResourceDictionnary]
+    public Dictionary<string, Color> Colors { get; set; } = [];
+    [IsResourceDictionnary]
+    public Dictionary<string, Color> ColorsDark { get; set; } = [];
+
+    [IsResourceDictionnary] public int DefaultGridSize { get; set; } = 12;
+
+    [IsResourceDictionnary] public ButtonTheme Button { get; set; } = new();
+    
+    public string Ignore { get; set; }
+    
+    public class ButtonTheme
+    {
+        public Thickness CompactMargin { get; set; }
+        public Thickness Margin { get; set; }
+    }
 }
 
 public record VariantBreakpoints : VariantBase<MiniTheme>
