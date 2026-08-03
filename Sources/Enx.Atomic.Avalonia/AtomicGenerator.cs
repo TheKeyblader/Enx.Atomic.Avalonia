@@ -5,13 +5,23 @@ using Enx.Atomic.Avalonia.Internal;
 
 namespace Enx.Atomic.Avalonia;
 
+/// <summary>
+/// The core engine that turns raw utility-class tokens (e.g. <c>"hover:bg-red-500"</c>) into Avalonia styles.
+/// A token is first stripped of variants (<see cref="MatchVariants(string, string?)"/>), the remaining base
+/// token is matched against configured <see cref="Rule"/>s to produce style values, and those values are
+/// re-wrapped by the matched variants into a final selector/setter pair (<see cref="StringifiedUtil"/>).
+/// Results are cached per raw token since the same token is typically encountered many times across a project.
+/// </summary>
 public class AtomicGenerator<TTheme>
     where TTheme : class
 {
+    /// <summary>The rules, variants, extractors, emitters and theme this generator resolves tokens against.</summary>
     public AtomicConfiguration<TTheme> Configuration { get; }
     private readonly HashSet<IRule> _activatedRules = [];
     private readonly Dictionary<string, StringifiedUtil[]> _cache = [];
 
+    /// <summary>Creates a generator for the given configuration, assigning each rule its declaration-order index.</summary>
+    /// <exception cref="InvalidOperationException">A configured rule is neither <see cref="IStaticRule"/> nor <see cref="IDynamicRule{TTheme}"/>.</exception>
     public AtomicGenerator(AtomicConfiguration<TTheme> configuration)
     {
         Configuration = configuration;
@@ -30,6 +40,11 @@ public class AtomicGenerator<TTheme>
             throw new InvalidOperationException();
     }
 
+    /// <summary>Runs the configured <see cref="Extractor"/>s over <paramref name="code"/> to pull out candidate utility tokens.</summary>
+    /// <param name="code">The source text to scan.</param>
+    /// <param name="id">Optional identifier passed to extractors that need to scope tokens to this source.</param>
+    /// <param name="extracted">An existing set to add tokens to, useful for accumulating across multiple files. A new set is created if omitted.</param>
+    /// <returns>The set of tokens extracted, including any pre-existing entries from <paramref name="extracted"/>.</returns>
     public HashSet<string> ApplyExtractors(
         string code,
         string? id = null,
@@ -52,6 +67,9 @@ public class AtomicGenerator<TTheme>
         return extracted;
     }
 
+    /// <summary>Builds the <see cref="RuleContext{TTheme}"/> passed to rules when resolving a token, from the result of variant matching.</summary>
+    /// <param name="raw">The original, unstripped token.</param>
+    /// <param name="applied">The result of matching variants against <paramref name="raw"/>.</param>
     public RuleContext<TTheme> MakeContext(string raw, VariantMatchedResult<TTheme> applied)
     {
         return new RuleContext<TTheme>
@@ -65,6 +83,12 @@ public class AtomicGenerator<TTheme>
         };
     }
 
+    /// <summary>
+    /// Resolves a single raw utility token into its final Avalonia styles, running pre-processors, variant
+    /// matching, rule resolution and stringification. Results are cached by raw token.
+    /// </summary>
+    /// <param name="raw">The raw token, e.g. <c>"hover:bg-red-500"</c>.</param>
+    /// <returns>The styles produced by the token, or an empty array if no rule matched.</returns>
     public StringifiedUtil[] ParseToken(string raw)
     {
         var cacheKey = $"{raw}";
@@ -88,6 +112,13 @@ public class AtomicGenerator<TTheme>
         }
     }
 
+    /// <summary>Strips and records every configured variant that matches <paramref name="raw"/>, starting from a fresh match state.</summary>
+    /// <param name="raw">The original, unstripped token.</param>
+    /// <param name="current">The token to start matching from; defaults to <paramref name="raw"/> if omitted.</param>
+    /// <returns>
+    /// One result per branch of the match. Most tokens produce a single result; variants whose handler is
+    /// ambiguous (matches multiple ways) fork into one result per interpretation.
+    /// </returns>
     public VariantMatchedResult<TTheme>[] MatchVariants(string raw, string? current = null)
     {
         var context = new VariantContext<TTheme>
@@ -102,6 +133,16 @@ public class AtomicGenerator<TTheme>
         return MatchVariants(matched, context);
     }
 
+    /// <summary>
+    /// Repeatedly matches configured variants against <paramref name="result"/>'s current token, peeling one
+    /// variant off per pass until none apply. Variants marked <c>MultiPass</c> may match more than once;
+    /// a variant whose handler returns more than one match forks the result recursively (one branch per match),
+    /// unless it is itself <c>MultiPass</c>, which is not supported for ambiguous matches.
+    /// </summary>
+    /// <param name="result">The current match state to continue from.</param>
+    /// <param name="context">Shared context (theme, generator) available to variant matchers.</param>
+    /// <exception cref="InvalidOperationException">A <c>MultiPass</c> variant produced more than one match.</exception>
+    /// <exception cref="Exception">More than 500 variant handlers were accumulated, indicating a runaway/cyclic match.</exception>
     public VariantMatchedResult<TTheme>[] MatchVariants(
         VariantMatchedResult<TTheme> result,
         VariantContext<TTheme> context
@@ -164,12 +205,17 @@ public class AtomicGenerator<TTheme>
         return [result];
     }
 
+    /// <summary>Matches variants on <paramref name="input"/> and resolves each resulting branch against the configured rules.</summary>
     private ParsedUtil[] ParseUtil(string input, RuleContext<TTheme> context)
     {
         var variantResults = MatchVariants(input);
         return [.. variantResults.Select(v => ParseUtil(v, context)).SelectMany(x => x)];
     }
 
+    /// <summary>
+    /// Resolves a variant-stripped token against the configured rules: a matching static rule wins outright,
+    /// otherwise dynamic rules are tried in declaration order and the first one that yields styles is used.
+    /// </summary>
     private ParsedUtil[] ParseUtil(
         VariantMatchedResult<TTheme> matched,
         RuleContext<TTheme> context
@@ -203,6 +249,7 @@ public class AtomicGenerator<TTheme>
         return [];
     }
 
+    /// <summary>Marks <paramref name="rule"/> as activated and groups its style values by owner type into one <see cref="ParsedUtil"/> per group.</summary>
     private ParsedUtil[] ResolveStylingResult(
         string raw,
         IEnumerable<StyleValue> styleValues,
@@ -231,6 +278,7 @@ public class AtomicGenerator<TTheme>
         return [.. parsedUtils];
     }
 
+    /// <summary>Applies variant handlers to a resolved util and converts each resulting <see cref="Internal.UtilObject"/> into a <see cref="StringifiedUtil"/>.</summary>
     private StringifiedUtil[] StringifyUtils(ParsedUtil parsed, RuleContext<TTheme> context)
     {
         var utilities = ApplyVariants(parsed);
@@ -255,6 +303,11 @@ public class AtomicGenerator<TTheme>
         return [.. result];
     }
 
+    /// <summary>
+    /// Runs the parsed util's variant handlers, outermost-declared first, composing them into a single
+    /// pipeline that starts from a base selector/entry set and folds in each handler's selector, container
+    /// query and entry transformations. The final expressions are compiled to lambdas for the emitter.
+    /// </summary>
     private UtilObject[] ApplyVariants(
         ParsedUtil parsed,
         VariantHandlerBase[]? variantHanders = null,
@@ -316,12 +369,16 @@ public class AtomicGenerator<TTheme>
         ];
     }
 
+    /// <summary>Extracts utility tokens from <paramref name="input"/> and resolves them all into styles.</summary>
+    /// <param name="input">The source text to scan.</param>
+    /// <param name="options">Generation options, including the optional source identifier used during extraction.</param>
     public StringifiedUtil[] Generate(string input, Options options)
     {
         var tokens = ApplyExtractors(input, options.Id);
         return Generate(tokens, options);
     }
 
+    /// <summary>Resolves an already-extracted set of tokens into styles, skipping duplicates and tokens that match no rule.</summary>
     public StringifiedUtil[] Generate(ISet<string> tokens, Options options)
     {
         var matched = new HashSet<string>();
@@ -343,8 +400,10 @@ public class AtomicGenerator<TTheme>
         return [.. sheet];
     }
 
+    /// <summary>Options controlling a single <see cref="Generate(string, Options)"/> call.</summary>
     public class Options
     {
+        /// <summary>Identifier scoping extracted tokens to a particular source, forwarded to extractors.</summary>
         public string? Id { get; init; }
     }
 }

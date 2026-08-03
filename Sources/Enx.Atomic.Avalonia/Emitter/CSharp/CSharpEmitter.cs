@@ -9,23 +9,52 @@ using Microsoft.CodeAnalysis;
 
 namespace Enx.Atomic.Avalonia.CSharp;
 
+/// <summary>Configures what <see cref="CSharpEmitter{TTheme}"/> generates and how the generated types are named.</summary>
 public class CSharpEmitterOptions
 {
+    /// <summary>The namespace generated types are placed in.</summary>
     public string Namespace { get; init; } = "Enx.Atomic";
+
+    /// <summary>Whether to generate the <see cref="Avalonia.Styling.Styles"/> subclass containing the resolved utility styles.</summary>
     public bool EmitStyle { get; init; } = true;
+
+    /// <summary>The name of the generated styles class.</summary>
     public string StyleClassName { get; init; } = "AtomicStyles";
+
+    /// <summary>Whether to generate a resource dictionary. Currently a no-op placeholder — see <see cref="EmitResource(EmitContext{TTheme})"/>.</summary>
     public bool EmitResource { get; init; } = true;
+
+    /// <summary>The name of the generated resource dictionary class.</summary>
     public string ResourceClassName { get; init; } = "AtomicResourceDictionary";
+
+    /// <summary>Whether to generate an enum listing every resource key discovered on the theme.</summary>
     public bool EmitResourceEnum { get; init; } = true;
+
+    /// <summary>The name of the generated resource-key enum.</summary>
     public string ResourceEnumClassName { get; init; } = "AtomicResourceEnum";
+
+    /// <summary>Whether to generate a markup extension for referencing theme resources from XAML.</summary>
     public bool EmitMarkupExtension { get; init; } = true;
+
+    /// <summary>The name of the generated markup extension class.</summary>
     public string MarkupExtensionClassName { get; init; } = "AtomicResourceExtension";
+
+    /// <summary>
+    /// <see cref="string.Format(string, object?)"/> pattern used to derive each generated file's name from
+    /// its class name, e.g. the default <c>"{0}.g.cs"</c> yields <c>AtomicStyles.g.cs</c>.
+    /// </summary>
     public string FileNamePattern { get; init; } = "{0}.g.cs";
 }
 
+/// <summary>
+/// Emits the resolved atomic styles as generated C# source: a <see cref="Avalonia.Styling.Styles"/> subclass
+/// that constructs each <see cref="Setter"/> directly (avoiding XAML parsing at runtime), plus an enum of the
+/// theme's resource keys. Controlled by <see cref="CSharpEmitterOptions"/>.
+/// </summary>
 public class CSharpEmitter<TTheme>(CSharpEmitterOptions Options) : IStyleEmitter<TTheme>
     where TTheme : class
 {
+    /// <summary>Generates the files enabled by <see cref="CSharpEmitterOptions"/>: the styles class, resource dictionary, and/or resource enum.</summary>
     public EmitResult[] Emit(EmitContext<TTheme> context)
     {
         List<EmitResult> results = [];
@@ -43,6 +72,7 @@ public class CSharpEmitter<TTheme>(CSharpEmitterOptions Options) : IStyleEmitter
 
     #region Style
 
+    /// <summary>Generates the <see cref="Avalonia.Styling.Styles"/> subclass whose constructor builds and adds one <see cref="Style"/> per resolved util.</summary>
     public virtual EmitResult EmitStyles(EmitContext<TTheme> context)
     {
         var builder = CodeBuilder.Create(Options.Namespace);
@@ -78,6 +108,7 @@ public class CSharpEmitter<TTheme>(CSharpEmitterOptions Options) : IStyleEmitter
         };
     }
 
+    /// <summary>Writes the local variable declaration and setter/container-query statements for a single resolved util.</summary>
     private void WriteUtil(
         ICodeWriter writer,
         int index,
@@ -109,6 +140,8 @@ public class CSharpEmitter<TTheme>(CSharpEmitterOptions Options) : IStyleEmitter
         }
     }
 
+    /// <summary>Writes a single <c>Setters.Add(new Setter(...))</c> statement, using the matching <see cref="ValueEmitter"/> to render the value.</summary>
+    /// <exception cref="InvalidOperationException">No configured <see cref="ValueEmitter"/> can handle the setter's value type.</exception>
     private void WriteSetter(
         ICodeWriter writer,
         string styleVarName,
@@ -134,6 +167,8 @@ public class CSharpEmitter<TTheme>(CSharpEmitterOptions Options) : IStyleEmitter
 
     private static readonly Dictionary<AvaloniaProperty, string> PropertyAccessors = [];
 
+    /// <summary>Resolves the static field that declares <paramref name="property"/> (e.g. <c>"Button.BackgroundProperty"</c>) via reflection, caching the result.</summary>
+    /// <exception cref="InvalidOperationException">No static field on the property's owner type holds this property instance.</exception>
     private static string GetAvaloniaPropertyName(AvaloniaProperty property)
     {
         if (PropertyAccessors.TryGetValue(property, out var accessor))
@@ -161,7 +196,7 @@ public class CSharpEmitter<TTheme>(CSharpEmitterOptions Options) : IStyleEmitter
 
     #region Resource
 
-
+    /// <summary>Generates the resource dictionary file. Currently a placeholder that emits no content.</summary>
     public EmitResult EmitResource(EmitContext<TTheme> context)
     {
         var builder = CodeBuilder.Create(Options.Namespace);
@@ -179,6 +214,7 @@ public class CSharpEmitter<TTheme>(CSharpEmitterOptions Options) : IStyleEmitter
 
     #region Enum
 
+    /// <summary>Generates a public enum listing every resource key discovered on the theme via <see cref="EmitterHelpers.GetThemeKeys"/>.</summary>
     public EmitResult EmitEnum(EmitContext<TTheme> context)
     {
         var builder = CodeBuilder.Create(Options.Namespace);
