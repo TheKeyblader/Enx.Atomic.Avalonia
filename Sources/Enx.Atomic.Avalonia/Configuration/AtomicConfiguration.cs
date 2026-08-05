@@ -22,17 +22,6 @@ public class AtomicConfiguration<TTheme>
     /// <summary>The theme instance rules and variants can read values from (colors, spacing, breakpoints, etc.).</summary>
     public required TTheme Theme { get; set; }
 
-    /// <summary>Converts resolved style values to C# source for code-generating emitters. Defaults cover common Avalonia value types.</summary>
-    public List<ValueEmitter> Emitters { get; set; } =
-    [
-        new BasicTypeEmitter(),
-        new ColorEmitter(),
-        new SolidColorBrushEmitter(),
-        new ThicknessEmitter(),
-        new CornerRadiusEmitter(),
-        new FontWeightEmitter(),
-    ];
-
     /// <summary>The container name used when emitting container-query-scoped styles.</summary>
     public string ContainerName { get; set; } = "top-level";
 }
