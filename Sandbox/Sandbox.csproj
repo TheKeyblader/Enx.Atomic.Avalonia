@@ -11,4 +11,8 @@
       <ProjectReference Include="..\Sources\Enx.Atomic.Avalonia\Enx.Atomic.Avalonia.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <PackageReference Include="Avalonia.Desktop" Version="12.1.1" />
+    </ItemGroup>
+
 </Project>

@@ -10,4 +10,8 @@
     <ProjectReference Include="..\Enx.Atomic.Avalonia\Enx.Atomic.Avalonia.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Static\" />
+  </ItemGroup>
+
 </Project>
