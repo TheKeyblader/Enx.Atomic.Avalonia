@@ -8,7 +8,7 @@ namespace Enx.Atomic.Avalonia.Tests;
 
 public class GhostPropertyCombinerTests
 {
-    [Fact]
+    [AvaloniaFact]
     public void CoOccurringSides_CombineIntoOneRealMarginValue()
     {
         var (configuration, generator) = TestHelpers.CreateMiniGenerator();
@@ -25,7 +25,7 @@ public class GhostPropertyCombinerTests
         Assert.Equal(new Thickness(4, 0, 8, 0), setter.Value);
     }
 
-    [Fact]
+    [AvaloniaFact]
     public void LoneGhostToken_StillFallsBackToItsOwnStyle()
     {
         var (configuration, generator) = TestHelpers.CreateMiniGenerator();
@@ -42,7 +42,7 @@ public class GhostPropertyCombinerTests
         Assert.Equal(new Thickness(0, 16, 0, 0), setter.Value);
     }
 
-    [Fact]
+    [AvaloniaFact]
     public void OriginalGhostTokens_NeverReachFinalOutputOnTheirOwn()
     {
         var (configuration, generator) = TestHelpers.CreateMiniGenerator();
@@ -58,7 +58,7 @@ public class GhostPropertyCombinerTests
         Assert.Single(results);
     }
 
-    [Fact]
+    [AvaloniaFact]
     public void UnrelatedToken_OnTheSameLine_IsUnaffected()
     {
         var (configuration, generator) = TestHelpers.CreateMiniGenerator();
@@ -75,7 +75,7 @@ public class GhostPropertyCombinerTests
         Assert.Equal(new Thickness(8), setter.Value);
     }
 
-    [Fact]
+    [AvaloniaFact]
     public void PaddingSides_CombineIntoOneRealPaddingValue()
     {
         var (configuration, generator) = TestHelpers.CreateMiniGenerator();
@@ -92,7 +92,7 @@ public class GhostPropertyCombinerTests
         Assert.Equal(new Thickness(8, 16, 0, 0), setter.Value);
     }
 
-    [Fact]
+    [AvaloniaFact]
     public void CornerRadii_CombineIntoOneRealCornerRadiusValue()
     {
         var (configuration, generator) = TestHelpers.CreateMiniGenerator();
@@ -109,7 +109,7 @@ public class GhostPropertyCombinerTests
         Assert.Equal(new CornerRadius(8, 6, 0, 0), setter.Value);
     }
 
-    [Fact]
+    [AvaloniaFact]
     public void SameCombination_OnDifferentLines_RegistersOnlyOneSyntheticRule()
     {
         var (configuration, generator) = TestHelpers.CreateMiniGenerator();

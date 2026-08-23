@@ -12,7 +12,7 @@ namespace Enx.Atomic.Avalonia.Tests;
 /// </summary>
 public class AmbiguousPrefixTests
 {
-    [Fact]
+    [AvaloniaFact]
     public void Border_Bare_UsesDefaultLineWidth()
     {
         var (_, generator) = TestHelpers.CreateMiniGenerator();
@@ -25,7 +25,7 @@ public class AmbiguousPrefixTests
         Assert.Equal(new Thickness(1), setter.Value);
     }
 
-    [Fact]
+    [AvaloniaFact]
     public void BorderNumber_ResolvesToWidthInPixels_NotColor()
     {
         var (_, generator) = TestHelpers.CreateMiniGenerator();
@@ -38,7 +38,7 @@ public class AmbiguousPrefixTests
         Assert.Equal(new Thickness(2), setter.Value);
     }
 
-    [Fact]
+    [AvaloniaFact]
     public void BorderColorName_ResolvesToColor_NotWidth()
     {
         var (_, generator) = TestHelpers.CreateMiniGenerator();
@@ -51,7 +51,7 @@ public class AmbiguousPrefixTests
         Assert.Equal(Color.Parse("#ef4444"), Assert.IsType<SolidColorBrush>(setter.Value).Color);
     }
 
-    [Fact]
+    [AvaloniaFact]
     public void TextScaleKey_ResolvesToFontSize_NotColor()
     {
         var (_, generator) = TestHelpers.CreateMiniGenerator();
@@ -64,7 +64,7 @@ public class AmbiguousPrefixTests
         Assert.Equal(14d, setter.Value);
     }
 
-    [Fact]
+    [AvaloniaFact]
     public void TextColorName_ResolvesToForeground_NotFontSize()
     {
         var (_, generator) = TestHelpers.CreateMiniGenerator();

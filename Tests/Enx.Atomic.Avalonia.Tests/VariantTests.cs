@@ -4,7 +4,7 @@ namespace Enx.Atomic.Avalonia.Tests;
 
 public class VariantTests
 {
-    [Fact]
+    [AvaloniaFact]
     public void Hover_AppendsPointerOverPseudoClassToSelector()
     {
         var (_, generator) = TestHelpers.CreateMiniGenerator();
@@ -15,7 +15,7 @@ public class VariantTests
         Assert.Contains(":pointerover", util.ResolveSelector().ToString());
     }
 
-    [Fact]
+    [AvaloniaFact]
     public void ChainedPseudoClasses_BothApply()
     {
         var (_, generator) = TestHelpers.CreateMiniGenerator();
@@ -28,7 +28,7 @@ public class VariantTests
         Assert.Contains(":focus", selector);
     }
 
-    [Fact]
+    [AvaloniaFact]
     public void Breakpoint_ProducesMinWidthContainerQuery()
     {
         var (_, generator) = TestHelpers.CreateMiniGenerator();
@@ -41,7 +41,7 @@ public class VariantTests
         Assert.Equal("min-width:640", query!.ToString());
     }
 
-    [Fact]
+    [AvaloniaFact]
     public void MaxBreakpoint_ProducesMaxWidthContainerQuery()
     {
         var (_, generator) = TestHelpers.CreateMiniGenerator();

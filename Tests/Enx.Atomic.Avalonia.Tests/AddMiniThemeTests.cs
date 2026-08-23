@@ -4,7 +4,7 @@ namespace Enx.Atomic.Avalonia.Tests;
 
 public class AddMiniThemeTests
 {
-    [Fact]
+    [AvaloniaFact]
     public void CallingTwice_DoesNotDuplicateRulesOrVariants()
     {
         var builder = ThemeBuilder<MiniTheme>.Create();
@@ -20,7 +20,7 @@ public class AddMiniThemeTests
         Assert.Equal(variantsAfterFirst, configuration.Variants.Count);
     }
 
-    [Fact]
+    [AvaloniaFact]
     public void PopulatesEveryThemeScale()
     {
         var builder = ThemeBuilder<MiniTheme>.Create();

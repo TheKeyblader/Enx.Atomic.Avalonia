@@ -10,7 +10,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Avalonia.Headless" Version="12.1.1" />
+        <PackageReference Include="Avalonia.Headless.XUnit" Version="12.1.1" />
         <PackageReference Include="coverlet.msbuild" Version="6.0.4">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -25,6 +25,7 @@
 
     <ItemGroup>
         <Using Include="Xunit" />
+        <Using Include="Avalonia.Headless.XUnit" />
     </ItemGroup>
 
     <ItemGroup>

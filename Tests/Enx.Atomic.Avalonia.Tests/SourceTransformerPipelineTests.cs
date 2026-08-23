@@ -4,7 +4,7 @@ namespace Enx.Atomic.Avalonia.Tests;
 
 public class SourceTransformerPipelineTests
 {
-    [Fact]
+    [AvaloniaFact]
     public void Transformers_RunPreThenDefaultThenPost_DeclarationOrderWithinAStage()
     {
         var (configuration, generator) = TestHelpers.CreateMiniGenerator();
@@ -18,7 +18,7 @@ public class SourceTransformerPipelineTests
         Assert.Equal("<original>[pre][d1][d2][post]", result);
     }
 
-    [Fact]
+    [AvaloniaFact]
     public void CodeFilter_ReturningFalse_SkipsTheTransformer()
     {
         var (configuration, generator) = TestHelpers.CreateMiniGenerator();
@@ -31,7 +31,7 @@ public class SourceTransformerPipelineTests
         Assert.Equal("<original>", result);
     }
 
-    [Fact]
+    [AvaloniaFact]
     public void IdFilter_ReturningFalse_SkipsTheTransformer()
     {
         var (configuration, generator) = TestHelpers.CreateMiniGenerator();
@@ -44,7 +44,7 @@ public class SourceTransformerPipelineTests
         Assert.Equal("<original>", result);
     }
 
-    [Fact]
+    [AvaloniaFact]
     public void IdFilter_SetButNoIdProvided_SkipsTheTransformer()
     {
         var (configuration, generator) = TestHelpers.CreateMiniGenerator();

@@ -5,7 +5,7 @@ namespace Enx.Atomic.Avalonia.Tests;
 
 public class SpacingRuleTests
 {
-    [Theory]
+    [AvaloniaTheory]
     [InlineData("m-4", 16)]
     [InlineData("-m-4", -16)]
     public void Margin_UniformVariant_SetsTheRealMarginProperty(string token, double uniform)
@@ -20,7 +20,7 @@ public class SpacingRuleTests
         Assert.Equal(new Thickness(uniform), setter.Value);
     }
 
-    [Fact]
+    [AvaloniaFact]
     public void MarginAxis_TargetsBothGhostPropertiesForThatAxis()
     {
         // Like the single-side branches, the x/y axis branch doesn't zero the other sides on the real
@@ -38,7 +38,7 @@ public class SpacingRuleTests
         Assert.All(util.Body, s => Assert.Equal(32f, s.Value));
     }
 
-    [Fact]
+    [AvaloniaFact]
     public void Margin_UnknownScaleKey_FallsBackToRemTimesFactor()
     {
         // "13" isn't in the default spacing scale, so it's treated as a bare rem number: 13 * 16px.
@@ -51,7 +51,7 @@ public class SpacingRuleTests
         Assert.Equal(new Thickness(208), setter.Value);
     }
 
-    [Fact]
+    [AvaloniaFact]
     public void Gap_SetsSpacingOnStackPanelAndSpacingOnGridBothAxes()
     {
         var (_, generator) = TestHelpers.CreateMiniGenerator();
@@ -69,7 +69,7 @@ public class SpacingRuleTests
         );
     }
 
-    [Fact]
+    [AvaloniaFact]
     public void MarginSide_TargetsGhostPropertyNotTheRealProperty()
     {
         // The per-side branch doesn't zero the other sides on the real property anymore — it targets a

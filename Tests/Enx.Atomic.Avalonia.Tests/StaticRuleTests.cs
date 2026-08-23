@@ -6,7 +6,7 @@ namespace Enx.Atomic.Avalonia.Tests;
 
 public class StaticRuleTests
 {
-    [Fact]
+    [AvaloniaFact]
     public void Hidden_SetsIsVisibleFalse()
     {
         var (_, generator) = TestHelpers.CreateMiniGenerator();
@@ -19,7 +19,7 @@ public class StaticRuleTests
         Assert.Equal(false, setter.Value);
     }
 
-    [Fact]
+    [AvaloniaFact]
     public void CursorPointer_SetsHandCursor()
     {
         var (_, generator) = TestHelpers.CreateMiniGenerator();
@@ -32,7 +32,7 @@ public class StaticRuleTests
         Assert.Equal("Hand", Assert.IsType<Cursor>(setter.Value).ToString());
     }
 
-    [Fact]
+    [AvaloniaFact]
     public void FlexRow_AppliesToEveryOrientedPanelType()
     {
         var (_, generator) = TestHelpers.CreateMiniGenerator();
@@ -50,7 +50,7 @@ public class StaticRuleTests
         );
     }
 
-    [Fact]
+    [AvaloniaFact]
     public void UnknownToken_ResolvesToNothing()
     {
         var (_, generator) = TestHelpers.CreateMiniGenerator();
