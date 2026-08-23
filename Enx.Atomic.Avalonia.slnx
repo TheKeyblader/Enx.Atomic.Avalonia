@@ -6,4 +6,7 @@
     <Project Path="Sources/Enx.Atomic.Avalonia.Preset.Mini/Enx.Atomic.Avalonia.Preset.Mini.csproj" Id="5c93ed51-359d-4ab2-8441-afe468ac2b7f" />
   </Folder>
   <Project Path="Sandbox/Sandbox.csproj" />
+  <Folder Name="/Tests/">
+    <Project Path="Tests/Enx.Atomic.Avalonia.Tests/Enx.Atomic.Avalonia.Tests.csproj" />
+  </Folder>
 </Solution>
