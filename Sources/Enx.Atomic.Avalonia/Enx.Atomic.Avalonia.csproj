@@ -18,16 +18,11 @@
 
     <ItemGroup>
       <PackageReference Include="Avalonia" Version="12.0.2" />
-      <PackageReference Include="AvantiPoint.CodeGenHelpers" Version="2.0.30-pre" />
       <PackageReference Include="Dunet" Version="1.16.2" />
-      <PackageReference Include="ExpressionToCodeLib" Version="3.5.0" />
-      <PackageReference Include="FastExpressionCompiler" Version="5.4.1" />
-      <PackageReference Include="Microsoft.Extensions.FileSystemGlobbing" Version="10.0.8" />
       <PackageReference Include="Roslynator.Analyzers" Version="4.15.0">
         <PrivateAssets>all</PrivateAssets>
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       </PackageReference>
-      <PackageReference Include="Testably.Abstractions" Version="10.2.0" />
     </ItemGroup>
 
 </Project>
