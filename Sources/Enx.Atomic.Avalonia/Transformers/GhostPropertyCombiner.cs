@@ -1,15 +1,19 @@
+using System.Linq.Expressions;
 using Avalonia;
+using Avalonia.Styling;
+using Enx.Atomic.Avalonia.Compact;
 
 namespace Enx.Atomic.Avalonia;
 
 /// <summary>
-/// Combines ghost-property utilities (see <see cref="SpecialProperties"/>) found co-occurring on the same
-/// source line into one real composite value, registered as a new static rule and appended to the line as a
-/// synthetic token — alongside, not instead of, the original tokens, so a ghost-property utility used alone
-/// still falls back to its own (zero-elsewhere) style. Runs <see cref="SourceTransformerEnforce.Post"/>, over
-/// the whole line rather than one token at a time, since combining requires seeing several tokens together.
-/// Same-line co-occurrence is a deliberately cheap heuristic (no XAML/AST awareness) — good enough for the
-/// common <c>Classes="ml-1 mr-2"</c> case.
+/// Combines ghost-property utilities (see <see cref="SpecialProperties"/>) found on the same source line into
+/// one real composite value, registered via <see cref="AtomicGenerator{TTheme}.AddUtil"/> as an extra
+/// <see cref="StringifiedUtil"/> with a <b>compound selector</b> requiring every contributing class (e.g.
+/// <c>.Class("ml-1").Class("mr-2")</c>). Its <see cref="Transform"/> always returns <paramref name="code"/>
+/// unchanged — the source text is only ever <em>read</em> here, and the compound selector only ever requires
+/// classes the real source already has, so nothing needs to be rewritten for this to work: not the in-memory
+/// text (this method's own return value is the "in-memory text", and it's a no-op), and — crucially — never
+/// the actual file on disk, which this engine has no notion of writing to in the first place.
 /// </summary>
 public sealed class GhostPropertyCombiner<TTheme> : ISourceTransformer<TTheme>
     where TTheme : class
@@ -21,13 +25,13 @@ public sealed class GhostPropertyCombiner<TTheme> : ISourceTransformer<TTheme>
 
     public string Transform(string code, string? id, AtomicGenerator<TTheme> generator)
     {
-        var lines = code.Split('\n');
+        var seen = new HashSet<string>();
 
-        for (var i = 0; i < lines.Length; i++)
+        foreach (var line in code.Split('\n'))
         {
             var candidates = SplitExtractor
                 .SplitRegex()
-                .Split(lines[i])
+                .Split(line)
                 .Where(token => token.Length > 0)
                 .Distinct()
                 .ToArray();
@@ -46,28 +50,50 @@ public sealed class GhostPropertyCombiner<TTheme> : ISourceTransformer<TTheme>
             if (ghostHits.Count < 1)
                 continue;
 
-            // Groups of 1 are the common "used alone" case (e.g. a lone ml-4): still synthesized through the
-            // same path, so a ghost property never needs a separate real-property fallback rule of its own.
+            // A lone ghost token (no sibling on this line) is still a "group" of one here — otherwise a ghost
+            // property could never be used on its own.
             foreach (var group in ghostHits.GroupBy(hit => GhostProperties.Map[hit.Ghost].Real))
             {
+                var tokens = group
+                    .Select(hit => hit.Token)
+                    .Distinct()
+                    .OrderBy(t => t, StringComparer.Ordinal)
+                    .ToArray();
+
+                var key = string.Join(' ', tokens);
+                if (!seen.Add(key))
+                    continue;
+
                 var slots = new float[4];
                 foreach (var hit in group)
                     slots[GhostProperties.Map[hit.Ghost].Slot] = Convert.ToSingle(hit.Value);
 
                 var value = GhostProperties.Map[group.First().Ghost].Build(slots);
-                var syntheticName = $"__ghost_{string.Join('_', group.Select(hit => hit.Token).Distinct().OrderBy(t => t))}__";
 
-                if (generator.Configuration.Rules.OfType<IStaticRule>().All(r => r.Name != syntheticName))
-                {
-                    var rule = new Rule.Static(syntheticName, [value]);
-                    rule.Metadata.Index = generator.Configuration.Rules.Count;
-                    generator.Configuration.Rules.Add(rule);
-                }
+                SelectorExpression selectorData = SelectorsExpression.Is(null, value.UntypedProperty.OwnerType);
+                foreach (var token in tokens)
+                    selectorData = selectorData.Class(token);
 
-                lines[i] = $"{lines[i]} {syntheticName}";
+                var selectorParameter = Expression.Parameter(typeof(Selector), "selector");
+                var selector = Expression.Lambda<Func<Selector, Selector>>(
+                    selectorData.ToExpression(selectorParameter),
+                    true,
+                    selectorParameter
+                );
+
+                generator.AddUtil(
+                    new StringifiedUtil
+                    {
+                        Index = int.MaxValue,
+                        Selector = selector,
+                        SelectorData = selectorData,
+                        Body = [new Setter(value.UntypedProperty, value.UntypedValue)],
+                        Metadata = new RuleMetadata(),
+                    }
+                );
             }
         }
 
-        return string.Join('\n', lines);
+        return code;
     }
 }

@@ -34,13 +34,18 @@ lifted directly from it, adapted to Avalonia properties and selectors instead of
   variants without depending directly on `System.Linq.Expressions`. Converted to a
   compiled `Expression<Func<Selector, Selector>>` only at the very end
   (`AtomicGenerator.ApplyVariants`).
-- **`ISourceTransformer<TTheme>`** (`Transformers/`) — rewrites a source file's *full
+- **`ISourceTransformer<TTheme>`** (`Transformers/`) — sees a source file's *full
   text* before extraction, ported from UnoCSS's `SourceCodeTransformer`. Unlike
   `IPreProcessor`, which only ever sees one already-isolated token, a transformer sees
-  everything at once — the tool for anything that needs several co-occurring tokens
-  together (see [Source transformers and ghost properties](#source-transformers-and-ghost-properties)
-  below). Transformers are grouped by `Enforce` (`Pre` → `Default` → `Post`) and run
-  in that order, declaration order within a group, each seeing the previous one's
+  everything at once. Its `Transform` returns the (possibly rewritten) text — the tool
+  for genuine text rewrites, e.g. a future port of UnoCSS's variant-group expansion
+  (`hover:(bg-red-500 text-white)` → `hover:bg-red-500 hover:text-white`) — but it
+  doesn't have to rewrite anything: [ghost-property
+  combining](#source-transformers-and-ghost-properties) below returns its input
+  unchanged and instead calls `AtomicGenerator.AddUtil` as a side effect, for a style
+  that isn't derived from any single matched token. Transformers are grouped by
+  `Enforce` (`Pre` → `Default` → `Post`) and run in that order, declaration order
+  within a group, each seeing the previous one's
   output (`AtomicGenerator.ApplyTransformers`) — always before `ApplyExtractors`.
 - **`AtomicConfiguration<TTheme>`** — assembles `Transformers`, `PreProcessors`,
   `Rules`, `Variants`, `Extractors` and the `TTheme` instance.
@@ -103,7 +108,7 @@ become `Avalonia.Styling.Style`s. `Sandbox/Program.cs` exercises this end to end
 ## Source transformers and ghost properties
 
 Implemented: `ISourceTransformer<TTheme>`, `SpecialProperties`, `GhostProperties`,
-`GhostPropertyCombiner<TTheme>`, and the per-side/corner branches of `MarginRule`,
+`GhostPropertyCombiner`, and the per-side/corner branches of `MarginRule`,
 `PaddingRule` and `RoundedRule` targeting ghost properties. Verified end to end in
 `Sandbox/Program.cs`.
 
@@ -135,38 +140,54 @@ four slots, and how to assemble a full group of slots into that property's
 `StyleValue` — the `Build` delegate is what lets the combiner below stay generic over
 both `Thickness`- and `CornerRadius`-valued composites.
 
-**The combiner (`GhostPropertyCombiner<TTheme>`).** A `Post`-stage
-`ISourceTransformer<TTheme>`: for each source line, it resolves every candidate token
-on that line (`generator.ParseToken`, reusing `SplitExtractor`'s tokenization) and
-collects the ones whose resolved `Setter`s target a registered ghost property.
-Grouped by target real property, it assembles the combined value and appends a
-**synthesized token** to the line (e.g. `ml-1 mr-2` → `ml-1 mr-2 __ghost_ml-1_mr-2__`)
-together with a matching `Rule.Static` registered on the fly into
-`AtomicConfiguration.Rules`, carrying the real `Setter(MarginProperty, ...)` —
-alongside, not instead of, the original tokens. A single ghost token with no sibling
-on the same line still gets its own synthesized token (a "group" of one), so it falls
-back to its own style with the other slots at 0, same as before ghost properties
-existed. Same-line co-occurrence is a deliberately cheap heuristic, not a real
-XAML/AST-aware analysis — good enough for the common `Classes="ml-1 mr-2"` case, not
-meant to be exhaustive. A style whose owner type is `SpecialProperties` can never
-match a real element (no real control derives from it) — resolving one doesn't throw
-(`ParseToken` still returns it, which is what lets the combiner see it in the first
-place), but `AtomicGenerator.Generate(ISet<string>, Options)` drops it at the final
-emission boundary, so an *uncombined* ghost token never reaches the output on its
-own.
+**The combiner (`GhostPropertyCombiner<TTheme>`, a `Post`-stage
+`ISourceTransformer<TTheme>`, auto-registered by `AddMiniTheme`).** Its `Transform`
+always returns the source text **unchanged** — it only ever *reads* it, never
+rewrites it. Two things are easy to conflate here and worth being precise about:
+transforming the in-memory string a transformer receives is completely fine and
+doesn't touch anything on disk (nothing in this engine ever writes a file); what
+actually matters is that the *selector* the combiner emits must only ever require
+classes that genuinely exist in that real, untouched source — never a name invented
+along the way. An earlier draft got this backwards: it rewrote the in-memory text to
+inject a synthesized class name and built the combined style around *that* name —
+which would only ever match a live control if that synthesized name were also
+somehow present on it, i.e. only if the real file got rewritten too. The fix isn't
+"don't transform text" (transforming text in memory is exactly what
+`ISourceTransformer` is for) — it's "build the selector from the real class names
+that were actually there."
 
-Note this ended up simpler than first drafted: no actual compound multi-class
-selector (`:is(Layoutable).ml-1.mr-2`) was needed — a single synthesized class name,
-added only when its ghost members actually co-occur, achieves the same effect within
-the existing "one token → one selector" resolution model.
+Concretely: for each source line, `Transform` resolves every candidate token on that
+line (`generator.ParseToken`, reusing `SplitExtractor`'s tokenization) and collects
+the ones whose resolved `Setter`s target a registered ghost property. Grouped by
+target real property, it assembles the combined value and calls
+`AtomicGenerator<TTheme>.AddUtil` with an extra `StringifiedUtil` carrying a
+**compound selector** requiring every contributing class — `.Class("ml-1")
+.Class("mr-2")`, i.e. `:is(Layoutable).ml-1.mr-2` — and the real
+`Setter(MarginProperty, ...)`. `AddUtil` exists precisely because `Transform`'s
+return type is `string`, with no way to also hand back extra resolved styles; a
+transformer that needs to (this one does, since one compound style doesn't
+correspond to any single matched token) registers them as a side effect instead,
+and `Generate(string, Options)` folds them into its own result automatically — the
+caller never needs to know this happened. `ml-1`/`mr-2` still individually resolve
+to a `SpecialProperties`-scoped style on their own, dropped at `Generate`'s emission
+boundary same as always (see below) — only the compound one reaches output. A single
+ghost token with no sibling on the same line still yields a style — a "group" of
+one, compound with just that one already-existing class — which is what makes a
+ghost property usable on its own at all, other slots defaulting to 0, same as before
+ghost properties existed. Same-line co-occurrence is a deliberately cheap heuristic,
+not a real XAML/AST-aware analysis — good enough for the common
+`Classes="ml-1 mr-2"` case, not meant to be exhaustive. A style whose owner type is
+`SpecialProperties` can never match a real element (no real control derives from
+it) — resolving one doesn't throw (`ParseToken` still returns it, which is what lets
+the combiner see it in the first place), but
+`AtomicGenerator.Generate(ISet<string>, Options)` drops it at the final emission
+boundary, so an *uncombined* ghost token never reaches that call's output on its own.
 
-**Runtime vs. build-time implication.** For a combined style to ever match a live
-element, the element's actual `Classes` must contain the synthesized token — so this
-only works if the *transformed* text becomes the real source of truth (the on-disk
-`.axaml` the app compiles), not a throwaway scratch copy used only for token
-scanning. That fits the [planned build-time codegen CLI](#build-time-c-code-generation)
-below, which reads and is meant to rewrite real files; it does not fit bolting this
-onto an already-compiled, already-loaded XAML tree at pure runtime.
+This is why the whole mechanism has no runtime-vs-build-time caveat: a compound
+selector only ever depends on classes the real source already has, so it works the
+same whether resolved at app runtime or by the [build-time codegen
+emitter](#build-time-c-code-generation) below — nothing needs to be written back to
+any file, ever.
 
 ## Build-time C# code generation
 

@@ -47,12 +47,15 @@ static void AppMain(Application app, string[] args)
     Console.WriteLine();
 
     configuration.Transformers.Clear();
-
-    // GhostPropertyCombiner: ml-1 + mr-2 on one line should combine into a single real Margin value;
-    // mt-4 alone on another line should still fall back to its own (zero-elsewhere) style; and the
-    // original ml-1/mr-2/mt-4 tokens themselves should resolve to nothing (SpecialProperties is filtered
-    // out of emission), so only the synthesized combined tokens and p-2 should show up below.
     configuration.Transformers.Add(new GhostPropertyCombiner<MiniTheme>());
+
+    // GhostPropertyCombiner: ml-1 + mr-2 on one line combine into a single real Margin value, via a COMPOUND
+    // selector requiring both pre-existing classes (never a rewritten/synthesized token — the source text
+    // below is only ever read; GhostPropertyCombiner.Transform returns it unchanged and registers the extra
+    // style through AtomicGenerator.AddUtil instead, which Generate() picks up automatically). mt-4 alone on
+    // another line still yields its own style (a "group" of one). The original ml-1/mr-2/mt-4 tokens
+    // themselves resolve to nothing via Generate() (SpecialProperties is filtered at that emission boundary),
+    // so only the combined styles and p-2 show up below.
     var ghostGenerator = new AtomicGenerator<MiniTheme>(configuration);
     var ghostSource =
         "Classes=\"ml-1 mr-2\"\n"
@@ -60,9 +63,10 @@ static void AppMain(Application app, string[] args)
         + "Classes=\"p-2\"\n"
         + "Classes=\"pl-2 pt-4\"\n"
         + "Classes=\"rounded-tl-lg rounded-tr-md\"";
-    Console.WriteLine("transformed:\n" + ghostGenerator.ApplyTransformers(ghostSource, "test.axaml"));
-    Console.WriteLine($"rules after transform: {configuration.Rules.Count}");
-    var ghostResults = ghostGenerator.Generate(ghostSource, new AtomicGenerator<MiniTheme>.Options { Id = "test.axaml" });
+    var ghostResults = ghostGenerator.Generate(
+        ghostSource,
+        new AtomicGenerator<MiniTheme>.Options { Id = "test.axaml" }
+    );
 
     Console.WriteLine($"Ghost combiner -> {ghostResults.Length} result(s)");
     foreach (var result in ghostResults)
@@ -74,7 +78,6 @@ static void AppMain(Application app, string[] args)
     }
     Console.WriteLine();
 
-    configuration.Transformers.Clear();
     var generator = new AtomicGenerator<MiniTheme>(configuration);
 
     string[] tokens =
@@ -143,21 +146,15 @@ static void AppMain(Application app, string[] args)
         }
     }
 
-    // StyleEmitter: emit a real, compilable .cs file for a small representative set of tokens.
-    configuration.Transformers.Add(new GhostPropertyCombiner<MiniTheme>());
+    // StyleEmitter: emit a real, compilable .cs file for a small representative set of tokens. Ghost
+    // combining (ml-1 mr-2) happens transparently through Generate() here too.
     var codeGenGenerator = new AtomicGenerator<MiniTheme>(configuration);
-    var codeGenSource = codeGenGenerator.ApplyTransformers("Classes=\"ml-1 mr-2\"", "demo.axaml");
-    HashSet<string> codeGenTokens =
-    [
-        "hidden",
-        "flex-row",
-        "cursor-pointer",
-        "no-underline",
-        "hover:bg-red-500",
-        "sm:hidden",
-    ];
-    codeGenGenerator.ApplyExtractors(codeGenSource, "demo.axaml", codeGenTokens);
-    var codeGenUtils = codeGenGenerator.Generate(codeGenTokens, new AtomicGenerator<MiniTheme>.Options());
+    var codeGenSource =
+        "Classes=\"ml-1 mr-2 hidden flex-row cursor-pointer no-underline hover:bg-red-500 sm:hidden\"";
+    var codeGenUtils = codeGenGenerator.Generate(
+        codeGenSource,
+        new AtomicGenerator<MiniTheme>.Options { Id = "demo.axaml" }
+    );
     var emitted = StyleEmitter.Emit(codeGenUtils, "GeneratedStyles", "AtomicStyles");
     Console.WriteLine();
     Console.WriteLine("=== StyleEmitter output ===");

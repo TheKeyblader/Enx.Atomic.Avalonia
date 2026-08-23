@@ -1,18 +1,17 @@
-using Enx.Atomic.Avalonia.Preset.Mini;
-
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Layout;
+using Enx.Atomic.Avalonia.Preset.Mini;
 
 namespace Enx.Atomic.Avalonia.Tests;
 
 public class GhostPropertyCombinerTests
 {
     [AvaloniaFact]
-    public void CoOccurringSides_CombineIntoOneRealMarginValue()
+    public void CoOccurringSides_CombineIntoOneRealMarginValue_WithACompoundSelector()
     {
-        var (configuration, generator) = TestHelpers.CreateMiniGenerator();
-        configuration.Transformers.Add(new GhostPropertyCombiner<MiniTheme>());
+        // AddMiniTheme registers GhostPropertyCombiner<MiniTheme> automatically.
+        var (_, generator) = TestHelpers.CreateMiniGenerator();
 
         var results = generator.Generate(
             "Classes=\"ml-1 mr-2\"",
@@ -23,13 +22,18 @@ public class GhostPropertyCombinerTests
         var setter = Assert.Single(util.Body);
         Assert.Equal(Layoutable.MarginProperty, setter.Property);
         Assert.Equal(new Thickness(4, 0, 8, 0), setter.Value);
+
+        var selector = util.ResolveSelector().ToString();
+        Assert.Contains(".ml-1", selector);
+        Assert.Contains(".mr-2", selector);
     }
 
     [AvaloniaFact]
-    public void LoneGhostToken_StillFallsBackToItsOwnStyle()
+    public void LoneGhostToken_StillYieldsItsOwnStyle()
     {
-        var (configuration, generator) = TestHelpers.CreateMiniGenerator();
-        configuration.Transformers.Add(new GhostPropertyCombiner<MiniTheme>());
+        // A "group" of one: no sibling to combine with, but it should still resolve — otherwise a ghost
+        // property could never be used on its own.
+        var (_, generator) = TestHelpers.CreateMiniGenerator();
 
         var results = generator.Generate(
             "Classes=\"mt-4\"",
@@ -40,29 +44,38 @@ public class GhostPropertyCombinerTests
         var setter = Assert.Single(util.Body);
         Assert.Equal(Layoutable.MarginProperty, setter.Property);
         Assert.Equal(new Thickness(0, 16, 0, 0), setter.Value);
+        Assert.Contains(".mt-4", util.ResolveSelector().ToString());
     }
 
     [AvaloniaFact]
     public void OriginalGhostTokens_NeverReachFinalOutputOnTheirOwn()
     {
-        var (configuration, generator) = TestHelpers.CreateMiniGenerator();
-        configuration.Transformers.Add(new GhostPropertyCombiner<MiniTheme>());
+        // ml-1/mr-2 resolve to a SpecialProperties-scoped style on their own, dropped at Generate()'s
+        // emission boundary — the transformer's compound-selector style is the only one that reaches output.
+        var (_, generator) = TestHelpers.CreateMiniGenerator();
 
         var results = generator.Generate(
             "Classes=\"ml-1 mr-2\"",
             new AtomicGenerator<MiniTheme>.Options { Id = "test.axaml" }
         );
 
-        // Only the synthesized combined style should show up - not the raw ml-1/mr-2 tokens resolving to
-        // their (unemittable) SpecialProperties-scoped styles.
         Assert.Single(results);
+    }
+
+    [AvaloniaFact]
+    public void SourceTextIsNeverRewritten()
+    {
+        var (_, generator) = TestHelpers.CreateMiniGenerator();
+
+        var transformed = generator.ApplyTransformers("Classes=\"ml-1 mr-2\"", "test.axaml");
+
+        Assert.Equal("Classes=\"ml-1 mr-2\"", transformed);
     }
 
     [AvaloniaFact]
     public void UnrelatedToken_OnTheSameLine_IsUnaffected()
     {
-        var (configuration, generator) = TestHelpers.CreateMiniGenerator();
-        configuration.Transformers.Add(new GhostPropertyCombiner<MiniTheme>());
+        var (_, generator) = TestHelpers.CreateMiniGenerator();
 
         var results = generator.Generate(
             "Classes=\"p-2\"",
@@ -78,8 +91,7 @@ public class GhostPropertyCombinerTests
     [AvaloniaFact]
     public void PaddingSides_CombineIntoOneRealPaddingValue()
     {
-        var (configuration, generator) = TestHelpers.CreateMiniGenerator();
-        configuration.Transformers.Add(new GhostPropertyCombiner<MiniTheme>());
+        var (_, generator) = TestHelpers.CreateMiniGenerator();
 
         var results = generator.Generate(
             "Classes=\"pl-2 pt-4\"",
@@ -95,8 +107,7 @@ public class GhostPropertyCombinerTests
     [AvaloniaFact]
     public void CornerRadii_CombineIntoOneRealCornerRadiusValue()
     {
-        var (configuration, generator) = TestHelpers.CreateMiniGenerator();
-        configuration.Transformers.Add(new GhostPropertyCombiner<MiniTheme>());
+        var (_, generator) = TestHelpers.CreateMiniGenerator();
 
         var results = generator.Generate(
             "Classes=\"rounded-tl-lg rounded-tr-md\"",
@@ -110,18 +121,15 @@ public class GhostPropertyCombinerTests
     }
 
     [AvaloniaFact]
-    public void SameCombination_OnDifferentLines_RegistersOnlyOneSyntheticRule()
+    public void SameCombination_OnDifferentLines_YieldsOnlyOneStyle()
     {
-        var (configuration, generator) = TestHelpers.CreateMiniGenerator();
-        configuration.Transformers.Add(new GhostPropertyCombiner<MiniTheme>());
-        var rulesBefore = configuration.Rules.Count;
+        var (_, generator) = TestHelpers.CreateMiniGenerator();
 
-        generator.Generate(
+        var results = generator.Generate(
             "Classes=\"ml-1 mr-2\"\nClasses=\"ml-1 mr-2\"",
             new AtomicGenerator<MiniTheme>.Options { Id = "test.axaml" }
         );
 
-        // Two lines with the same combination should register exactly one synthetic Rule.Static, not two.
-        Assert.Equal(rulesBefore + 1, configuration.Rules.Count);
+        Assert.Single(results);
     }
 }

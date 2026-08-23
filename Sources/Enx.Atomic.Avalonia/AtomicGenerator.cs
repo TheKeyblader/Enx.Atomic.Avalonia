@@ -19,6 +19,7 @@ public class AtomicGenerator<TTheme>
     public AtomicConfiguration<TTheme> Configuration { get; }
     private readonly HashSet<IRule> _activatedRules = [];
     private readonly Dictionary<string, StringifiedUtil[]> _cache = [];
+    private readonly List<StringifiedUtil> _pendingUtils = [];
 
     /// <summary>Creates a generator for the given configuration, assigning each rule its declaration-order index.</summary>
     /// <exception cref="InvalidOperationException">A configured rule is neither <see cref="IStaticRule"/> nor <see cref="IDynamicRule{TTheme}"/>.</exception>
@@ -44,11 +45,16 @@ public class AtomicGenerator<TTheme>
     /// Runs the configured <see cref="ISourceTransformer{TTheme}"/>s over <paramref name="code"/>, grouped and
     /// run <c>pre</c> → <c>default</c> → <c>post</c> (declaration order within a group), each seeing the
     /// previous one's output — ported from UnoCSS's <c>applyTransformers</c>. Always runs before extraction.
+    /// Clears and repopulates <see cref="_pendingUtils"/> — a transformer that needs to emit a style whose
+    /// selector isn't derived from a single matched token (e.g. one spanning several classes at once) calls
+    /// <see cref="AddUtil"/> as a side effect, rather than trying to express that through its returned text.
     /// </summary>
     /// <param name="code">The source text to transform.</param>
     /// <param name="id">Optional identifier passed to transformers that filter by source.</param>
     public string ApplyTransformers(string code, string? id = null)
     {
+        _pendingUtils.Clear();
+
         foreach (
             var stage in (SourceTransformerEnforce[])
                 [SourceTransformerEnforce.Pre, SourceTransformerEnforce.Default, SourceTransformerEnforce.Post]
@@ -71,6 +77,14 @@ public class AtomicGenerator<TTheme>
 
         return code;
     }
+
+    /// <summary>
+    /// Registers <paramref name="util"/> to be included in the next <see cref="Generate(string, Options)"/>
+    /// call's result, bypassing normal token-to-selector resolution. For a <see cref="ISourceTransformer{TTheme}"/>
+    /// whose style doesn't correspond to any single matched token — e.g. a compound selector spanning several
+    /// classes at once, built directly rather than from <c>Is(OwnerType).Class(rawToken)</c>.
+    /// </summary>
+    public void AddUtil(StringifiedUtil util) => _pendingUtils.Add(util);
 
     /// <summary>Runs the configured <see cref="Extractor"/>s over <paramref name="code"/> to pull out candidate utility tokens.</summary>
     /// <param name="code">The source text to scan.</param>
@@ -412,7 +426,7 @@ public class AtomicGenerator<TTheme>
     {
         var transformed = ApplyTransformers(input, options.Id);
         var tokens = ApplyExtractors(transformed, options.Id);
-        return Generate(tokens, options);
+        return [.. Generate(tokens, options), .. _pendingUtils];
     }
 
     /// <summary>Resolves an already-extracted set of tokens into styles, skipping duplicates and tokens that match no rule.</summary>

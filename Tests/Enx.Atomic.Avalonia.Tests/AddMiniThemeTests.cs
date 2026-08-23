@@ -13,11 +13,24 @@ public class AddMiniThemeTests
         builder.AddMiniTheme(configuration);
         var rulesAfterFirst = configuration.Rules.Count;
         var variantsAfterFirst = configuration.Variants.Count;
+        var transformersAfterFirst = configuration.Transformers.Count;
 
         builder.AddMiniTheme(configuration);
 
         Assert.Equal(rulesAfterFirst, configuration.Rules.Count);
         Assert.Equal(variantsAfterFirst, configuration.Variants.Count);
+        Assert.Equal(transformersAfterFirst, configuration.Transformers.Count);
+    }
+
+    [AvaloniaFact]
+    public void RegistersGhostPropertyCombiner()
+    {
+        var builder = ThemeBuilder<MiniTheme>.Create();
+        var configuration = new AtomicConfiguration<MiniTheme> { Theme = builder.Theme };
+
+        builder.AddMiniTheme(configuration);
+
+        Assert.Contains(configuration.Transformers, t => t is GhostPropertyCombiner<MiniTheme>);
     }
 
     [AvaloniaFact]
