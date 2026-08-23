@@ -1,6 +1,7 @@
 # Enx.Atomic.Avalonia
 
 [![CI](https://github.com/TheKeyblader/Enx.Atomic.Avalonia/actions/workflows/ci.yml/badge.svg)](https://github.com/TheKeyblader/Enx.Atomic.Avalonia/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/TheKeyblader/Enx.Atomic.Avalonia/graph/badge.svg)](https://codecov.io/gh/TheKeyblader/Enx.Atomic.Avalonia)
 
 An atomic utility-class engine for [Avalonia](https://avaloniaui.net/), inspired by
 [UnoCSS](https://unocss.dev/): resolve Tailwind/UnoCSS-style tokens
