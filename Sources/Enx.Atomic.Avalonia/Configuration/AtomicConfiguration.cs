@@ -7,6 +7,9 @@ namespace Enx.Atomic.Avalonia;
 public class AtomicConfiguration<TTheme>
     where TTheme : class
 {
+    /// <summary>Full-text source rewriters, run before extraction — see <see cref="ISourceTransformer{TTheme}"/>.</summary>
+    public List<ISourceTransformer<TTheme>> Transformers { get; set; } = [];
+
     /// <summary>Token rewriters run, in list order, before variant matching.</summary>
     public List<IPreProcessor> PreProcessors { get; set; } = [];
 

@@ -40,6 +40,38 @@ public class AtomicGenerator<TTheme>
             throw new InvalidOperationException();
     }
 
+    /// <summary>
+    /// Runs the configured <see cref="ISourceTransformer{TTheme}"/>s over <paramref name="code"/>, grouped and
+    /// run <c>pre</c> → <c>default</c> → <c>post</c> (declaration order within a group), each seeing the
+    /// previous one's output — ported from UnoCSS's <c>applyTransformers</c>. Always runs before extraction.
+    /// </summary>
+    /// <param name="code">The source text to transform.</param>
+    /// <param name="id">Optional identifier passed to transformers that filter by source.</param>
+    public string ApplyTransformers(string code, string? id = null)
+    {
+        foreach (
+            var stage in (SourceTransformerEnforce[])
+                [SourceTransformerEnforce.Pre, SourceTransformerEnforce.Default, SourceTransformerEnforce.Post]
+        )
+        {
+            foreach (var transformer in Configuration.Transformers)
+            {
+                if (transformer.Enforce != stage)
+                    continue;
+
+                if (transformer.IdFilter is not null && (id is null || !transformer.IdFilter(id)))
+                    continue;
+
+                if (transformer.CodeFilter is not null && !transformer.CodeFilter(code, id))
+                    continue;
+
+                code = transformer.Transform(code, id, this);
+            }
+        }
+
+        return code;
+    }
+
     /// <summary>Runs the configured <see cref="Extractor"/>s over <paramref name="code"/> to pull out candidate utility tokens.</summary>
     /// <param name="code">The source text to scan.</param>
     /// <param name="id">Optional identifier passed to extractors that need to scope tokens to this source.</param>
@@ -374,7 +406,8 @@ public class AtomicGenerator<TTheme>
     /// <param name="options">Generation options, including the optional source identifier used during extraction.</param>
     public StringifiedUtil[] Generate(string input, Options options)
     {
-        var tokens = ApplyExtractors(input, options.Id);
+        var transformed = ApplyTransformers(input, options.Id);
+        var tokens = ApplyExtractors(transformed, options.Id);
         return Generate(tokens, options);
     }
 
@@ -389,7 +422,14 @@ public class AtomicGenerator<TTheme>
             if (matched.Contains(token))
                 continue;
 
-            var payload = ParseToken(token);
+            // Ghost properties (see SpecialProperties) never produce real output on their own — their
+            // owner type isn't a real Avalonia control, so a style scoped to it could never match anything.
+            // They stay visible from ParseToken (an ISourceTransformer like GhostPropertyCombiner needs to
+            // see them to recognize and combine them into a real composite property); this is the actual
+            // emission boundary where an uncombined one is finally dropped.
+            var payload = ParseToken(token)
+                .Where(u => u.Body.Length == 0 || u.Body[0].Property?.OwnerType != typeof(SpecialProperties))
+                .ToArray();
             if (payload.Length == 0)
                 continue;
 

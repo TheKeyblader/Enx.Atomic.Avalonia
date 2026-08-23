@@ -32,8 +32,16 @@ lifted directly from it, adapted to Avalonia properties and selectors instead of
   variants without depending directly on `System.Linq.Expressions`. Converted to a
   compiled `Expression<Func<Selector, Selector>>` only at the very end
   (`AtomicGenerator.ApplyVariants`).
-- **`AtomicConfiguration<TTheme>`** — assembles `Rules`, `Variants`, `PreProcessors`,
-  `Extractors` and the `TTheme` instance.
+- **`ISourceTransformer<TTheme>`** (`Transformers/`) — rewrites a source file's *full
+  text* before extraction, ported from UnoCSS's `SourceCodeTransformer`. Unlike
+  `IPreProcessor`, which only ever sees one already-isolated token, a transformer sees
+  everything at once — the tool for anything that needs several co-occurring tokens
+  together (see [Source transformers and ghost properties](#source-transformers-and-ghost-properties)
+  below). Transformers are grouped by `Enforce` (`Pre` → `Default` → `Post`) and run
+  in that order, declaration order within a group, each seeing the previous one's
+  output (`AtomicGenerator.ApplyTransformers`) — always before `ApplyExtractors`.
+- **`AtomicConfiguration<TTheme>`** — assembles `Transformers`, `PreProcessors`,
+  `Rules`, `Variants`, `Extractors` and the `TTheme` instance.
 - **`AtomicGenerator<TTheme>`** — the engine itself: extracts tokens from source text
   (`Extractor`), resolves them into `StringifiedUtil` (a compiled selector + `Setter[]`
   + optional container query), cached by raw token. A static rule always wins over
@@ -85,9 +93,78 @@ lifted directly from it, adapted to Avalonia properties and selectors instead of
 ## Current pipeline: runtime resolution
 
 Today, `AtomicGenerator<TTheme>.Generate(...)` runs **at application runtime**: it
-scans text, resolves tokens, compiles the `Expression<Func<Selector, Selector>>`
-via `System.Linq.Expressions`, and produces `StringifiedUtil`s ready to become
-`Avalonia.Styling.Style`s. `Sandbox/Program.cs` exercises this end to end.
+transforms the source text (`ApplyTransformers`), scans it for tokens
+(`ApplyExtractors`), resolves them, compiles the `Expression<Func<Selector,
+Selector>>` via `System.Linq.Expressions`, and produces `StringifiedUtil`s ready to
+become `Avalonia.Styling.Style`s. `Sandbox/Program.cs` exercises this end to end.
+
+## Source transformers and ghost properties
+
+Implemented: `ISourceTransformer<TTheme>`, `SpecialProperties`, `GhostProperties`,
+`GhostPropertyCombiner<TTheme>`, and the per-side/corner branches of `MarginRule`,
+`PaddingRule` and `RoundedRule` targeting ghost properties. Verified end to end in
+`Sandbox/Program.cs`.
+
+**The problem.** Avalonia's `Margin`, `Padding`, `BorderThickness` and `CornerRadius`
+are each a single struct-valued property, not four independent ones. A per-side rule
+(`ml-4`) has to set the *whole* struct, zeroing the sides it isn't targeting. Two
+separate utilities on the same element (`ml-1 mr-2`) therefore don't combine — they
+resolve to two independent `Style`s, each setting the whole `Margin`, and Avalonia's
+styling system lets the later one win outright rather than merging them.
+
+**Ghost properties (`SpecialProperties.cs`).** A per-side rule can instead target a
+*ghost* `AvaloniaProperty` — a real, registered `AvaloniaProperty<TValue>` (so it
+still fits `StyleValue.Literal<TValue>` unchanged), but owned by a type
+(`SpecialProperties : StyledElement`; it has to derive from `StyledElement` rather
+than plain `AvaloniaObject` purely because `Selectors.Is<T>()` requires it — no
+instance of the type is ever created) that lives only in this generator project and
+is never referenced by the consuming/output project. `SpecialProperties` currently
+covers `Margin*`, `Padding*`, `BorderThickness*` (registered but not yet consumed by
+any rule — there is no per-side border-width utility today, only the uniform
+`border-*`) and `CornerRadius*` (note its slot order is TopLeft/TopRight/
+BottomRight/BottomLeft, following `CornerRadius`'s own constructor, unlike the
+Left/Top/Right/Bottom order the `Thickness`-valued ones use). `MarginRule`,
+`PaddingRule` and `RoundedRule`'s non-uniform branches target these instead of
+building a zeroed struct on the real composite property directly; each rule's
+uniform branch (`m-4`, `p-4`, `rounded-*` with no side) keeps targeting the real
+property, since there's nothing to combine there. `GhostProperties.Map` is the
+(hardcoded, not user-extensible) registry saying which real property, which of its
+four slots, and how to assemble a full group of slots into that property's
+`StyleValue` — the `Build` delegate is what lets the combiner below stay generic over
+both `Thickness`- and `CornerRadius`-valued composites.
+
+**The combiner (`GhostPropertyCombiner<TTheme>`).** A `Post`-stage
+`ISourceTransformer<TTheme>`: for each source line, it resolves every candidate token
+on that line (`generator.ParseToken`, reusing `SplitExtractor`'s tokenization) and
+collects the ones whose resolved `Setter`s target a registered ghost property.
+Grouped by target real property, it assembles the combined value and appends a
+**synthesized token** to the line (e.g. `ml-1 mr-2` → `ml-1 mr-2 __ghost_ml-1_mr-2__`)
+together with a matching `Rule.Static` registered on the fly into
+`AtomicConfiguration.Rules`, carrying the real `Setter(MarginProperty, ...)` —
+alongside, not instead of, the original tokens. A single ghost token with no sibling
+on the same line still gets its own synthesized token (a "group" of one), so it falls
+back to its own style with the other slots at 0, same as before ghost properties
+existed. Same-line co-occurrence is a deliberately cheap heuristic, not a real
+XAML/AST-aware analysis — good enough for the common `Classes="ml-1 mr-2"` case, not
+meant to be exhaustive. A style whose owner type is `SpecialProperties` can never
+match a real element (no real control derives from it) — resolving one doesn't throw
+(`ParseToken` still returns it, which is what lets the combiner see it in the first
+place), but `AtomicGenerator.Generate(ISet<string>, Options)` drops it at the final
+emission boundary, so an *uncombined* ghost token never reaches the output on its
+own.
+
+Note this ended up simpler than first drafted: no actual compound multi-class
+selector (`:is(Layoutable).ml-1.mr-2`) was needed — a single synthesized class name,
+added only when its ghost members actually co-occur, achieves the same effect within
+the existing "one token → one selector" resolution model.
+
+**Runtime vs. build-time implication.** For a combined style to ever match a live
+element, the element's actual `Classes` must contain the synthesized token — so this
+only works if the *transformed* text becomes the real source of truth (the on-disk
+`.axaml` the app compiles), not a throwaway scratch copy used only for token
+scanning. That fits the [planned build-time codegen CLI](#build-time-c-code-generation-planned-not-yet-implemented)
+below, which reads and is meant to rewrite real files; it does not fit bolting this
+onto an already-compiled, already-loaded XAML tree at pure runtime.
 
 ## Build-time C# code generation (planned, not yet implemented)
 
