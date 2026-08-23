@@ -1,0 +1,29 @@
+<Project>
+
+    <!--
+      Central package metadata and versioning for every project in the repo. MinVer derives Version from the
+      nearest git tag (tags are pushed as "vX.Y.Z" — see .github/workflows/release.yml) instead of any project
+      hand-maintaining its own version number; commits past a tag get an automatic prerelease suffix
+      (e.g. "1.2.3-alpha.0.4+abcdef"), so a build off main between releases still produces a valid, unique,
+      never-decreasing version instead of colliding with the last tagged one.
+    -->
+
+    <PropertyGroup>
+        <Authors>TheKeyblader</Authors>
+        <PackageProjectUrl>https://github.com/TheKeyblader/Enx.Atomic.Avalonia</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/TheKeyblader/Enx.Atomic.Avalonia</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
+        <EmbedUntrackedSources>true</EmbedUntrackedSources>
+        <IncludeSymbols>true</IncludeSymbols>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+        <ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' == 'true'">true</ContinuousIntegrationBuild>
+        <MinVerTagPrefix>v</MinVerTagPrefix>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="MinVer" Version="7.0.0" PrivateAssets="All" />
+    </ItemGroup>
+
+</Project>

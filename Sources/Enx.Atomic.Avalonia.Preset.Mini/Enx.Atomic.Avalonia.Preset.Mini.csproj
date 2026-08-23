@@ -6,6 +6,16 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <Description>A concrete rule/variant set for Enx.Atomic.Avalonia, inspired by @unocss/preset-mini.</Description>
+    <PackageTags>avalonia;atomic-css;unocss;styling;utility-classes</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\Enx.Atomic.Avalonia\Enx.Atomic.Avalonia.csproj" />
   </ItemGroup>

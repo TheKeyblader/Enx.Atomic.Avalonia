@@ -6,6 +6,16 @@
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
+    <PropertyGroup>
+        <Description>An atomic utility-class styling engine for Avalonia UI, inspired by UnoCSS: resolves Tailwind/UnoCSS-style utility tokens into real Avalonia Styles.</Description>
+        <PackageTags>avalonia;atomic-css;unocss;styling;utility-classes</PackageTags>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+    </ItemGroup>
+
     <ItemGroup>
       <PackageReference Include="Avalonia" Version="12.0.2" />
       <PackageReference Include="AvantiPoint.CodeGenHelpers" Version="2.0.30-pre" />

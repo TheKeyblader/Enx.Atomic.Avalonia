@@ -6,6 +6,20 @@
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
+    <PropertyGroup>
+        <Description>Build-time C# code generation (CLI + MSBuild wiring) for Enx.Atomic.Avalonia: resolves utility tokens found in source files into a compiled Styles class instead of paying resolution cost at runtime.</Description>
+        <PackageTags>avalonia;atomic-css;unocss;styling;codegen;msbuild</PackageTags>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <!-- build/{PackageId}.targets is a NuGet convention: a project that references this package as a
+           PackageReference gets Enx.Atomic.Avalonia.CodeGen.targets auto-imported, no explicit <Import>
+           needed (see EnxAtomicGenerateStyles's usage in ARCHITECTURE.md). -->
+      <None Include="build\Enx.Atomic.Avalonia.CodeGen.targets" Pack="true" PackagePath="build\" />
+      <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+    </ItemGroup>
+
     <ItemGroup>
       <ProjectReference Include="..\Enx.Atomic.Avalonia\Enx.Atomic.Avalonia.csproj" />
     </ItemGroup>
