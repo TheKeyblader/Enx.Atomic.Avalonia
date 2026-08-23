@@ -10,6 +10,7 @@
     <ItemGroup>
       <ProjectReference Include="..\Sources\Enx.Atomic.Avalonia\Enx.Atomic.Avalonia.csproj" />
       <ProjectReference Include="..\Sources\Enx.Atomic.Avalonia.Preset.Mini\Enx.Atomic.Avalonia.Preset.Mini.csproj" />
+      <ProjectReference Include="..\Sources\Enx.Atomic.Avalonia.CodeGen\Enx.Atomic.Avalonia.CodeGen.csproj" />
     </ItemGroup>
 
     <ItemGroup>

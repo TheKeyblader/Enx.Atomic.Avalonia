@@ -2,6 +2,7 @@ using System;
 using Avalonia;
 using Avalonia.Styling;
 using Enx.Atomic.Avalonia;
+using Enx.Atomic.Avalonia.CodeGen;
 using Enx.Atomic.Avalonia.Preset.Mini;
 
 AppBuilder.Configure<Application>().UsePlatformDetect().Start(AppMain, args);
@@ -141,6 +142,26 @@ static void AppMain(Application app, string[] args)
                 Console.WriteLine($"    {setter.Property} = {setter.Value}");
         }
     }
+
+    // StyleEmitter: emit a real, compilable .cs file for a small representative set of tokens.
+    configuration.Transformers.Add(new GhostPropertyCombiner<MiniTheme>());
+    var codeGenGenerator = new AtomicGenerator<MiniTheme>(configuration);
+    var codeGenSource = codeGenGenerator.ApplyTransformers("Classes=\"ml-1 mr-2\"", "demo.axaml");
+    HashSet<string> codeGenTokens =
+    [
+        "hidden",
+        "flex-row",
+        "cursor-pointer",
+        "no-underline",
+        "hover:bg-red-500",
+        "sm:hidden",
+    ];
+    codeGenGenerator.ApplyExtractors(codeGenSource, "demo.axaml", codeGenTokens);
+    var codeGenUtils = codeGenGenerator.Generate(codeGenTokens, new AtomicGenerator<MiniTheme>.Options());
+    var emitted = StyleEmitter.Emit(codeGenUtils, "GeneratedStyles", "AtomicStyles");
+    Console.WriteLine();
+    Console.WriteLine("=== StyleEmitter output ===");
+    Console.WriteLine(emitted);
 }
 
 file sealed class MarkerTransformer(string marker, SourceTransformerEnforce enforce) : ISourceTransformer<MiniTheme>

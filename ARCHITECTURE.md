@@ -11,7 +11,9 @@ lifted directly from it, adapted to Avalonia properties and selectors instead of
 |---|---|
 | `Sources/Enx.Atomic.Avalonia` | Generic engine: resolves tokens into styles, independent of any preset. |
 | `Sources/Enx.Atomic.Avalonia.Preset.Mini` | A concrete set of rules/variants/parts, inspired by `@unocss/preset-mini`. |
+| `Sources/Enx.Atomic.Avalonia.CodeGen` | The build-time C# emitter — see below. |
 | `Sandbox` | Avalonia console app used as a manual test bed for the engine and the presets. |
+| `Tests/Enx.Atomic.Avalonia.Tests` | The automated test suite (xUnit v3). |
 
 ## Engine concepts (`Sources/Enx.Atomic.Avalonia`)
 
@@ -162,22 +164,60 @@ the existing "one token → one selector" resolution model.
 element, the element's actual `Classes` must contain the synthesized token — so this
 only works if the *transformed* text becomes the real source of truth (the on-disk
 `.axaml` the app compiles), not a throwaway scratch copy used only for token
-scanning. That fits the [planned build-time codegen CLI](#build-time-c-code-generation-planned-not-yet-implemented)
+scanning. That fits the [planned build-time codegen CLI](#build-time-c-code-generation)
 below, which reads and is meant to rewrite real files; it does not fit bolting this
 onto an already-compiled, already-loaded XAML tree at pure runtime.
 
-## Build-time C# code generation (planned, not yet implemented)
+## Build-time C# code generation
 
 The goal is to move this resolution to the **build** of the consuming application,
 producing a static `.g.cs` file (a `Styles` class) instead of paying the
-resolution/expression-compilation cost on every startup. Design so far:
+resolution/expression-compilation cost on every startup.
+
+**Implemented: the emitter (`Sources/Enx.Atomic.Avalonia.CodeGen`).** `StyleEmitter.Emit(
+utils, namespaceName, className, containerName)` turns a `StringifiedUtil[]` (e.g.
+straight from `AtomicGenerator<TTheme>.Generate(...)`) into a full `.cs` file text — a
+`Styles` subclass constructing each `Style` and its `Setter`s directly. It works
+entirely off data:
+- **`StringifiedUtil.SelectorData`/`ContainerQueryData`** — added alongside the
+  existing compiled `Selector`/`ContainerQuery` `Expression`s specifically for this.
+  `SelectorEmitter`/`StyleQueryEmitter` pattern-match on the actual
+  `SelectorExpression`/`StyleQueryExpression` record types (`Is`, `Class`, `OfType`,
+  `PropertyEquals`, `Width`, `Height`, `Or`, `And`) and recurse over `.Previous`,
+  producing text like `selector.Is<Button>().Class("hover:bg-red-500")` — **never**
+  compiling an `Expression` and decompiling the result (see History below for why that
+  distinction matters). `Or`/`And` are real static factory calls in Avalonia
+  (`StyleQueries.Or(params StyleQuery[])`), not fluent extensions like the others —
+  worth remembering if extending this, since it's easy to assume otherwise.
+- **`Values/IValueEmitter`** — one emitter per value shape a `Setter` or
+  `PropertyEquals` can carry: `PrimitiveValueEmitter` (bool/numeric/string),
+  `EnumValueEmitter` (generic over any enum type — not one per enum), `Thickness`/
+  `CornerRadiusValueEmitter`, `BrushValueEmitter` (any `ISolidColorBrush`),
+  `CursorValueEmitter` (reconstructs `new Cursor(StandardCursorType.X)` from
+  `Cursor.ToString()`, since `Cursor` doesn't expose which `StandardCursorType` it was
+  built from — only supports that constructor, not bitmap cursors), and
+  `TextDecorationsValueEmitter` (only the three named `TextDecorations.*` constants,
+  matched by reference equality). No intermediate `var brushXxx = ...;` declarations
+  (unlike the old architecture) — every value is inlined as an expression directly in
+  the `Setter` call, so there's no variable-name collision to avoid in the first place.
+- **`AvaloniaPropertyNaming`** — resolves an `AvaloniaProperty` back to its declaring
+  static field's name (`"Button.IsPressedProperty"`) by reflection over
+  `OwnerType.GetFields(Public | Static)`, fixing the old architecture's missing
+  `Public` flag (a real bug there, not just noise).
+
+Verified by `Tests/.../CodeGenTests.cs`, which is the strongest check available for an
+emitter: it actually **compiles** the emitted text with Roslyn
+(`Microsoft.CodeAnalysis.CSharp`, test-only dependency) and asserts no errors.
+`Sandbox/Program.cs` prints a real example.
+
+**Not yet implemented — the CLI + MSBuild wiring:**
 
 1. **The user's configuration project becomes an executable.** It references
-   `Enx.Atomic.Avalonia`(`.Preset.Mini`), builds its `AtomicConfiguration<TTheme>` in
-   C#, and exposes a CLI entry point (`RunCli(string[] args)`) that: reads the source
-   file paths (XAML + C#) passed as arguments, runs them through the existing
-   `Extractor`s to pull out tokens, calls `Generate()`, then emits C# through a
-   dedicated emitter.
+   `Enx.Atomic.Avalonia`(`.Preset.Mini`)`.CodeGen`, builds its
+   `AtomicConfiguration<TTheme>` in C#, and exposes a CLI entry point
+   (`RunCli(string[] args)`) that: reads the source file paths (XAML + C#) passed as
+   arguments, runs them through the existing `Extractor`s to pull out tokens, calls
+   `Generate()`, then calls `StyleEmitter.Emit`.
 2. **An MSBuild `.targets`** adds a `ProjectReference` from the consuming project to
    the configuration project (guarantees build order), then runs that CLI via
    `<Exec>` (no custom C# MSBuild task — a plain `Exec` is enough) with the consuming
@@ -186,12 +226,6 @@ resolution/expression-compilation cost on every startup. Design so far:
    `$(IntermediateOutputPath)GenStyles.g.cs`) as output — also used as the target's
    `Outputs` for incrementality. The generated file is added back as
    `<Compile Include="$(EnxAtomicStylesOutputPath)" />`.
-3. **An emitter working directly off the data, not off compiled `Expression`s.**
-   `SelectorExpression`/`StyleQueryExpression` are already data trees; the new
-   emitter should walk them directly to produce C# text
-   (`Selectors.Is<Button>(selector).Class("hover:bg-red-500")`), **without** going
-   through `Expression.Compile()` and decompiling — see the History section below for
-   why that approach was abandoned.
 
 ### Known constraint: custom components and the build cycle
 

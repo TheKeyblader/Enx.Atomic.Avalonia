@@ -321,6 +321,7 @@ public class AtomicGenerator<TTheme>
                 new StringifiedUtil
                 {
                     Selector = util.Selector,
+                    SelectorData = util.SelectorData,
                     Body =
                     [
                         .. util.Entries.Select(x => new Setter(x.UntypedProperty, x.UntypedValue)),
@@ -328,6 +329,7 @@ public class AtomicGenerator<TTheme>
                     Index = parsed.Index,
                     Metadata = parsed.Metadata,
                     ContainerQuery = util.ContainerQuery,
+                    ContainerQueryData = util.ContainerQueryData,
                 }
             );
         }
@@ -394,7 +396,9 @@ public class AtomicGenerator<TTheme>
             new UtilObject
             {
                 Selector = selector,
+                SelectorData = variantContextResult.Selector,
                 ContainerQuery = containerQuery,
+                ContainerQueryData = variantContextResult.ContainerQuery,
                 Entries = variantContextResult.Entries,
                 Sort = variantContextResult.Sort,
             },

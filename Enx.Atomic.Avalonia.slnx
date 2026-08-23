@@ -1,6 +1,7 @@
 <Solution>
   <Folder Name="/Sources/">
     <Project Path="Sources/Enx.Atomic.Avalonia/Enx.Atomic.Avalonia.csproj" />
+    <Project Path="Sources/Enx.Atomic.Avalonia.CodeGen/Enx.Atomic.Avalonia.CodeGen.csproj" />
   </Folder>
   <Folder Name="/Sources/Presets/">
     <Project Path="Sources/Enx.Atomic.Avalonia.Preset.Mini/Enx.Atomic.Avalonia.Preset.Mini.csproj" Id="5c93ed51-359d-4ab2-8441-afe468ac2b7f" />
