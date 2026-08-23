@@ -63,7 +63,8 @@ dotnet test Tests/Enx.Atomic.Avalonia.Tests/Enx.Atomic.Avalonia.Tests.csproj \
 `Enx.Atomic.Avalonia`, `Enx.Atomic.Avalonia.Preset.Mini`, and
 `Enx.Atomic.Avalonia.CodeGen` are published to nuget.org whenever a `vX.Y.Z` tag is
 pushed — see [ARCHITECTURE.md](ARCHITECTURE.md#release-pipeline) for how versioning
-and publishing work.
+and publishing work, and [CHANGELOG.md](CHANGELOG.md) for what shipped in each
+release.
 
 ## License
 
