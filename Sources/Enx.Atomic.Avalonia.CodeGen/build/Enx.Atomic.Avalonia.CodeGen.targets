@@ -1,0 +1,67 @@
+<Project>
+
+    <!--
+      Wires a "configuration project" (an executable that calls Enx.Atomic.Avalonia.CodeGen.AtomicCli.Run) into
+      this project's build: builds the config project, runs it against this project's source files, and adds
+      the C# it emits to this project's compilation. See ARCHITECTURE.md's "Build-time C# code generation".
+
+      A consuming project opts in by setting EnxAtomicConfigProject (the config project's .csproj path) and,
+      today, importing this file explicitly (it isn't auto-imported yet — this isn't packaged/shipped via
+      NuGet, so there's no `build/{PackageId}.targets` convention to rely on).
+
+      EnxAtomicStylesOutputPath defaults to a GeneratedStyles/ folder next to the project file (not obj/) so
+      the emitted code is easy for a user to find and read, not just compiled invisibly. Unlike
+      IntermediateOutputPath (per-TargetFramework, only fully resolved once targets start executing —
+      MSBuildProjectDirectory has no such issue), this default is safe to compute in a plain top-level
+      PropertyGroup.
+    -->
+
+    <PropertyGroup>
+        <EnxAtomicStylesOutputPath Condition="'$(EnxAtomicStylesOutputPath)' == ''">$(MSBuildProjectDirectory)/GeneratedStyles/GenStyles.g.cs</EnxAtomicStylesOutputPath>
+        <EnxAtomicNamespace Condition="'$(EnxAtomicNamespace)' == ''">$(RootNamespace)</EnxAtomicNamespace>
+        <EnxAtomicClassName Condition="'$(EnxAtomicClassName)' == ''">AtomicStyles</EnxAtomicClassName>
+        <EnxAtomicContainerName Condition="'$(EnxAtomicContainerName)' == ''">top-level</EnxAtomicContainerName>
+    </PropertyGroup>
+
+    <!--
+      Once GenStyles.g.cs exists on disk (any build after the first), the SDK's default Compile glob picks it
+      up on its own — it lives under the project directory now, not obj/, which the default glob excludes.
+      Left alone, that's two separate bugs: the file gets fed back into EnxAtomicGenerateStyles's own source
+      list below (re-scanning its own emitted `.Class("...")` calls as if they were utility tokens, inflating
+      the output on every subsequent build) and gets passed to csc twice (CS2002).
+      This exclusion has to be a *static*, outside-target ItemGroup — Remove used inside a target only matches
+      an item's Identity as a literal string, not the equivalent relative/absolute form the default glob used,
+      so it silently fails to match there; static Remove does full path normalization and works reliably.
+    -->
+    <ItemGroup Condition="'$(EnxAtomicConfigProject)' != ''">
+        <Compile Remove="$(EnxAtomicStylesOutputPath)" />
+    </ItemGroup>
+
+    <Target Name="EnxAtomicGenerateStyles"
+            Condition="'$(EnxAtomicConfigProject)' != ''"
+            BeforeTargets="CoreCompile"
+            Inputs="@(Compile);@(AvaloniaXaml);$(MSBuildThisFileFullPath)"
+            Outputs="$(EnxAtomicStylesOutputPath)">
+
+        <MSBuild Projects="$(EnxAtomicConfigProject)" Targets="Build">
+            <Output TaskParameter="TargetOutputs" ItemName="_EnxAtomicConfigOutput" />
+        </MSBuild>
+
+        <ItemGroup>
+            <_EnxAtomicConfigAssembly Include="@(_EnxAtomicConfigOutput)" Condition="'%(Extension)' == '.dll'" />
+            <_EnxAtomicSource Include="@(Compile);@(AvaloniaXaml)" />
+        </ItemGroup>
+
+        <Error Condition="'@(_EnxAtomicConfigAssembly)' == ''" Text="EnxAtomicGenerateStyles: could not resolve the built assembly for EnxAtomicConfigProject ('$(EnxAtomicConfigProject)')." />
+
+        <MakeDir Directories="$([System.IO.Path]::GetDirectoryName('$(EnxAtomicStylesOutputPath)'))" Condition="'$([System.IO.Path]::GetDirectoryName($(EnxAtomicStylesOutputPath)))' != ''" />
+
+        <Exec Command="dotnet exec &quot;%(_EnxAtomicConfigAssembly.FullPath)&quot; --output &quot;$(EnxAtomicStylesOutputPath)&quot; --namespace &quot;$(EnxAtomicNamespace)&quot; --class &quot;$(EnxAtomicClassName)&quot; --container &quot;$(EnxAtomicContainerName)&quot; @(_EnxAtomicSource->'&quot;%(FullPath)&quot;', ' ')" />
+
+        <ItemGroup>
+            <Compile Include="$(EnxAtomicStylesOutputPath)" />
+            <FileWrites Include="$(EnxAtomicStylesOutputPath)" />
+        </ItemGroup>
+    </Target>
+
+</Project>

@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net10.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <!-- Opts into the build-time codegen wiring: builds the config project, runs it against @(Compile) and
+         @(AvaloniaXaml), and compiles the resulting GenStyles.g.cs into this project. -->
+    <PropertyGroup>
+        <EnxAtomicConfigProject>$(MSBuildThisFileDirectory)..\Enx.Atomic.Avalonia.Example.Config\Enx.Atomic.Avalonia.Example.Config.csproj</EnxAtomicConfigProject>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Avalonia.Desktop" Version="12.1.1" />
+    </ItemGroup>
+
+    <Import Project="..\..\Sources\Enx.Atomic.Avalonia.CodeGen\build\Enx.Atomic.Avalonia.CodeGen.targets" />
+
+</Project>

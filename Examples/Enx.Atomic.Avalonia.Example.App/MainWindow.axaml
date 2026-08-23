@@ -1,0 +1,9 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="Enx.Atomic.Avalonia.Example.App.MainWindow"
+        Title="Example">
+    <StackPanel Classes="flex-col p-2">
+        <TextBlock Classes="hidden" Text="Hidden by default" />
+        <Button Classes="hover:bg-red-500 cursor-pointer ml-1 mr-2" Content="Hover me" />
+    </StackPanel>
+</Window>

@@ -48,6 +48,10 @@ bld/
 [Ll]og/
 [Ll]ogs/
 
+# Enx.Atomic.Avalonia.CodeGen's build-time output (see Enx.Atomic.Avalonia.CodeGen.targets) — regenerated on
+# every build of a project that opts in via EnxAtomicConfigProject, lives outside obj/ so it's easy to read.
+GeneratedStyles/
+
 # Build results on 'Bin' directories
 **/[Bb]in/*
 # Uncomment if you have tasks that rely on *.refresh files to move binaries

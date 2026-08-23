@@ -10,4 +10,8 @@
       <ProjectReference Include="..\Enx.Atomic.Avalonia\Enx.Atomic.Avalonia.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <PackageReference Include="Spectre.Console.Cli" Version="0.51.1" />
+    </ItemGroup>
+
 </Project>

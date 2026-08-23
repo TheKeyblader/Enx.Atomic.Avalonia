@@ -231,22 +231,68 @@ emitter: it actually **compiles** the emitted text with Roslyn
 (`Microsoft.CodeAnalysis.CSharp`, test-only dependency) and asserts no errors.
 `Sandbox/Program.cs` prints a real example.
 
-**Not yet implemented — the CLI + MSBuild wiring:**
+**Implemented: the CLI + MSBuild wiring (`Sources/Enx.Atomic.Avalonia.CodeGen/AtomicCli.cs`,
+`Sources/Enx.Atomic.Avalonia.CodeGen/build/Enx.Atomic.Avalonia.CodeGen.targets`).**
 
-1. **The user's configuration project becomes an executable.** It references
+1. **The user's configuration project is an executable** that references
    `Enx.Atomic.Avalonia`(`.Preset.Mini`)`.CodeGen`, builds its
-   `AtomicConfiguration<TTheme>` in C#, and exposes a CLI entry point
-   (`RunCli(string[] args)`) that: reads the source file paths (XAML + C#) passed as
-   arguments, runs them through the existing `Extractor`s to pull out tokens, calls
-   `Generate()`, then calls `StyleEmitter.Emit`.
-2. **An MSBuild `.targets`** adds a `ProjectReference` from the consuming project to
-   the configuration project (guarantees build order), then runs that CLI via
-   `<Exec>` (no custom C# MSBuild task — a plain `Exec` is enough) with the consuming
-   project's `@(Compile)` and `@(AvaloniaXaml)` items, and a user-facing property
-   `EnxAtomicStylesOutputPath` (sensible default, e.g.
-   `$(IntermediateOutputPath)GenStyles.g.cs`) as output — also used as the target's
-   `Outputs` for incrementality. The generated file is added back as
-   `<Compile Include="$(EnxAtomicStylesOutputPath)" />`.
+   `AtomicConfiguration<TTheme>` in C#, and calls `AtomicCli.Run(args, configuration)`
+   from `Main`. `AtomicCli` defines its `--output`/`--namespace`/`--class`/`--container`/
+   `<SOURCES>` contract as a Spectre.Console.Cli `Command<AtomicCliSettings>`
+   (`GenerateCommand<TTheme>`) rather than hand-rolled parsing — real `--help`, option
+   validation (`--output` is required), and error messages for free. Since
+   `CommandApp<TDefaultCommand>` builds the command via a plain parameterless
+   `Activator.CreateInstance` (no constructor injection without a custom
+   `ITypeRegistrar`, which isn't worth the complexity for a single generic dependency),
+   the `AtomicConfiguration<TTheme>` is handed to `GenerateCommand<TTheme>` through a
+   static property set immediately before `app.Run(args)` — safe because this is always
+   a single, synchronous, single-shot invocation. `Execute` runs each source file
+   through `AtomicGenerator<TTheme>.Generate(content, options)` to extract and resolve
+   tokens, then calls `StyleEmitter.Emit` and writes the result. See
+   `Examples/Enx.Atomic.Avalonia.Example.Config` for a minimal config project — it
+   bootstraps Avalonia's headless platform before touching `AddMiniTheme` because some
+   static rules (e.g. `Cursors`) construct real Avalonia types at static-init time and
+   need `AvaloniaLocator` populated.
+2. **The MSBuild `.targets`** does *not* use a `ProjectReference` (that would force a
+   plain build-order dependency the consuming project doesn't otherwise need); instead
+   it invokes `<MSBuild Projects="$(EnxAtomicConfigProject)" Targets="Build">` directly
+   inside the generation target to build the configuration project and resolve its
+   output assembly via the `TargetOutputs` output parameter, then runs it with
+   `<Exec Command="dotnet exec ...">` against the consuming project's `@(Compile)` and
+   `@(AvaloniaXaml)` items. Output path defaults to
+   `$(MSBuildProjectDirectory)/GeneratedStyles/GenStyles.g.cs` — deliberately next to the
+   project file rather than under `obj/`, so the emitted code is easy for a user to find
+   and read, not just compiled invisibly — overridable via `EnxAtomicStylesOutputPath`.
+   `GeneratedStyles/` is gitignored (build output, regenerated every build). The target
+   runs `BeforeTargets="CoreCompile"`, with `Inputs`/`Outputs` for incrementality, and
+   adds the generated file back via `<Compile Include="..." />` inside the same target
+   so it's picked up for this same compilation pass regardless of whether the target
+   itself was skipped as up to date (a plain `ItemGroup` that's a direct child of a
+   `Target`, as opposed to a task's captured output, runs every time the target is
+   *evaluated* even when its tasks are skipped — this is what makes the `Compile
+   Include` reliable across incremental builds without needing the target's `Exec` to
+   actually run). Because the output now lives under the project directory instead of
+   `obj/`, the SDK's own default `Compile` glob would otherwise pick it up too once it
+   exists — as a *static*, top-level `<ItemGroup><Compile Remove="$(EnxAtomicStylesOutputPath)" /></ItemGroup>`
+   (outside the target) excludes it; a `Remove` attempted *inside* the target instead
+   only matches an item's `Identity` as a literal string, not the equivalent
+   relative/absolute form the default glob used, so it silently failed to match there,
+   while the static, project-load-time form does full path normalization and works.
+   Left unexcluded this was a real correctness bug, not just noise: the generated file
+   got fed back into `EnxAtomicGenerateStyles`'s own list of source files to scan,
+   re-extracting its own emitted `.Class("...")` calls as utility tokens and doubling
+   the output on every subsequent build (10 styles → 20), on top of a `CS2002` duplicate
+   source warning from `csc`. All of `EnxAtomicStylesOutputPath`/`EnxAtomicNamespace`/
+   `EnxAtomicClassName`/`EnxAtomicContainerName`'s defaults are computed in a plain
+   top-level `PropertyGroup` — safe here since, unlike `IntermediateOutputPath` (see
+   git history for an earlier version of this file that depended on it — its
+   TargetFramework-specific suffix isn't appended until targets start executing),
+   `MSBuildProjectDirectory` is fully resolved at plain project-load time. A consuming
+   project opts in by setting `EnxAtomicConfigProject` to the config project's `.csproj`
+   path and importing the `.targets` file explicitly (not auto-imported — not
+   packaged/shipped via NuGet, so there's no `build/{PackageId}.targets` convention to
+   rely on). See
+   `Examples/Enx.Atomic.Avalonia.Example.App` for a working end-to-end example.
 
 ### Known constraint: custom components and the build cycle
 

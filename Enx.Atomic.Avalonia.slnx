@@ -10,4 +10,8 @@
   <Folder Name="/Tests/">
     <Project Path="Tests/Enx.Atomic.Avalonia.Tests/Enx.Atomic.Avalonia.Tests.csproj" />
   </Folder>
+  <Folder Name="/Examples/">
+    <Project Path="Examples/Enx.Atomic.Avalonia.Example.App/Enx.Atomic.Avalonia.Example.App.csproj" />
+    <Project Path="Examples/Enx.Atomic.Avalonia.Example.Config/Enx.Atomic.Avalonia.Example.Config.csproj" />
+  </Folder>
 </Solution>

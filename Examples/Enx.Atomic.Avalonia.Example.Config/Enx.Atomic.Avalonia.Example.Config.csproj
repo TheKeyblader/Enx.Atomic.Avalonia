@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net10.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\Sources\Enx.Atomic.Avalonia\Enx.Atomic.Avalonia.csproj" />
+        <ProjectReference Include="..\..\Sources\Enx.Atomic.Avalonia.Preset.Mini\Enx.Atomic.Avalonia.Preset.Mini.csproj" />
+        <ProjectReference Include="..\..\Sources\Enx.Atomic.Avalonia.CodeGen\Enx.Atomic.Avalonia.CodeGen.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- Headless, not Desktop: this is a CLI tool, no window is ever shown — it only needs a platform
+             registered in AvaloniaLocator because some static rules (e.g. Cursors) construct real Avalonia
+             types (Cursor) at static-init time. -->
+        <PackageReference Include="Avalonia.Headless" Version="12.1.1" />
+    </ItemGroup>
+
+</Project>
