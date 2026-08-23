@@ -70,7 +70,7 @@ public sealed class GhostPropertyCombiner<TTheme> : ISourceTransformer<TTheme>
 
                 var value = GhostProperties.Map[group.First().Ghost].Build(slots);
 
-                SelectorExpression selectorData = SelectorsExpression.Is(null, value.UntypedProperty.OwnerType);
+                SelectorExpression selectorData = SelectorsExpression.Is(null, value.TargetType);
                 foreach (var token in tokens)
                     selectorData = selectorData.Class(token);
 

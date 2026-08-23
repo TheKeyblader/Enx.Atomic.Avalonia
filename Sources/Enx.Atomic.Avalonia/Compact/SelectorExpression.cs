@@ -69,9 +69,9 @@ public abstract record SelectorExpression
         {
             if (!Properties.TryGetValue(Property, out var prop))
             {
-                foreach (var propInfo in Property.OwnerType.GetFields(BindingFlags.Static))
+                foreach (var propInfo in Property.OwnerType.GetFields(BindingFlags.Public | BindingFlags.Static))
                 {
-                    if (propInfo.GetValue(null) != Property)
+                    if (propInfo.GetValue(null) as AvaloniaProperty != Property)
                         continue;
                     Properties[Property] = prop = propInfo;
                     break;

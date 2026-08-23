@@ -1,0 +1,37 @@
+using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
+using Avalonia.Media;
+
+namespace Enx.Atomic.Avalonia.Tests;
+
+public class ColorRuleTests
+{
+    [AvaloniaFact]
+    public void BackgroundColor_TargetsBothBorderAndTemplatedControl()
+    {
+        // Regression test: Border.BackgroundProperty and TemplatedControl.BackgroundProperty are the exact
+        // same AvaloniaProperty instance (TemplatedControl adds itself as an owner of Border's property), so
+        // its OwnerType always reports Border regardless of which static field it was accessed through.
+        // BackgroundColorRule relies on an explicit StyleValue.TargetType override to still produce a second,
+        // separately selected style for TemplatedControl (and therefore anything deriving from it, like
+        // Button) — without that override, "bg-red-500" would never visibly apply to a Button.
+        var (_, generator) = TestHelpers.CreateMiniGenerator();
+
+        var results = generator.ParseToken("bg-red-500");
+
+        Assert.Equal(2, results.Length);
+
+        var borderUtil = Assert.Single(results, u => u.ResolveSelector().ToString().Contains(nameof(Border)));
+        var templatedControlUtil = Assert.Single(
+            results,
+            u => u.ResolveSelector().ToString().Contains(nameof(TemplatedControl))
+        );
+
+        foreach (var util in new[] { borderUtil, templatedControlUtil })
+        {
+            var setter = Assert.Single(util.Body);
+            Assert.Equal(Border.BackgroundProperty, setter.Property);
+            Assert.IsType<SolidColorBrush>(setter.Value);
+        }
+    }
+}

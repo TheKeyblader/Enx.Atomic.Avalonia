@@ -2,6 +2,7 @@ using System.Collections.Immutable;
 using System.Text.RegularExpressions;
 using Avalonia.Controls;
 using Avalonia.Controls.Documents;
+using Avalonia.Controls.Primitives;
 
 namespace Enx.Atomic.Avalonia.Preset.Mini.Dynamic;
 
@@ -17,7 +18,17 @@ public partial class BackgroundColorRule<TTheme> : IDynamicRule<TTheme>
         if (!context.Theme.Colors.TryGetValue(match.Groups["value"].Value, out var brush))
             return [];
 
-        return [Border.BackgroundProperty.ToLiteral(brush)];
+        return
+        [
+            Border.BackgroundProperty.ToLiteral(brush),
+            // Border.BackgroundProperty and TemplatedControl.BackgroundProperty are the exact same
+            // AvaloniaProperty instance (TemplatedControl adds itself as an owner of Border's property) — its
+            // OwnerType always reports Border, the original registrant, regardless of which static field this
+            // was accessed through. Without an explicit targetType here, this second entry would collapse into
+            // the same group as the one above and never produce a selector matching Button/ComboBox/etc., which
+            // derive from TemplatedControl, not Border.
+            TemplatedControl.BackgroundProperty.ToLiteral(brush, typeof(TemplatedControl)),
+        ];
     }
 
     [GeneratedRegex("^bg-(?<value>.+)$")]

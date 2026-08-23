@@ -11,8 +11,12 @@ public class VariantTests
 
         var results = generator.ParseToken("hover:bg-red-500");
 
-        var util = Assert.Single(results);
-        Assert.Contains(":pointerover", util.ResolveSelector().ToString());
+        // Two utils: BackgroundColorRule emits both a Border.BackgroundProperty and a
+        // TemplatedControl.BackgroundProperty entry, since those are the exact same shared AvaloniaProperty
+        // (TemplatedControl.AddOwner(Border.BackgroundProperty)) but need separate selectors — Border and
+        // TemplatedControl aren't related types, so one selector alone can't match both. See StyleValue.TargetType.
+        Assert.Equal(2, results.Length);
+        Assert.All(results, util => Assert.Contains(":pointerover", util.ResolveSelector().ToString()));
     }
 
     [AvaloniaFact]

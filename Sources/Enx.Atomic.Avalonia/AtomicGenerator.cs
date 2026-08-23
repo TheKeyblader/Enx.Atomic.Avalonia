@@ -307,7 +307,7 @@ public class AtomicGenerator<TTheme>
             return [];
 
         _activatedRules.Add(rule);
-        var valueByOwners = styleValues.GroupBy(x => x.UntypedProperty.OwnerType);
+        var valueByOwners = styleValues.GroupBy(x => x.TargetType);
 
         var parsedUtils = valueByOwners.Select(g =>
         {
@@ -381,7 +381,7 @@ public class AtomicGenerator<TTheme>
             new VariantHandlerContext
             {
                 Selector = SelectorsExpression
-                    .Is(null, parsed.StyleEntries[0].UntypedProperty.OwnerType)
+                    .Is(null, parsed.StyleEntries[0].TargetType)
                     .Class(parsed.Raw),
                 ContainerQuery = null,
                 Entries = parsed.StyleEntries,
