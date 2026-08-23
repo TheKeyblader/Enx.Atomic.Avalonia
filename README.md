@@ -21,7 +21,7 @@ variants, source transformers, the Mini preset, and build-time code generation.
 | Project | Role |
 |---|---|
 | `Sources/Enx.Atomic.Avalonia` | The generic engine: resolves tokens into styles, independent of any preset. |
-| `Sources/Enx.Atomic.Avalonia.Preset.Mini` | A concrete rule/variant set, inspired by `@unocss/preset-mini`. |
+| `Sources/Enx.Atomic.Avalonia.Preset.Mini` | A concrete rule/variant set, inspired by `@unocss/preset-mini` — see its [README](Sources/Enx.Atomic.Avalonia.Preset.Mini/README.md) for the full utility-class reference. |
 | `Sources/Enx.Atomic.Avalonia.CodeGen` | Build-time C# code generation: emitter, CLI, and MSBuild wiring. |
 | `Sandbox` | An Avalonia console app used as a manual test bed for the engine and the presets. |
 | `Examples/` | A minimal end-to-end example of the build-time code generation pipeline. |
