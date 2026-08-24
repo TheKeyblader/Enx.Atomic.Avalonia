@@ -161,6 +161,22 @@ public static class ThemeBuilderExtensions
         return builder;
     }
 
+    /// <summary>
+    /// Registers <see cref="GridColumnsRule{TTheme}"/>, <see cref="GridRowsRule{TTheme}"/>, and
+    /// <see cref="GridCellRule{TTheme}"/>. Structural, not tied to any theme part.
+    /// </summary>
+    public static ThemeBuilder<TTheme> AddGridRules<TTheme>(
+        this ThemeBuilder<TTheme> builder,
+        AtomicConfiguration<TTheme> configuration
+    )
+        where TTheme : class, new()
+    {
+        configuration.AddRuleOnce(new GridColumnsRule<TTheme>());
+        configuration.AddRuleOnce(new GridRowsRule<TTheme>());
+        configuration.AddRuleOnce(new GridCellRule<TTheme>());
+        return builder;
+    }
+
     /// <summary>Registers <see cref="DarkVariant{TTheme}"/> onto <see cref="AtomicConfiguration{TTheme}.Variants"/>. Not tied to any theme part.</summary>
     public static ThemeBuilder<TTheme> AddDarkVariant<TTheme>(
         this ThemeBuilder<TTheme> builder,
@@ -243,6 +259,7 @@ public static class ThemeBuilderExtensions
             .AddColorRules(configuration)
             .AddPseudoClassVariants(configuration)
             .AddDarkVariant(configuration)
+            .AddGridRules(configuration)
             .AddGhostPropertyCombiner(configuration)
             .AddRemToPxFactor();
 }

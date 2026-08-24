@@ -44,6 +44,34 @@ public sealed class MSBuildIntegrationTests : IDisposable
     }
 
     [Fact]
+    public void Build_WithGridUtilityClasses_EmbedsSelfContainedGhostPropertyClass()
+    {
+        // Regression test: grid-cols-*/grid-rows-* resolve to a Setter targeting a ghost AvaloniaProperty
+        // declared in Enx.Atomic.Avalonia.Preset.Mini — but this throwaway app project (like Examples/, and
+        // like any real consumer of the codegen path) only references Avalonia itself, never the preset
+        // assembly. Compiling here at all proves EmittableGhostPropertyHostAttribute's embedding actually
+        // works: without it, the emitted Setter would reference a type this project can't see and fail with
+        // CS0246.
+        var (appDir, _) = Scaffold();
+        File.WriteAllText(
+            Path.Combine(appDir, "Widgets.cs"),
+            WidgetsSource("grid-cols-3 grid-rows-2 col-span-2 row-span-2")
+        );
+
+        var (exitCode, output) = DotnetBuild(appDir);
+
+        // Build success here is the real assertion: App/ThrowawayApp.csproj (see Scaffold) never references
+        // Preset.Mini, so the app project's own CoreCompile — the last one to run, and the only one that
+        // matters — would fail with CS0246 if GridDefinitions weren't embedded self-contained.
+        Assert.True(exitCode == 0, output);
+
+        var generated = ReadGenerated(appDir, output);
+        Assert.Contains("file static class GridDefinitions", generated);
+        Assert.Contains("GridDefinitions.ColumnDefinitionsProperty", generated);
+        Assert.Contains("GridDefinitions.RowDefinitionsProperty", generated);
+    }
+
+    [Fact]
     public void Rebuild_WithNoSourceChanges_LeavesOutputUntouched()
     {
         // EnxAtomicGenerateStyles has no Inputs/Outputs of its own — it runs on every build (see the comment

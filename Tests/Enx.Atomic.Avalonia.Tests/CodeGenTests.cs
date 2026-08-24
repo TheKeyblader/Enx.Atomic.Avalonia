@@ -19,7 +19,8 @@ namespace Enx.Atomic.Avalonia.Tests;
 /// (<c>SpecialProperties</c> owner type, a compound selector via <see cref="GhostPropertyCombiner{TTheme}"/>),
 /// and a whole-number <c>double</c>-valued token (<c>max-w-md</c> — the exact int/double boxing bug above), and
 /// a <c>PropertyEquals</c> selector node with an explicit declaring type (<c>dark:bg-red-500</c> — the
-/// <c>ThemeVariantScope</c>/<c>AddOwner</c> pitfall documented on <see cref="Enx.Atomic.Avalonia.StyleValue.TargetType"/>).
+/// <c>ThemeVariantScope</c>/<c>AddOwner</c> pitfall documented on <see cref="Enx.Atomic.Avalonia.StyleValue.TargetType"/>),
+/// and the <c>ColumnDefinitions</c>/<c>RowDefinitions</c> ghost properties (<c>grid-cols-3</c>).
 /// </summary>
 public class CodeGenTests
 {
@@ -29,7 +30,7 @@ public class CodeGenTests
         var (_, generator) = TestHelpers.CreateMiniGenerator();
 
         var source =
-            "Classes=\"ml-1 mr-2 hidden flex-row cursor-pointer no-underline hover:bg-red-500 sm:hidden max-w-md dark:bg-red-500\"";
+            "Classes=\"ml-1 mr-2 hidden flex-row cursor-pointer no-underline hover:bg-red-500 sm:hidden max-w-md dark:bg-red-500 grid-cols-3 col-span-2\"";
 
         var utils = generator.Generate(source, new AtomicGenerator<MiniTheme>.Options { Id = "test.axaml" });
         Assert.NotEmpty(utils);

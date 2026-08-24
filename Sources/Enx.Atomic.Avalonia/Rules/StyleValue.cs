@@ -19,14 +19,27 @@ public abstract record StyleValue
 
     /// <summary>
     /// The type the generated selector should match against (<c>.Is(TargetType)</c>). Defaults to
-    /// <see cref="UntypedProperty"/>'s <see cref="AvaloniaProperty.OwnerType"/>, but that default is only
-    /// correct when the property has a single owner. <see cref="AvaloniaProperty{TValue}.AddOwner{TOwner}"/>
-    /// lets several unrelated types share the exact same property instance (e.g. <c>Border</c> and
-    /// <c>TemplatedControl</c> both exposing the same <c>BackgroundProperty</c>) — <c>OwnerType</c> always
-    /// reports the type that originally registered it, never the type a rule accessed it through. A rule that
-    /// needs to target one of those other owners (see <c>BackgroundColorRule</c>) must set this explicitly.
+    /// <see cref="UntypedProperty"/>'s <see cref="AvaloniaProperty.OwnerType"/> for a plain styled property,
+    /// but that default is only correct when the property has a single owner.
+    /// <see cref="AvaloniaProperty{TValue}.AddOwner{TOwner}"/> lets several unrelated types share the exact
+    /// same property instance (e.g. <c>Border</c> and <c>TemplatedControl</c> both exposing the same
+    /// <c>BackgroundProperty</c>) — <c>OwnerType</c> always reports the type that originally registered it,
+    /// never the type a rule accessed it through. A rule that needs to target one of those other owners (see
+    /// <c>BackgroundColorRule</c>) must set this explicitly.
+    ///
+    /// For an <see cref="AvaloniaProperty.IsAttached"/> property, <c>OwnerType</c> isn't even the right
+    /// starting point — it names whatever type happened to declare it (e.g. <c>Grid</c> for
+    /// <c>Grid.ColumnSpanProperty</c>), not the (usually much wider) set of types it can actually be set on
+    /// (any <c>Control</c>, for that one) — a rule setting <c>col-span-*</c> on a grid *child* would otherwise
+    /// end up with a selector matching <c>Grid</c> itself. The default for those is <see cref="StyledElement"/>
+    /// instead, the widest type <c>Selectors.Is</c> accepts — narrow it explicitly if a rule knows the actual
+    /// usage is narrower.
     /// </summary>
     public abstract Type TargetType { get; }
+
+    /// <summary>The default <see cref="TargetType"/> for <paramref name="property"/> when a rule doesn't override it explicitly — see <see cref="TargetType"/>.</summary>
+    private protected static Type DefaultTargetType(AvaloniaProperty property) =>
+        property.IsAttached ? typeof(StyledElement) : property.OwnerType;
 
     /// <summary>A style value that sets its property to a fixed, compile-time-known value.</summary>
     public record Literal<TValue> : StyleValue
@@ -46,12 +59,12 @@ public abstract record StyleValue
         /// <inheritdoc/>
         public override Type TargetType { get; }
 
-        /// <summary>Creates a literal style value, targeting <paramref name="targetType"/> or, if omitted, <paramref name="property"/>'s own <see cref="AvaloniaProperty.OwnerType"/>.</summary>
+        /// <summary>Creates a literal style value, targeting <paramref name="targetType"/> or, if omitted, the default from <see cref="StyleValue.TargetType"/>.</summary>
         public Literal(AvaloniaProperty<TValue> property, TValue value, Type? targetType = null)
         {
             Property = property;
             Value = value;
-            TargetType = targetType ?? property.OwnerType;
+            TargetType = targetType ?? DefaultTargetType(property);
         }
     }
 
@@ -67,12 +80,12 @@ public abstract record StyleValue
         /// <inheritdoc/>
         public override Type TargetType { get; }
 
-        /// <summary>Creates a resource-backed style value for <paramref name="property"/>, looked up under resource key <paramref name="name"/>, targeting <paramref name="targetType"/> or, if omitted, <paramref name="property"/>'s own <see cref="AvaloniaProperty.OwnerType"/>.</summary>
+        /// <summary>Creates a resource-backed style value for <paramref name="property"/>, looked up under resource key <paramref name="name"/>, targeting <paramref name="targetType"/> or, if omitted, the default from <see cref="StyleValue.TargetType"/>.</summary>
         public Resource(AvaloniaProperty property, string name, Type? targetType = null)
         {
             UntypedProperty = property;
             UntypedValue = new DynamicResourceExtension(name);
-            TargetType = targetType ?? property.OwnerType;
+            TargetType = targetType ?? DefaultTargetType(property);
         }
     }
 }

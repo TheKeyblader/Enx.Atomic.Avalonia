@@ -27,6 +27,7 @@ public static class StyleEmitter
     {
         var values = new ValueEmitterRegistry(valueEmitters);
         var namespaces = new HashSet<string> { "Avalonia.Styling" };
+        var embeddedTypes = new Dictionary<string, string>();
         var body = new StringBuilder();
 
         for (var i = 0; i < utils.Count; i++)
@@ -42,10 +43,25 @@ public static class StyleEmitter
                 if (setter.Property is null)
                     continue;
 
-                foreach (var ns in CSharpTypeNaming.GetNamespaces(setter.Property.OwnerType))
-                    namespaces.Add(ns);
+                var declaringType = setter.Property.OwnerType;
+                var embeddableSource = EmittableGhostPropertyEmitter.TryGetEmbeddableSource(declaringType);
 
-                var propertyText = AvaloniaPropertyNaming.GetExpression(setter.Property);
+                string propertyText;
+                if (embeddableSource is not null)
+                {
+                    // The declaring type's own assembly may not be a dependency of the project this file
+                    // compiles into (see EmittableGhostPropertyHostAttribute) — embed a self-contained copy
+                    // once instead of referencing the original.
+                    embeddedTypes[declaringType.Name] = embeddableSource;
+                    propertyText = $"{declaringType.Name}.{AvaloniaPropertyNaming.GetFieldName(setter.Property, declaringType)}";
+                }
+                else
+                {
+                    foreach (var ns in CSharpTypeNaming.GetNamespaces(declaringType))
+                        namespaces.Add(ns);
+                    propertyText = AvaloniaPropertyNaming.GetExpression(setter.Property);
+                }
+
                 var valueText = values.Emit(setter.Value, namespaces);
                 body.AppendLine($"        {styleVar}.Setters.Add(new Setter({propertyText}, {valueText}));");
             }
@@ -74,6 +90,11 @@ public static class StyleEmitter
         file.AppendLine("//     code is regenerated.");
         file.AppendLine("// </auto-generated>");
         file.AppendLine("//------------------------------------------------------------------------------");
+        // Files matching the "generated code" convention (this one does, both by name and by the header
+        // above) default to a nullable-oblivious context regardless of the project's own <Nullable> setting,
+        // unless the file states its own context explicitly — needed for the nullable annotations an embedded
+        // EmittableGhostPropertyHostAttribute type's source can use (e.g. GridDefinitions' ColumnDefinitions?).
+        file.AppendLine("#nullable enable");
         foreach (var ns in namespaces.Where(ns => ns != namespaceName).OrderBy(ns => ns, StringComparer.Ordinal))
             file.AppendLine($"using {ns};");
         file.AppendLine();
@@ -86,6 +107,12 @@ public static class StyleEmitter
         file.Append(body);
         file.AppendLine("    }");
         file.AppendLine("}");
+
+        foreach (var source in embeddedTypes.OrderBy(kv => kv.Key, StringComparer.Ordinal).Select(kv => kv.Value))
+        {
+            file.AppendLine();
+            file.Append(source);
+        }
 
         return file.ToString();
     }

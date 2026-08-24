@@ -13,6 +13,7 @@ public sealed class ValueEmitterRegistry(IEnumerable<IValueEmitter>? emitters = 
         new CursorValueEmitter(),
         new TextDecorationsValueEmitter(),
         new ThemeVariantValueEmitter(),
+        new GridDefinitionsValueEmitter(),
     ];
 
     private readonly IReadOnlyList<IValueEmitter> _emitters = [.. emitters ?? Default];
