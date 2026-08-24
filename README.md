@@ -69,21 +69,14 @@ release.
 ## Roadmap
 
 Ideas being considered, not commitments with a date — this is an early, solo-maintained
-project. Grouped by rough priority rather than a flat list: alpha closes gaps in and
-stabilizes what already ships, beta extends the token/rule vocabulary and lays down
-infrastructure the later milestones need, v1 is ready to build a real app on — every
-manual mechanism an app needs is there, just not the tooling/automation on top of it
-yet (an editor extension, auto-discovering a safelist from referenced packages) — and
-v2 is where that tooling/automation, plus deeper architectural bets, land.
-
-### Alpha — stabilize what exists
-
-- **Richer responsive utilities.** `sm:`/`max-sm:` breakpoint variants already work on
-  any token today, but there's no higher-level vocabulary on top of them yet — a
-  column/grid system, responsive gap/order — the kind of thing that made CSS grid
-  frameworks worth having before native CSS grid existed. Arguably the actual
-  pillar of "responsive" as a feature, not a nice-to-have on top of it — bumped up
-  from v1 for that reason.
+project. Grouped by rough priority rather than a flat list: beta extends the
+token/rule vocabulary and lays down infrastructure the later milestones need, v1 is
+ready to build a real app on — every manual mechanism an app needs is there, just not
+the tooling/automation on top of it yet (an editor extension, auto-discovering a
+safelist from referenced packages) — and v2 is where that tooling/automation, plus
+deeper architectural bets, land. Alpha (stabilizing what already shipped, including a
+tested MSBuild build system and a grid vocabulary — `grid-cols-*`/`grid-rows-*`,
+`col-*`/`row-*`, `col-span-*`/`row-span-*`) has nothing outstanding right now.
 
 ### Beta — extend the vocabulary, lay down infrastructure
 

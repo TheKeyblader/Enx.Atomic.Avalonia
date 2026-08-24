@@ -7,6 +7,50 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.0.4] - 2026-08-25
+
+### Added
+
+- `dark:` variant, matching Avalonia's native `ThemeVariant` (Light/Dark).
+- Per-side border-width utilities: `border-t-*`, `border-r-*`, `border-b-*`, `border-l-*`.
+- Grid utilities: `grid-cols-*`/`grid-rows-*` (equal-column/row `Grid` definitions) and
+  `col-*`/`row-*`/`col-span-*`/`row-span-*` (`Grid.Column`/`Row`/`ColumnSpan`/`RowSpan`).
+- `bg-*` now also targets `Panel.BackgroundProperty` (`StackPanel`, `Grid`, `DockPanel`, ...),
+  alongside `Border`/`TemplatedControl`.
+- A utility-class reference README for `Enx.Atomic.Avalonia.Preset.Mini`, and a Roadmap
+  section in the root README.
+
+### Fixed
+
+- Building the consuming app project standalone (not via the whole solution) could fail
+  the first time with `NETSDK1004`, since nothing restored the configuration project on
+  its own.
+- Editing a rule/theme in the configuration project while leaving the app's own sources
+  untouched could leave the generated styles silently stale.
+- A `Setter`'s default selector target for an attached property (e.g.
+  `Grid.ColumnSpanProperty`) now targets `StyledElement` instead of the property's
+  declaring type — fixes `col-span-*`/`row-span-*`, and incidentally the same
+  pre-existing bug in `scroll-x-*`/`scroll-y-*`, only ever matching the wrong element.
+
+### Changed
+
+- Bumped Avalonia to 12.1.1, Spectre.Console.Cli to 0.55.0, Roslynator.Analyzers to 5.0.0,
+  and the test project's `coverlet.msbuild`/`Microsoft.NET.Test.Sdk`/`Microsoft.CodeAnalysis.CSharp`.
+- Removed the unused `Dunet` dependency.
+
+## [0.0.3] - 2026-08-23
+
+### Fixed
+
+- `bg-red-500` (and other properties shared via `AddOwner`, e.g. `TemplatedControl.BackgroundProperty`)
+  not applying to `Button`/`ComboBox`/etc., since `AvaloniaProperty.OwnerType` always reports the
+  type that originally registered a property, not the type it was actually reached through.
+- A code-gen boxing bug: a whole-number `double` value (e.g. for `MaxWidthProperty`) was emitted
+  as a bare numeric literal, inferred as `int` by the compiler and crashing at runtime when
+  Avalonia applied the boxed `Setter` value.
+- A latent reflection bug in `SelectorExpression`'s `PropertyEquals` node (`BindingFlags.Static`
+  alone always returns zero fields) and a `CS0252` reference-equality warning.
+
 ## [0.0.2] - 2026-08-23
 
 ### Removed
@@ -45,6 +89,8 @@ Initial release.
   by pushing a `vX.Y.Z` tag.
 - MIT license.
 
-[Unreleased]: https://github.com/TheKeyblader/Enx.Atomic.Avalonia/compare/v0.0.2...HEAD
+[Unreleased]: https://github.com/TheKeyblader/Enx.Atomic.Avalonia/compare/v0.0.4...HEAD
+[0.0.4]: https://github.com/TheKeyblader/Enx.Atomic.Avalonia/compare/v0.0.3...v0.0.4
+[0.0.3]: https://github.com/TheKeyblader/Enx.Atomic.Avalonia/compare/v0.0.2...v0.0.3
 [0.0.2]: https://github.com/TheKeyblader/Enx.Atomic.Avalonia/compare/v0.0.1...v0.0.2
 [0.0.1]: https://github.com/TheKeyblader/Enx.Atomic.Avalonia/releases/tag/v0.0.1
