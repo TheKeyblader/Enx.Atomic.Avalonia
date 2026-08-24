@@ -1,6 +1,5 @@
 using Avalonia;
 using Avalonia.Headless;
-using Avalonia.Headless.XUnit;
 
 [assembly: AvaloniaTestApplication(typeof(Enx.Atomic.Avalonia.Tests.TestAppBuilder))]
 [assembly: AvaloniaTestIsolation(AvaloniaTestIsolationLevel.PerAssembly)]

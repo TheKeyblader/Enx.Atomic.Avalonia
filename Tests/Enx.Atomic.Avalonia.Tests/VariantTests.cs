@@ -1,5 +1,3 @@
-using Avalonia.Styling;
-
 namespace Enx.Atomic.Avalonia.Tests;
 
 public class VariantTests
@@ -11,11 +9,12 @@ public class VariantTests
 
         var results = generator.ParseToken("hover:bg-red-500");
 
-        // Two utils: BackgroundColorRule emits both a Border.BackgroundProperty and a
-        // TemplatedControl.BackgroundProperty entry, since those are the exact same shared AvaloniaProperty
-        // (TemplatedControl.AddOwner(Border.BackgroundProperty)) but need separate selectors — Border and
-        // TemplatedControl aren't related types, so one selector alone can't match both. See StyleValue.TargetType.
-        Assert.Equal(2, results.Length);
+        // Three utils: BackgroundColorRule emits a Border.BackgroundProperty, a TemplatedControl.BackgroundProperty,
+        // and a Panel.BackgroundProperty entry, since these are the exact same shared AvaloniaProperty
+        // (TemplatedControl/Panel each AddOwner(Border.BackgroundProperty)) but need separate selectors — Border,
+        // TemplatedControl, and Panel aren't related types, so one selector alone can't match all three. See
+        // StyleValue.TargetType.
+        Assert.Equal(3, results.Length);
         Assert.All(results, util => Assert.Contains(":pointerover", util.ResolveSelector().ToString()));
     }
 
@@ -61,13 +60,14 @@ public class VariantTests
     [AvaloniaFact]
     public void Dark_AppendsActualThemeVariantPropertyEqualsToSelector()
     {
-        // Like hover:bg-red-500, this resolves to two utils (Border.BackgroundProperty and
-        // TemplatedControl.BackgroundProperty) — each still needs the dark-mode selector condition.
+        // Like hover:bg-red-500, this resolves to three utils (Border.BackgroundProperty,
+        // TemplatedControl.BackgroundProperty, and Panel.BackgroundProperty) — each still needs the
+        // dark-mode selector condition.
         var (_, generator) = TestHelpers.CreateMiniGenerator();
 
         var results = generator.ParseToken("dark:bg-red-500");
 
-        Assert.Equal(2, results.Length);
+        Assert.Equal(3, results.Length);
         Assert.All(
             results,
             util => Assert.Contains("[ActualThemeVariant=Dark]", util.ResolveSelector().ToString())

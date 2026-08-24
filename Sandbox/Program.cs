@@ -1,6 +1,4 @@
-using System;
 using Avalonia;
-using Avalonia.Styling;
 using Enx.Atomic.Avalonia;
 using Enx.Atomic.Avalonia.CodeGen;
 using Enx.Atomic.Avalonia.Preset.Mini;

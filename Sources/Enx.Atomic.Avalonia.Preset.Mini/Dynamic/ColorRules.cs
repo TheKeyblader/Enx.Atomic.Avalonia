@@ -28,6 +28,7 @@ public partial class BackgroundColorRule<TTheme> : IDynamicRule<TTheme>
             // the same group as the one above and never produce a selector matching Button/ComboBox/etc., which
             // derive from TemplatedControl, not Border.
             TemplatedControl.BackgroundProperty.ToLiteral(brush, typeof(TemplatedControl)),
+            Panel.BackgroundProperty.ToLiteral(brush, typeof(Panel)),
         ];
     }
 

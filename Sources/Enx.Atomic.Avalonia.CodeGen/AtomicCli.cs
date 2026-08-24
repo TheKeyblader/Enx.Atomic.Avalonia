@@ -68,7 +68,7 @@ internal sealed class GenerateCommand<TTheme> : Command<AtomicCliSettings>
 {
     internal static AtomicConfiguration<TTheme>? Configuration { get; set; }
 
-    public override int Execute(CommandContext context, AtomicCliSettings settings)
+    protected override int Execute(CommandContext context, AtomicCliSettings settings, CancellationToken cancellationToken)
     {
         var configuration = Configuration ?? throw new InvalidOperationException(
             $"{nameof(GenerateCommand<TTheme>)}.{nameof(Configuration)} was not set before running the command — call it through {nameof(AtomicCli)}.{nameof(AtomicCli.Run)}."
