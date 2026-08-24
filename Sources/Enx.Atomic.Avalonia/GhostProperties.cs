@@ -31,7 +31,7 @@ public static class GhostProperties
         [SpecialProperties.PaddingRightProperty] = new(Decorator.PaddingProperty, 2, ThicknessSetter(Decorator.PaddingProperty)),
         [SpecialProperties.PaddingBottomProperty] = new(Decorator.PaddingProperty, 3, ThicknessSetter(Decorator.PaddingProperty)),
 
-        // Border width: same Thickness slot order. Provisioned for a future per-side border-width rule.
+        // Border width: same Thickness slot order.
         [SpecialProperties.BorderThicknessLeftProperty] = new(Border.BorderThicknessProperty, 0, ThicknessSetter(Border.BorderThicknessProperty)),
         [SpecialProperties.BorderThicknessTopProperty] = new(Border.BorderThicknessProperty, 1, ThicknessSetter(Border.BorderThicknessProperty)),
         [SpecialProperties.BorderThicknessRightProperty] = new(Border.BorderThicknessProperty, 2, ThicknessSetter(Border.BorderThicknessProperty)),

@@ -57,8 +57,8 @@ public class SpecialProperties : StyledElement
         float
     >("PaddingBottom");
 
-    // Border width (Border.BorderThicknessProperty). Not consumed by any Preset.Mini rule yet — there is no
-    // per-side border-width utility today (only the uniform border-*) — but provisioned for when one exists.
+    // Border width (Border.BorderThicknessProperty). Consumed by BorderWidthRule's per-side variants
+    // (border-t-*, border-r-*, border-b-*, border-l-*).
     public static readonly AvaloniaProperty<float> BorderThicknessLeftProperty = AvaloniaProperty.Register<
         SpecialProperties,
         float

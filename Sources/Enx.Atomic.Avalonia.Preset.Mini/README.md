@@ -100,6 +100,7 @@ Theme-driven — the value after the prefix is resolved against a scale (see
 | `border-{color}` | `Border.BorderBrushProperty` | [Colors](#colors) |
 | `text-{size}` | `TextElement.FontSizeProperty` | [FontSizes](#fontsizes) |
 | `border` / `border-{width}` | `Border.BorderThicknessProperty` (uniform) | [LineWidths](#linewidths) |
+| `border-t/r/b/l-{width}` | Border width, one side (ghost property) | [LineWidths](#linewidths) |
 | `rounded-{radius}` | `Border.CornerRadiusProperty` (uniform) | [Radii](#radii) |
 | `rounded-t/b/l/r-{radius}` | Two adjacent corners (ghost properties, combined) | [Radii](#radii) |
 | `rounded-tl/tr/br/bl-{radius}` | One corner (ghost property) | [Radii](#radii) |
@@ -122,10 +123,11 @@ Notes:
   are the exact same `AvaloniaProperty` (`TemplatedControl` shares it via `AddOwner`), but a single
   selector can't match both `Border`-derived and `TemplatedControl`-derived elements (e.g. `Button`)
   at once — see `ARCHITECTURE.md` for why.
-- **Per-side margin/padding/radius** (`ml-*`, `pt-*`, `rounded-tl-*`, ...) go through ghost
-  properties: real, hidden `AvaloniaProperty`s combined back into one real struct-valued setter by
-  `GhostPropertyCombiner` when several land on the same element (`ml-1 mr-2` → one `Margin` setter,
-  not two competing ones). Requires `AddGhostPropertyCombiner` (already part of `AddMiniTheme`).
+- **Per-side margin/padding/radius/border-width** (`ml-*`, `pt-*`, `rounded-tl-*`, `border-t-*`, ...)
+  go through ghost properties: real, hidden `AvaloniaProperty`s combined back into one real
+  struct-valued setter by `GhostPropertyCombiner` when several land on the same element (`ml-1 mr-2` →
+  one `Margin` setter, not two competing ones). Requires `AddGhostPropertyCombiner` (already part of
+  `AddMiniTheme`).
 - **`text-` is shared** between `FontSizeRule` and `ForegroundColorRule` — a value that resolves in
   the `FontSizes` scale wins as a size; otherwise it's tried as a color. Likewise **`border-`** is
   shared between `BorderWidthRule` and `BorderColorRule` — a value resolving in `LineWidths` (named
