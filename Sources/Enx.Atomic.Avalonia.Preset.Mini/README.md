@@ -106,7 +106,7 @@ Theme-driven — the value after the prefix is resolved against a scale (see
 
 | Token | Sets | Scale |
 |---|---|---|
-| `bg-{color}` | `Border.BackgroundProperty` **and** `TemplatedControl.BackgroundProperty` (two styles — see note below) | [Colors](#colors) |
+| `bg-{color}` | `Border.BackgroundProperty`, `TemplatedControl.BackgroundProperty`, **and** `Panel.BackgroundProperty` (three styles — see note below) | [Colors](#colors) |
 | `text-{color}` | `TextElement.ForegroundProperty` | [Colors](#colors) |
 | `border-{color}` | `Border.BorderBrushProperty` | [Colors](#colors) |
 | `text-{size}` | `TextElement.FontSizeProperty` | [FontSizes](#fontsizes) |
@@ -128,12 +128,24 @@ Theme-driven — the value after the prefix is resolved against a scale (see
 | `gap-{n}` | `Spacing`/`ColumnSpacing`/`RowSpacing` on `StackPanel`, `Grid`, `UniformGrid` | [Spacing](#spacing) |
 | `gap-x-{n}` | `ColumnSpacing` on `Grid` and `UniformGrid` only | [Spacing](#spacing) |
 | `gap-y-{n}` | `RowSpacing` on `Grid` and `UniformGrid` only | [Spacing](#spacing) |
+| `grid-cols-{n}` | `Grid.ColumnDefinitions` = `n` equal (`1*`) columns (ghost property, on the `Grid` itself) | *(structural — see note below)* |
+| `grid-rows-{n}` | `Grid.RowDefinitions` = `n` equal (`1*`) rows (ghost property, on the `Grid` itself) | *(structural)* |
+| `col-{n}` / `row-{n}` | `Grid.ColumnProperty` / `RowProperty` (0-based, on a grid **child**) | *(structural)* |
+| `col-span-{n}` / `row-span-{n}` | `Grid.ColumnSpanProperty` / `RowSpanProperty` (on a grid **child**) | *(structural)* |
 
 Notes:
-- **`bg-{color}` emits two styles.** `Border.BackgroundProperty` and `TemplatedControl.BackgroundProperty`
-  are the exact same `AvaloniaProperty` (`TemplatedControl` shares it via `AddOwner`), but a single
-  selector can't match both `Border`-derived and `TemplatedControl`-derived elements (e.g. `Button`)
-  at once — see `ARCHITECTURE.md` for why.
+- **`bg-{color}` emits three styles.** `Border.BackgroundProperty`, `TemplatedControl.BackgroundProperty`,
+  and `Panel.BackgroundProperty` are the exact same `AvaloniaProperty` (`TemplatedControl`/`Panel` share
+  it via `AddOwner`), but a single selector can't match `Border`-, `TemplatedControl`-, and `Panel`-derived
+  elements (e.g. `Button`, `StackPanel`) at once — see `ARCHITECTURE.md` for why.
+- **`grid-cols-*`/`grid-rows-*` are structural, not theme-scaled** — `n` is parsed directly as a plain
+  integer, not looked up in a scale. `Grid.ColumnDefinitions`/`RowDefinitions` aren't real
+  `AvaloniaProperty`s (Avalonia limitation), so these go through a ghost `AttachedProperty` plus a class
+  handler that syncs the real collection — see `GridDefinitions` in `Dynamic/GridRules.cs`. Only wired
+  up for the build-time code-gen path today, not runtime resolution.
+- **`col-*`/`row-*`/`col-span-*`/`row-span-*` target the grid child, not the `Grid`** — they're
+  `AttachedProperty`s meant to be set on whatever control sits inside the grid (e.g.
+  `<Border Classes="col-span-2">`), not on the `Grid` element itself.
 - **Per-side margin/padding/radius/border-width** (`ml-*`, `pt-*`, `rounded-tl-*`, `border-t-*`, ...)
   go through ghost properties: real, hidden `AvaloniaProperty`s combined back into one real
   struct-valued setter by `GhostPropertyCombiner` when several land on the same element (`ml-1 mr-2` →
