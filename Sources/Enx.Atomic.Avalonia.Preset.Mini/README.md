@@ -59,6 +59,17 @@ inside a control whose `ContainerName`/size the query can see.
 <StackPanel Classes="flex-col sm:flex-row" />
 ```
 
+### Dark mode (`DarkVariant`)
+
+`dark:` matches when the current Avalonia `ThemeVariant` is `Dark` — Avalonia's native
+Light/Dark theming, checked via `ThemeVariantScope.ActualThemeVariantProperty` (inherited, so it
+resolves correctly regardless of where the `ThemeVariantScope`/`TopLevel` sits above the element).
+There's no `light:` — since `Light` is the default, an un-prefixed token already covers it.
+
+```xml
+<Border Classes="bg-white dark:bg-slate-800" />
+```
+
 ## Static utilities
 
 Fixed name, fixed value — no theme lookup.

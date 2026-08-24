@@ -161,6 +161,17 @@ public static class ThemeBuilderExtensions
         return builder;
     }
 
+    /// <summary>Registers <see cref="DarkVariant{TTheme}"/> onto <see cref="AtomicConfiguration{TTheme}.Variants"/>. Not tied to any theme part.</summary>
+    public static ThemeBuilder<TTheme> AddDarkVariant<TTheme>(
+        this ThemeBuilder<TTheme> builder,
+        AtomicConfiguration<TTheme> configuration
+    )
+        where TTheme : class, new()
+    {
+        configuration.AddVariantOnce(new DarkVariant<TTheme>());
+        return builder;
+    }
+
     /// <summary>Every rule declared under <c>Static/</c> — theme-independent, so valid for any <typeparamref name="TTheme"/>.</summary>
     private static readonly Rule.Static[] AllStaticRules =
     [
@@ -231,6 +242,7 @@ public static class ThemeBuilderExtensions
             .AddBreakpointRules(configuration)
             .AddColorRules(configuration)
             .AddPseudoClassVariants(configuration)
+            .AddDarkVariant(configuration)
             .AddGhostPropertyCombiner(configuration)
             .AddRemToPxFactor();
 }

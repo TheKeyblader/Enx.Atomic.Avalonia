@@ -54,10 +54,11 @@ public static class SelectorEmitter
         ValueEmitterRegistry values
     )
     {
-        foreach (var ns in CSharpTypeNaming.GetNamespaces(propertyEquals.Property.OwnerType))
+        var declaringType = propertyEquals.DeclaringType ?? propertyEquals.Property.OwnerType;
+        foreach (var ns in CSharpTypeNaming.GetNamespaces(declaringType))
             namespaces.Add(ns);
 
-        var propertyText = AvaloniaPropertyNaming.GetExpression(propertyEquals.Property);
+        var propertyText = AvaloniaPropertyNaming.GetExpression(propertyEquals.Property, propertyEquals.DeclaringType);
         var valueText = values.Emit(propertyEquals.Value, namespaces);
         return $"{previous}.PropertyEquals({propertyText}, {valueText})";
     }

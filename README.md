@@ -78,11 +78,6 @@ v2 is where that tooling/automation, plus deeper architectural bets, land.
 
 ### Alpha — stabilize what exists
 
-- **`dark:` variant.** Avalonia has `ThemeVariant` (Light/Dark) natively, the direct
-  counterpart to Tailwind/UnoCSS's `dark:` — today neither `PseudoClassVariant` nor
-  `BreakpointVariant` covers it, so there's no way to write `dark:bg-slate-800`.
-  Doesn't need to wait on resource-based theming below; it can ship against
-  literal inlined values first, the same way every other variant works today.
 - **Richer responsive utilities.** `sm:`/`max-sm:` breakpoint variants already work on
   any token today, but there's no higher-level vocabulary on top of them yet — a
   column/grid system, responsive gap/order — the kind of thing that made CSS grid

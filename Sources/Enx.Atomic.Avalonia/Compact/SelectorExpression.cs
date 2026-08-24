@@ -35,7 +35,7 @@ public abstract record SelectorExpression
     public record PropertyEquals : SelectorExpression
     {
         private static readonly MethodInfo CallInfo;
-        private static Dictionary<AvaloniaProperty, FieldInfo> Properties { get; } = [];
+        private static Dictionary<(AvaloniaProperty Property, Type DeclaringType), FieldInfo> Properties { get; } = [];
 
         static PropertyEquals()
         {
@@ -52,28 +52,41 @@ public abstract record SelectorExpression
         /// <summary>The value the property must equal.</summary>
         public object? Value { get; set; }
 
+        /// <summary>
+        /// The type whose public static fields are searched for <see cref="Property"/>'s declaring field, or
+        /// <see langword="null"/> to use <see cref="Property"/>'s own <see cref="AvaloniaProperty.OwnerType"/>.
+        /// Needed when <see cref="Property"/> was reached via <see cref="AvaloniaProperty{TValue}.AddOwner{TOwner}"/>
+        /// from a type whose own field isn't public (or doesn't exist) — <c>OwnerType</c> always reports the
+        /// type that originally registered the property, not the one it was accessed through.
+        /// </summary>
+        public Type? DeclaringType { get; set; }
+
         /// <summary>Creates a property-equality selector node.</summary>
         public PropertyEquals(
             SelectorExpression? previous,
             AvaloniaProperty property,
-            object? value
+            object? value,
+            Type? declaringType = null
         )
         {
             Previous = previous;
             Property = property;
             Value = value;
+            DeclaringType = declaringType;
         }
 
         /// <inheritdoc/>
         public override Expression ToExpressionCore(Expression parameter)
         {
-            if (!Properties.TryGetValue(Property, out var prop))
+            var declaringType = DeclaringType ?? Property.OwnerType;
+            var key = (Property, declaringType);
+            if (!Properties.TryGetValue(key, out var prop))
             {
-                foreach (var propInfo in Property.OwnerType.GetFields(BindingFlags.Public | BindingFlags.Static))
+                foreach (var propInfo in declaringType.GetFields(BindingFlags.Public | BindingFlags.Static))
                 {
                     if (propInfo.GetValue(null) as AvaloniaProperty != Property)
                         continue;
-                    Properties[Property] = prop = propInfo;
+                    Properties[key] = prop = propInfo;
                     break;
                 }
 
@@ -182,4 +195,16 @@ public static class SelectorsExpression
     /// <summary>Appends a <see cref="SelectorExpression.Is"/> node matching elements assignable to <typeparamref name="T"/>.</summary>
     public static SelectorExpression Is<T>(this SelectorExpression? previous)
         where T : StyledElement => previous.Is(typeof(T));
+
+    /// <summary>
+    /// Appends a <see cref="SelectorExpression.PropertyEquals"/> node matching elements whose <paramref name="property"/>
+    /// equals <paramref name="value"/>. See <see cref="SelectorExpression.PropertyEquals.DeclaringType"/> for when
+    /// <paramref name="declaringType"/> is needed.
+    /// </summary>
+    public static SelectorExpression PropertyEquals(
+        this SelectorExpression? previous,
+        AvaloniaProperty property,
+        object? value,
+        Type? declaringType = null
+    ) => new SelectorExpression.PropertyEquals(previous, property, value, declaringType);
 }

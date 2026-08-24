@@ -57,4 +57,33 @@ public class VariantTests
         Assert.NotNull(query);
         Assert.Equal("max-width:640", query!.ToString());
     }
+
+    [AvaloniaFact]
+    public void Dark_AppendsActualThemeVariantPropertyEqualsToSelector()
+    {
+        // Like hover:bg-red-500, this resolves to two utils (Border.BackgroundProperty and
+        // TemplatedControl.BackgroundProperty) — each still needs the dark-mode selector condition.
+        var (_, generator) = TestHelpers.CreateMiniGenerator();
+
+        var results = generator.ParseToken("dark:bg-red-500");
+
+        Assert.Equal(2, results.Length);
+        Assert.All(
+            results,
+            util => Assert.Contains("[ActualThemeVariant=Dark]", util.ResolveSelector().ToString())
+        );
+    }
+
+    [AvaloniaFact]
+    public void ChainedDarkAndPseudoClass_BothApply()
+    {
+        var (_, generator) = TestHelpers.CreateMiniGenerator();
+
+        var results = generator.ParseToken("dark:hover:underline");
+
+        var util = Assert.Single(results);
+        var selector = util.ResolveSelector().ToString();
+        Assert.Contains("[ActualThemeVariant=Dark]", selector);
+        Assert.Contains(":pointerover", selector);
+    }
 }
