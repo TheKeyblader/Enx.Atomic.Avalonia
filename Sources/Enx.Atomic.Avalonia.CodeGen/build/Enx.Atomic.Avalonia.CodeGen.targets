@@ -37,13 +37,34 @@
         <Compile Remove="$(EnxAtomicStylesOutputPath)" />
     </ItemGroup>
 
+    <!--
+      Deliberately has no Inputs/Outputs — this target always runs, on every build. Two things made that the
+      right call over an MSBuild-level staleness check:
+        1. Editing a rule/theme in the config project (or anything *it* references) needs to be picked up even
+           though this project's own @(Compile)/@(AvaloniaXaml) never changed — the config project doing the
+           actual token-resolution work isn't otherwise part of this project's dependency graph, so there's no
+           single file whose timestamp reliably tracks "did the resolved output change".
+        2. The obvious fix — use the config project's own build output assembly's timestamp as a proxy — turns
+           out not to be reliable either: a config project referencing Avalonia can pick up an extra build
+           task (an Avalonia resource-cache file) that only gets written starting from a project's *second*
+           build in a given process, which touches the assembly's mtime for reasons with no connection to any
+           actual rule/theme change and would cause spurious regeneration forever after.
+      Instead, AtomicCli writes the output write-if-different (see its Execute method) — so this Exec always
+      runs (a few hundred ms, dominated by "dotnet exec" process startup), but the file's mtime — and therefore
+      whether *this* project's own CoreCompile needs to recompile GenStyles.g.cs — only changes when the
+      resolved styles actually did.
+
+      Targets="Restore;Build", not just "Build": this MSBuild invocation is the config project's only
+      guaranteed entry point when EnxAtomicConfigProject isn't itself a ProjectReference of the consuming
+      project (it isn't, in Examples/) — building the consuming project standalone (dotnet build App.csproj,
+      rather than the whole .slnx) would otherwise fail with NETSDK1004 the first time, since nothing else
+      ever restored the config project.
+    -->
     <Target Name="EnxAtomicGenerateStyles"
             Condition="'$(EnxAtomicConfigProject)' != ''"
-            BeforeTargets="CoreCompile"
-            Inputs="@(Compile);@(AvaloniaXaml);$(MSBuildThisFileFullPath)"
-            Outputs="$(EnxAtomicStylesOutputPath)">
+            BeforeTargets="CoreCompile">
 
-        <MSBuild Projects="$(EnxAtomicConfigProject)" Targets="Build">
+        <MSBuild Projects="$(EnxAtomicConfigProject)" Targets="Restore;Build">
             <Output TaskParameter="TargetOutputs" ItemName="_EnxAtomicConfigOutput" />
         </MSBuild>
 

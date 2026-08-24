@@ -97,6 +97,19 @@ internal sealed class GenerateCommand<TTheme> : Command<AtomicCliSettings>
         if (!string.IsNullOrEmpty(outputDirectory))
             Directory.CreateDirectory(outputDirectory);
 
+        // Write-if-different, not an unconditional write: this CLI runs on every build (see the .targets file
+        // — MSBuild's own Inputs/Outputs staleness check isn't reliable here, since a nested config-project
+        // build can touch its output assembly's timestamp for reasons unrelated to any actual rule/theme
+        // change), so leaving the output's mtime untouched when nothing actually changed is what lets the
+        // *consuming* project's own incremental compile still skip recompiling GenStyles.g.cs.
+        if (File.Exists(settings.Output) && File.ReadAllText(settings.Output) == emitted)
+        {
+            AnsiConsole.MarkupLineInterpolated(
+                $"Enx.Atomic.Avalonia.CodeGen: {utils.Count} style(s) from {settings.Sources.Length} source file(s) unchanged at '{settings.Output}'."
+            );
+            return 0;
+        }
+
         File.WriteAllText(settings.Output, emitted);
         AnsiConsole.MarkupLineInterpolated(
             $"Enx.Atomic.Avalonia.CodeGen: wrote {utils.Count} style(s) from {settings.Sources.Length} source file(s) to '{settings.Output}'."

@@ -84,15 +84,6 @@ v2 is where that tooling/automation, plus deeper architectural bets, land.
   frameworks worth having before native CSS grid existed. Arguably the actual
   pillar of "responsive" as a feature, not a nice-to-have on top of it — bumped up
   from v1 for that reason.
-- **A more robust, better-tested MSBuild build system.** `Enx.Atomic.Avalonia.CodeGen.targets`
-  works (see `Examples/`), but it's currently only verified by hand, and it leans
-  on a few non-obvious MSBuild behaviors — e.g. plain `ItemGroup`s inside a target
-  still run even when that target's own tasks are skipped as up to date, and a
-  default-value `PropertyGroup` has to live inside the target rather than at the
-  top of the file to see fully-resolved properties. Worth an actual automated test
-  (a real `dotnet build` of a throwaway project, asserting on its output) instead
-  of relying on the `Examples/` projects staying correct by inspection, and a
-  second look at whether some of that timing-sensitivity can be designed away.
 
 ### Beta — extend the vocabulary, lay down infrastructure
 
