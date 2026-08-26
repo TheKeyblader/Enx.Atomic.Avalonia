@@ -165,6 +165,11 @@ transforms the source text, extracts tokens, resolves them, compiles the
 `Expression<Func<Selector, Selector>>`, and produces `StringifiedUtil`s ready to
 become `Avalonia.Styling.Style`s. `Sandbox/Program.cs` demonstrates this.
 
+Grid utilities and resource-based theming only work through
+`Enx.Atomic.Avalonia.CodeGen` (see below and each feature's own section); reached
+through this path instead, they resolve to nothing. See the root README's Roadmap,
+v3, for the runtime connector that would cover them.
+
 ## Build-time C# code generation (`Sources/Enx.Atomic.Avalonia.CodeGen`)
 
 Resolving tokens at every app startup has a cost. `Enx.Atomic.Avalonia.CodeGen` moves
@@ -199,10 +204,10 @@ Verified by `Tests/.../CodeGenTests.cs`, which actually **compiles** the emitted
 with Roslyn (`Microsoft.CodeAnalysis.CSharp`) and asserts no errors.
 
 **Resource-based theming (`ResourceDictionaryEmitter.cs`).** A color value (`bg-*`,
-`text-*`, `border-*`) no longer bakes a `SolidColorBrush` straight into the generated
-`Style` — it's a `StyleValue.Resource`, so `StyleEmitter` only ever emits a
-`DynamicResourceExtension` key. Something still has to build the actual
-`ResourceDictionary` those keys resolve against — that's `ResourceDictionaryEmitter`:
+`text-*`, `border-*`) is a `StyleValue.Resource`, so `StyleEmitter` emits a
+`DynamicResourceExtension` key rather than a `SolidColorBrush` baked straight into the
+`Style`. Something still has to build the actual `ResourceDictionary` those keys
+resolve against — that's `ResourceDictionaryEmitter`:
 for every distinct `AtomicGenerator<TTheme>.ResolvedResources` entry (deduplicated by
 `Key` — `bg-red-500`'s `Border`/`TemplatedControl`/`Panel` triple all share one), it
 compiles and invokes the resource's `ThemeAccess` once against a real `TTheme`
@@ -222,8 +227,7 @@ public static class AtomicResources
 which the consuming app merges once at startup — see
 `Examples/Enx.Atomic.Avalonia.Example.App/App.axaml.cs`
 (`Resources.MergedDictionaries.Add(AtomicResources.Build())`), before adding
-`AtomicStyles`. Only wired up for build-time code generation today, same as the grid
-utilities' ghost properties — no runtime-path equivalent yet.
+`AtomicStyles`.
 
 **The CLI (`AtomicCli.cs`).** A user's configuration project is a small executable
 that references `Enx.Atomic.Avalonia`(`.Preset.Mini`)`.CodeGen`, builds its

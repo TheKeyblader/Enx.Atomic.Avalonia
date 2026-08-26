@@ -36,14 +36,22 @@ works too).
 dotnet build Enx.Atomic.Avalonia.slnx
 ```
 
-There are two ways to resolve utility tokens into styles:
+There are two ways to resolve utility tokens into styles — **build time is the
+supported, complete path**; runtime is a lighter-weight sandbox/demo path with a
+real gap (see below):
 
-- **At runtime** — call `AtomicGenerator<TTheme>.Generate(...)` yourself and add the
-  resulting styles to your `Application.Styles`. See `Sandbox/Program.cs`.
 - **At build time** — set up a small configuration project and wire it into your
   app's build via `Enx.Atomic.Avalonia.CodeGen`, so tokens are resolved once at
   compile time instead of on every startup. See `Examples/` and
   [ARCHITECTURE.md](ARCHITECTURE.md#build-time-c-code-generation) for the full setup.
+- **At runtime** — call `AtomicGenerator<TTheme>.Generate(...)` yourself and add the
+  resulting styles to your `Application.Styles`. See `Sandbox/Program.cs`. Grid
+  utilities (`grid-cols-*`, `col-span-*`, ...) and resource-based theming
+  (`bg-*`/`text-*`/`border-*`) are **codegen-only today** — at runtime they silently
+  resolve to nothing, since both need machinery (a ghost-property class handler, a
+  built `ResourceDictionary`) that's currently only assembled at build time. Full
+  runtime parity would need a connector watching for newly-used classes across
+  loaded components and emitting/resolving them live — see the Roadmap's v3.
 
 ## Testing
 
@@ -73,10 +81,12 @@ project. Grouped by rough priority rather than a flat list: beta extends the
 token/rule vocabulary and lays down infrastructure the later milestones need, v1 is
 ready to build a real app on — every manual mechanism an app needs is there, just not
 the tooling/automation on top of it yet (an editor extension, auto-discovering a
-safelist from referenced packages) — and v2 is where that tooling/automation, plus
-deeper architectural bets, land. Alpha (stabilizing what already shipped, including a
-tested MSBuild build system and a grid vocabulary — `grid-cols-*`/`grid-rows-*`,
-`col-*`/`row-*`, `col-span-*`/`row-span-*`) has nothing outstanding right now.
+safelist from referenced packages) — v2 is where that tooling/automation, plus
+deeper architectural bets, land — and v3 brings runtime resolution up to parity
+with build-time codegen. Alpha (stabilizing what
+already shipped, including a tested MSBuild build system and a grid vocabulary —
+`grid-cols-*`/`grid-rows-*`, `col-*`/`row-*`, `col-span-*`/`row-span-*`) has nothing
+outstanding right now.
 
 ### Beta — extend the vocabulary, lay down infrastructure
 
@@ -126,6 +136,14 @@ tested MSBuild build system and a grid vocabulary — `grid-cols-*`/`grid-rows-*
   computed from it must update too, without hand-writing each derived shade in
   the theme. Only worth the complexity once resource-based theming (already shipped —
   `bg-*`/`text-*`/`border-*` are `DynamicResource`-backed) is actually in wide use.
+
+### v3 — runtime parity
+
+- **A runtime connector for codegen-only features.** A connector that detects
+  newly-used classes across loaded components as they appear and resolves/emits
+  the matching ghost-property handlers and resource dictionary entries live —
+  bringing grid utilities and resource-based theming to the runtime path
+  (`AtomicGenerator<TTheme>.Generate(...)`), not just build-time codegen.
 
 Have an opinion on any of these, or a different priority? Open an issue.
 
