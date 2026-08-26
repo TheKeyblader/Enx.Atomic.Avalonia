@@ -18,8 +18,10 @@
 
     <PropertyGroup>
         <EnxAtomicStylesOutputPath Condition="'$(EnxAtomicStylesOutputPath)' == ''">$(MSBuildProjectDirectory)/GeneratedStyles/GenStyles.g.cs</EnxAtomicStylesOutputPath>
+        <EnxAtomicResourcesOutputPath Condition="'$(EnxAtomicResourcesOutputPath)' == ''">$(MSBuildProjectDirectory)/GeneratedStyles/GenResources.g.cs</EnxAtomicResourcesOutputPath>
         <EnxAtomicNamespace Condition="'$(EnxAtomicNamespace)' == ''">$(RootNamespace)</EnxAtomicNamespace>
         <EnxAtomicClassName Condition="'$(EnxAtomicClassName)' == ''">AtomicStyles</EnxAtomicClassName>
+        <EnxAtomicResourcesClassName Condition="'$(EnxAtomicResourcesClassName)' == ''">AtomicResources</EnxAtomicResourcesClassName>
         <EnxAtomicContainerName Condition="'$(EnxAtomicContainerName)' == ''">top-level</EnxAtomicContainerName>
     </PropertyGroup>
 
@@ -35,6 +37,7 @@
     -->
     <ItemGroup Condition="'$(EnxAtomicConfigProject)' != ''">
         <Compile Remove="$(EnxAtomicStylesOutputPath)" />
+        <Compile Remove="$(EnxAtomicResourcesOutputPath)" />
     </ItemGroup>
 
     <!--
@@ -77,11 +80,13 @@
 
         <MakeDir Directories="$([System.IO.Path]::GetDirectoryName('$(EnxAtomicStylesOutputPath)'))" Condition="'$([System.IO.Path]::GetDirectoryName($(EnxAtomicStylesOutputPath)))' != ''" />
 
-        <Exec Command="dotnet exec &quot;%(_EnxAtomicConfigAssembly.FullPath)&quot; --output &quot;$(EnxAtomicStylesOutputPath)&quot; --namespace &quot;$(EnxAtomicNamespace)&quot; --class &quot;$(EnxAtomicClassName)&quot; --container &quot;$(EnxAtomicContainerName)&quot; @(_EnxAtomicSource->'&quot;%(FullPath)&quot;', ' ')" />
+        <Exec Command="dotnet exec &quot;%(_EnxAtomicConfigAssembly.FullPath)&quot; --output &quot;$(EnxAtomicStylesOutputPath)&quot; --namespace &quot;$(EnxAtomicNamespace)&quot; --class &quot;$(EnxAtomicClassName)&quot; --container &quot;$(EnxAtomicContainerName)&quot; --resources-output &quot;$(EnxAtomicResourcesOutputPath)&quot; --resources-class &quot;$(EnxAtomicResourcesClassName)&quot; @(_EnxAtomicSource->'&quot;%(FullPath)&quot;', ' ')" />
 
         <ItemGroup>
             <Compile Include="$(EnxAtomicStylesOutputPath)" />
+            <Compile Include="$(EnxAtomicResourcesOutputPath)" />
             <FileWrites Include="$(EnxAtomicStylesOutputPath)" />
+            <FileWrites Include="$(EnxAtomicResourcesOutputPath)" />
         </ItemGroup>
     </Target>
 

@@ -16,7 +16,7 @@ public class MiniTheme
     public Dictionary<string, float> Spacing { get; set; } = [];
     public Dictionary<string, float> Sizes { get; set; } = [];
     public Dictionary<string, float> Radii { get; set; } = [];
-    public Dictionary<string, IBrush> Colors { get; set; } = [];
+    public Dictionary<string, Themed<IBrush>> Colors { get; set; } = [];
     public Dictionary<string, double> FontSizes { get; set; } = [];
     public Dictionary<string, float> LineWidths { get; set; } = [];
     public Dictionary<string, double> Breakpoints { get; set; } = [];

@@ -20,6 +20,16 @@ public class AtomicGenerator<TTheme>
     private readonly HashSet<IRule> _activatedRules = [];
     private readonly Dictionary<string, StringifiedUtil[]> _cache = [];
     private readonly List<StringifiedUtil> _pendingUtils = [];
+    private readonly Dictionary<string, StyleValue.Resource> _resolvedResources = [];
+
+    /// <summary>
+    /// Every distinct <see cref="StyleValue.Resource"/> encountered so far, keyed by <see cref="StyleValue.Resource.Key"/>
+    /// — the data <c>ResourceDictionaryEmitter</c> (in <c>Enx.Atomic.Avalonia.CodeGen</c>) needs to build the
+    /// actual resource dictionary a generated <c>Styles</c> class's <c>DynamicResource</c> lookups resolve
+    /// against. Deduplicated by key: several rules (or several <c>StyleValue</c>s from the same rule, e.g.
+    /// <c>bg-*</c>'s <c>Border</c>/<c>TemplatedControl</c>/<c>Panel</c> triple) commonly share one resource.
+    /// </summary>
+    public IReadOnlyDictionary<string, StyleValue.Resource> ResolvedResources => _resolvedResources;
 
     /// <summary>Creates a generator for the given configuration, assigning each rule its declaration-order index.</summary>
     /// <exception cref="InvalidOperationException">A configured rule is neither <see cref="IStaticRule"/> nor <see cref="IDynamicRule{TTheme}"/>.</exception>
@@ -307,6 +317,9 @@ public class AtomicGenerator<TTheme>
             return [];
 
         _activatedRules.Add(rule);
+        foreach (var resource in styleValues.OfType<StyleValue.Resource>())
+            _resolvedResources.TryAdd(resource.Key, resource);
+
         var valueByOwners = styleValues.GroupBy(x => x.TargetType);
 
         var parsedUtils = valueByOwners.Select(g =>

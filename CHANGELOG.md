@@ -7,6 +7,28 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- Resource-based theming: `bg-*`/`text-*`/`border-*` now emit a `DynamicResource`
+  lookup instead of an inlined `SolidColorBrush`, backed by a generated
+  `ResourceDictionary` (`GenResources.g.cs`, merged into `Application.Resources` once
+  at startup) instead of literal brushes baked into every generated `Style`.
+- `Themed<T>`, a theme scale entry that may differ between light and dark (e.g.
+  `IColorPart.Colors : Dictionary<string, Themed<IBrush>>`) — implicitly convertible
+  from a plain value, so an entry only actually splits across
+  `ResourceDictionary.ThemeDictionaries[Light]`/`[Dark]` when a theme author opts in
+  via `new Themed<T>(light, dark)`.
+- `AtomicCli`'s `--resources-output`/`--resources-class` options (optional — omitting
+  `--resources-output` skips resource generation), and the matching
+  `EnxAtomicResourcesOutputPath`/`EnxAtomicResourcesClassName` MSBuild properties.
+
+### Changed
+
+- A resource's key is always derived automatically from the theme-scale expression a
+  rule read to produce it (e.g. `t => t.Colors[value]` → `"Colors[red-500]"`), never
+  passed in by hand — guarantees two rules reading the same theme entry always agree
+  on one key, and two rules reading different entries can never collide.
+
 ## [0.0.4] - 2026-08-25
 
 ### Added

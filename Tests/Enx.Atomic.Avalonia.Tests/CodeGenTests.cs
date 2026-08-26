@@ -1,4 +1,5 @@
 using System.Reflection;
+using Avalonia.Data;
 using Avalonia.Styling;
 using Enx.Atomic.Avalonia.CodeGen;
 using Enx.Atomic.Avalonia.Preset.Mini;
@@ -48,9 +49,16 @@ public class CodeGenTests
         {
             checkedAnySetter = true;
             var propertyType = setter.Property!.PropertyType;
+            // A resource-based value (dark:bg-red-500 here) is a BindingBase (DynamicResourceExtension),
+            // deliberately *not* an instance of the target property's type — Avalonia only resolves it against
+            // that type once the setter is actually applied to a live control with resources to look up.
             Assert.True(
-                setter.Value is null ? propertyType.IsClass || Nullable.GetUnderlyingType(propertyType) != null
-                    : propertyType.IsInstanceOfType(setter.Value),
+                setter.Value is BindingBase
+                    || (
+                        setter.Value is null
+                            ? propertyType.IsClass || Nullable.GetUnderlyingType(propertyType) != null
+                            : propertyType.IsInstanceOfType(setter.Value)
+                    ),
                 $"Setter for '{setter.Property}' expects '{propertyType}' but got a boxed '{setter.Value?.GetType().ToString() ?? "null"}' ({setter.Value})."
             );
         }

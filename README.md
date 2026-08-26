@@ -85,11 +85,6 @@ tested MSBuild build system and a grid vocabulary — `grid-cols-*`/`grid-rows-*
 - **A user-extensible ghost-property registry.** `GhostProperties.Map` is hardcoded
   today; a preset or app author can't register a ghost property for a struct-valued
   property this library doesn't already know about.
-- **Resource-based theming.** Emit real `ResourceDictionary` entries (e.g.
-  `DynamicResource Color.Red.500`) instead of inlining literal `SolidColorBrush`es
-  in generated styles, so switching a theme's colors (dark/light, a custom palette)
-  doesn't require regenerating styles — just swapping the resource dictionary. A
-  prerequisite for the computed-resources idea in v2.
 - **More presets.** Only `Preset.Mini` exists so far — the engine itself
   (`Sources/Enx.Atomic.Avalonia`) doesn't assume any particular rule set.
 
@@ -131,8 +126,8 @@ tested MSBuild build system and a grid vocabulary — `grid-cols-*`/`grid-rows-*
   at runtime — but recomputation still has to happen at runtime: if a base
   resource changes (theme switch, a user overriding one color), every value
   computed from it must update too, without hand-writing each derived shade in
-  the theme. Only worth the complexity once resource-based theming (beta) is
-  actually in use.
+  the theme. Only worth the complexity once resource-based theming (already shipped —
+  `bg-*`/`text-*`/`border-*` are `DynamicResource`-backed) is actually in wide use.
 
 Have an opinion on any of these, or a different priority? Open an issue.
 

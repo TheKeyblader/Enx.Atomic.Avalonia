@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using Avalonia;
 
 namespace Enx.Atomic.Avalonia;
@@ -23,12 +24,15 @@ public static class AvaloniaExtensions
 
     /// <summary>
     /// Creates a <see cref="StyleValue.Resource"/> that sets <paramref name="property"/> via a
-    /// <c>DynamicResource</c> lookup named <paramref name="name"/>. See <paramref name="targetType"/> on
-    /// <see cref="ToLiteral{TValue}"/> for when to pass it explicitly.
+    /// <c>DynamicResource</c> lookup, whose value is derived from <paramref name="theme"/> (e.g.
+    /// <c>t =&gt; t.Colors[value]</c>) — see <see cref="StyleValue.Resource.ThemeAccess"/>. The resource key
+    /// itself is derived automatically from <paramref name="theme"/>, not passed in — see
+    /// <see cref="ThemeResourceKey.From"/>. See <paramref name="targetType"/> on <see cref="ToLiteral{TValue}"/>
+    /// for when to pass it explicitly.
     /// </summary>
-    public static StyleValue.Resource ToResource<TValue>(
+    public static StyleValue.Resource ToResource<TValue, TTheme>(
         this AvaloniaProperty<TValue> property,
-        string name,
+        Expression<Func<TTheme, object>> theme,
         Type? targetType = null
-    ) => new(property, name, targetType);
+    ) => new(property, theme, targetType);
 }

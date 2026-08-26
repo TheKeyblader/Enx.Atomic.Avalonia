@@ -1,6 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
-using Avalonia.Media;
+using Avalonia.Markup.Xaml.MarkupExtensions;
 
 namespace Enx.Atomic.Avalonia.Tests;
 
@@ -33,7 +33,26 @@ public class ColorRuleTests
         {
             var setter = Assert.Single(util.Body);
             Assert.Equal(Border.BackgroundProperty, setter.Property);
-            Assert.IsType<SolidColorBrush>(setter.Value);
+            // bg-* now resolves to a resource-based value (StyleValue.Resource), not a fixed literal — see
+            // BackgroundColorRule and StyleValue.Resource — so the raw brush was never inlined at all.
+            var resource = Assert.IsType<DynamicResourceExtension>(setter.Value);
+            Assert.Equal("Colors[red-500]", resource.ResourceKey);
         }
+    }
+
+    [AvaloniaFact]
+    public void BackgroundColor_ResourceResolvesToTheThemeBrush()
+    {
+        var (configuration, generator) = TestHelpers.CreateMiniGenerator();
+
+        var results = generator.ParseToken("bg-red-500");
+
+        Assert.Equal(3, results.Length);
+        var resourceKey = Assert.Single(generator.ResolvedResources.Keys);
+        var entry = generator.ResolvedResources[resourceKey];
+        var resolved = entry.ThemeAccess.Compile().DynamicInvoke(configuration.Theme);
+        var themed = Assert.IsAssignableFrom<IThemedValue>(resolved);
+        Assert.False(themed.IsThemed);
+        Assert.Same(configuration.Theme.Colors["red-500"].Light, themed.LightValue);
     }
 }

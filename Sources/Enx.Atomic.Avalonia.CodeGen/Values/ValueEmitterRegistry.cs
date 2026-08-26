@@ -14,6 +14,7 @@ public sealed class ValueEmitterRegistry(IEnumerable<IValueEmitter>? emitters = 
         new TextDecorationsValueEmitter(),
         new ThemeVariantValueEmitter(),
         new GridDefinitionsValueEmitter(),
+        new DynamicResourceValueEmitter(),
     ];
 
     private readonly IReadOnlyList<IValueEmitter> _emitters = [.. emitters ?? Default];

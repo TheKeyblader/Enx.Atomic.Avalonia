@@ -15,20 +15,21 @@ public partial class BackgroundColorRule<TTheme> : IDynamicRule<TTheme>
 
     public ImmutableArray<StyleValue> Match(Match match, RuleContext<TTheme> context)
     {
-        if (!context.Theme.Colors.TryGetValue(match.Groups["value"].Value, out var brush))
+        var value = match.Groups["value"].Value;
+        if (!context.Theme.Colors.ContainsKey(value))
             return [];
 
         return
         [
-            Border.BackgroundProperty.ToLiteral(brush),
+            Border.BackgroundProperty.ToResource((TTheme t) => t.Colors[value]),
             // Border.BackgroundProperty and TemplatedControl.BackgroundProperty are the exact same
             // AvaloniaProperty instance (TemplatedControl adds itself as an owner of Border's property) — its
             // OwnerType always reports Border, the original registrant, regardless of which static field this
             // was accessed through. Without an explicit targetType here, this second entry would collapse into
             // the same group as the one above and never produce a selector matching Button/ComboBox/etc., which
             // derive from TemplatedControl, not Border.
-            TemplatedControl.BackgroundProperty.ToLiteral(brush, typeof(TemplatedControl)),
-            Panel.BackgroundProperty.ToLiteral(brush, typeof(Panel)),
+            TemplatedControl.BackgroundProperty.ToResource((TTheme t) => t.Colors[value], typeof(TemplatedControl)),
+            Panel.BackgroundProperty.ToResource((TTheme t) => t.Colors[value], typeof(Panel)),
         ];
     }
 
@@ -48,10 +49,11 @@ public partial class ForegroundColorRule<TTheme> : IDynamicRule<TTheme>
 
     public ImmutableArray<StyleValue> Match(Match match, RuleContext<TTheme> context)
     {
-        if (!context.Theme.Colors.TryGetValue(match.Groups["value"].Value, out var brush))
+        var value = match.Groups["value"].Value;
+        if (!context.Theme.Colors.ContainsKey(value))
             return [];
 
-        return [TextElement.ForegroundProperty.ToLiteral(brush)];
+        return [TextElement.ForegroundProperty.ToResource((TTheme t) => t.Colors[value])];
     }
 
     [GeneratedRegex("^text-(?<value>.+)$")]
@@ -70,10 +72,11 @@ public partial class BorderColorRule<TTheme> : IDynamicRule<TTheme>
 
     public ImmutableArray<StyleValue> Match(Match match, RuleContext<TTheme> context)
     {
-        if (!context.Theme.Colors.TryGetValue(match.Groups["value"].Value, out var brush))
+        var value = match.Groups["value"].Value;
+        if (!context.Theme.Colors.ContainsKey(value))
             return [];
 
-        return [Border.BorderBrushProperty.ToLiteral(brush)];
+        return [Border.BorderBrushProperty.ToResource((TTheme t) => t.Colors[value])];
     }
 
     [GeneratedRegex("^border-(?<value>.+)$")]

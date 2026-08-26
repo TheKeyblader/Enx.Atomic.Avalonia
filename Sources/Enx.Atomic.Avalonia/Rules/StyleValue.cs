@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using Avalonia;
 using Avalonia.Markup.Xaml.MarkupExtensions;
 
@@ -68,7 +69,19 @@ public abstract record StyleValue
         }
     }
 
-    /// <summary>A style value that sets its property via a <c>DynamicResource</c> lookup, so it tracks theme/resource changes at runtime.</summary>
+    /// <summary>
+    /// A style value that sets its property via a <c>DynamicResource</c> lookup under <see cref="Key"/>, so it
+    /// tracks theme/resource changes at runtime instead of being fixed at resolution time like
+    /// <see cref="Literal{TValue}"/>. <see cref="ThemeAccess"/> is the theme-scale expression a rule read to
+    /// produce this value (e.g. <c>t =&gt; t.Colors[value]</c>) — kept as data (an <see cref="Expression"/>
+    /// tree), not compiled+decompiled — so the codegen pipeline can later compile and invoke it once against a
+    /// real <c>TTheme</c> instance to populate the actual resource dictionary this key resolves against (see
+    /// <c>ResourceDictionaryEmitter</c> in <c>Enx.Atomic.Avalonia.CodeGen</c>), while <see cref="StyleEmitter"/>
+    /// itself only ever needs <see cref="Key"/> to emit the <c>Setter</c>'s <c>DynamicResourceExtension</c>.
+    /// <see cref="Key"/> is always derived from <see cref="ThemeAccess"/> (<see cref="ThemeResourceKey.From"/>),
+    /// never passed in — that's what guarantees two rules reading the same theme entry always agree on the
+    /// same key, and two rules reading different entries can never collide on one.
+    /// </summary>
     public record Resource : StyleValue
     {
         /// <inheritdoc/>
@@ -80,11 +93,23 @@ public abstract record StyleValue
         /// <inheritdoc/>
         public override Type TargetType { get; }
 
-        /// <summary>Creates a resource-backed style value for <paramref name="property"/>, looked up under resource key <paramref name="name"/>, targeting <paramref name="targetType"/> or, if omitted, the default from <see cref="StyleValue.TargetType"/>.</summary>
-        public Resource(AvaloniaProperty property, string name, Type? targetType = null)
+        /// <summary>The resource dictionary key this value is looked up under, derived from <see cref="ThemeAccess"/> — see <see cref="ThemeResourceKey.From"/>.</summary>
+        public string Key { get; }
+
+        /// <summary>
+        /// The theme-scale access this resource's value came from, e.g. <c>Expression&lt;Func&lt;TTheme,object&gt;&gt;</c>
+        /// for <c>t =&gt; t.Colors[value]</c>. Untyped as a plain <see cref="LambdaExpression"/> so <see cref="StyleValue"/>
+        /// doesn't need to be generic over <c>TTheme</c> — same rationale as <see cref="UntypedProperty"/>/<see cref="UntypedValue"/>.
+        /// </summary>
+        public LambdaExpression ThemeAccess { get; }
+
+        /// <summary>Creates a resource-backed style value for <paramref name="property"/>, looked up under a key derived from <paramref name="themeAccess"/>, targeting <paramref name="targetType"/> or, if omitted, the default from <see cref="StyleValue.TargetType"/>.</summary>
+        public Resource(AvaloniaProperty property, LambdaExpression themeAccess, Type? targetType = null)
         {
             UntypedProperty = property;
-            UntypedValue = new DynamicResourceExtension(name);
+            ThemeAccess = themeAccess;
+            Key = ThemeResourceKey.From(themeAccess);
+            UntypedValue = new DynamicResourceExtension(Key);
             TargetType = targetType ?? DefaultTargetType(property);
         }
     }

@@ -45,8 +45,25 @@ A string like `hover:bg-red-500` goes through four steps:
   rules can share a prefix (`border-2` as width vs `border-red-500` as color) without
   one convoluted regex.
 - **`StyleValue`** — `Literal<TValue>` (value fixed at resolution time) or `Resource`
-  (a runtime `DynamicResource` lookup, for values that must track theme/resource
-  changes).
+  (a `DynamicResource` lookup under `Key`, so the value tracks a theme/resource change
+  at runtime instead of being baked in). A rule builds one from `ThemeAccess`, the
+  theme-scale expression it read to produce it (e.g. `t => t.Colors[value]`, via
+  `AvaloniaExtensions.ToResource`) — kept as an `Expression` tree, never
+  compiled+decompiled, so downstream code can compile and invoke it once against a
+  real `TTheme` to learn the actual value (see `ResourceDictionaryEmitter` below).
+  `Key` itself is never passed in — it's derived automatically from `ThemeAccess` by
+  `ThemeResourceKey.From` (walking member/indexer access nodes as data, evaluating an
+  indexer's argument), so two rules reading the same theme entry (e.g. `bg-red-500`'s
+  `Border`/`TemplatedControl`/`Panel` triple) always agree on one key, and two rules
+  reading different entries can never collide on a hand-typed one.
+- **`Themed<T>`/`IThemedValue`** — a theme scale entry (e.g.
+  `IColorPart.Colors : Dictionary<string, Themed<IBrush>>`) that may differ between
+  `ThemeVariant.Light`/`Dark`. Implicitly convertible from a plain `T`, so seeding a
+  scale with one value per key (`theme.Colors[key] = someBrush`) still compiles — only
+  a value built via the two-argument constructor (`new Themed<T>(light, dark)`) is
+  `IsThemed`. That flag is what decides, for a resolved `Resource`, whether its value
+  lands in the plain resource dictionary or gets split across
+  `ResourceDictionary.ThemeDictionaries[Light]`/`[Dark]`.
 - **`VariantBase<TTheme>`** — matches a token prefix/suffix and produces a
   `VariantHandlerBase` that transforms the resolved style's selector or container
   query.
@@ -65,7 +82,10 @@ A string like `hover:bg-red-500` goes through four steps:
 - **`AtomicConfiguration<TTheme>`** — assembles `Transformers`, `PreProcessors`,
   `Rules`, `Variants`, `Extractors`, and the `TTheme` instance.
 - **`AtomicGenerator<TTheme>`** — the engine itself. `Generate(...)` runs the full
-  pipeline above and returns `StringifiedUtil[]`, cached by raw token.
+  pipeline above and returns `StringifiedUtil[]`, cached by raw token. Also accumulates
+  every distinct `StyleValue.Resource` encountered into `ResolvedResources` (keyed by
+  `Key`), which `ResourceDictionaryEmitter` reads to build the actual resource
+  dictionary those resources' `DynamicResource` lookups resolve against.
 
 ## `Enx.Atomic.Avalonia.Preset.Mini`
 
@@ -155,13 +175,44 @@ each `Style` and its `Setter`s directly. It works entirely off data:
   `PrimitiveValueEmitter` (bool/numeric/string), `EnumValueEmitter` (generic over any
   enum type), `Thickness`/`CornerRadiusValueEmitter`, `BrushValueEmitter` (any
   `ISolidColorBrush`), `CursorValueEmitter` (reconstructs
-  `new Cursor(StandardCursorType.X)`), and `TextDecorationsValueEmitter` (the three
-  named `TextDecorations.*` constants).
+  `new Cursor(StandardCursorType.X)`), `TextDecorationsValueEmitter` (the three named
+  `TextDecorations.*` constants), `ThemeVariantValueEmitter`, `GridDefinitionsValueEmitter`
+  (see grid utilities), and `DynamicResourceValueEmitter` — a `StyleValue.Resource`'s
+  `UntypedValue` is a `DynamicResourceExtension`; this emitter only needs its `Key`
+  text (`new DynamicResourceExtension("Colors[red-500]")`), never the value the key
+  resolves to — that's `ResourceDictionaryEmitter`'s job, described below.
 - **`AvaloniaPropertyNaming`** — resolves an `AvaloniaProperty` back to its declaring
   static field's name (`"Button.IsPressedProperty"`) by reflection.
 
 Verified by `Tests/.../CodeGenTests.cs`, which actually **compiles** the emitted text
 with Roslyn (`Microsoft.CodeAnalysis.CSharp`) and asserts no errors.
+
+**Resource-based theming (`ResourceDictionaryEmitter.cs`).** A color value (`bg-*`,
+`text-*`, `border-*`) no longer bakes a `SolidColorBrush` straight into the generated
+`Style` — it's a `StyleValue.Resource`, so `StyleEmitter` only ever emits a
+`DynamicResourceExtension` key. Something still has to build the actual
+`ResourceDictionary` those keys resolve against — that's `ResourceDictionaryEmitter`:
+for every distinct `AtomicGenerator<TTheme>.ResolvedResources` entry (deduplicated by
+`Key` — `bg-red-500`'s `Border`/`TemplatedControl`/`Panel` triple all share one), it
+compiles and invokes the resource's `ThemeAccess` once against a real `TTheme`
+instance to get the value, then emits it via the same `ValueEmitterRegistry` used for
+`Setter` values. A non-`Themed<T>` result (or one built via the implicit conversion,
+`IsThemed == false`) becomes a plain dictionary entry; an explicitly `Themed<T>` one
+splits across `ResourceDictionary.ThemeDictionaries[ThemeVariant.Light]`/`[Dark]`.
+Output is a second static class, e.g.:
+
+```csharp
+public static class AtomicResources
+{
+    public static ResourceDictionary Build() { /* ... */ }
+}
+```
+
+which the consuming app merges once at startup — see
+`Examples/Enx.Atomic.Avalonia.Example.App/App.axaml.cs`
+(`Resources.MergedDictionaries.Add(AtomicResources.Build())`), before adding
+`AtomicStyles`. Only wired up for build-time code generation today, same as the grid
+utilities' ghost properties — no runtime-path equivalent yet.
 
 **The CLI (`AtomicCli.cs`).** A user's configuration project is a small executable
 that references `Enx.Atomic.Avalonia`(`.Preset.Mini`)`.CodeGen`, builds its
@@ -169,7 +220,9 @@ that references `Enx.Atomic.Avalonia`(`.Preset.Mini`)`.CodeGen`, builds its
 `Main`. `AtomicCli` is a [Spectre.Console.Cli](https://spectreconsole.net/cli/)
 command with `--output`/`--namespace`/`--class`/`--container` options plus a list of
 source files: it runs each file through `AtomicGenerator<TTheme>.Generate(...)`, then
-`StyleEmitter.Emit`, and writes the result. See
+`StyleEmitter.Emit`, and writes the result. `--resources-output`/`--resources-class`
+(optional — omitting `--resources-output` skips resource generation entirely) do the
+same for `ResourceDictionaryEmitter`. See
 `Examples/Enx.Atomic.Avalonia.Example.Config` for a minimal config project — it
 bootstraps Avalonia's headless platform before touching `AddMiniTheme`, because some
 static rules (e.g. `Cursors`) construct real Avalonia types at static-init time and
@@ -189,19 +242,22 @@ Referencing `Enx.Atomic.Avalonia.CodeGen` as a `PackageReference` auto-imports t
 `.targets` file (it's packed at `build/Enx.Atomic.Avalonia.CodeGen.targets`, the
 standard NuGet convention). During the consuming project's build, the target:
 
-1. Builds the configuration project via `<MSBuild Targets="Build">` and resolves its
-   output assembly.
+1. Builds the configuration project via `<MSBuild Targets="Restore;Build">` and
+   resolves its output assembly.
 2. Runs it with `dotnet exec` against the consuming project's `@(Compile)` and
    `@(AvaloniaXaml)` items.
-3. Writes the result to `GeneratedStyles/GenStyles.g.cs`, next to the project file
-   (not hidden under `obj/`, so it's easy to read) — overridable via
-   `EnxAtomicStylesOutputPath`. `GeneratedStyles/` is gitignored: it's regenerated on
-   every build.
-4. Compiles that file into the project.
+3. Writes the result to `GeneratedStyles/GenStyles.g.cs` and
+   `GeneratedStyles/GenResources.g.cs`, next to the project file (not hidden under
+   `obj/`, so they're easy to read) — overridable via `EnxAtomicStylesOutputPath`/
+   `EnxAtomicResourcesOutputPath`. `GeneratedStyles/` is gitignored: it's regenerated
+   on every build.
+4. Compiles both files into the project.
 
-The target runs `BeforeTargets="CoreCompile"` with `Inputs`/`Outputs` for
-incrementality. See `Examples/Enx.Atomic.Avalonia.Example.App` for a working
-end-to-end example.
+The target runs `BeforeTargets="CoreCompile"` on every build, deliberately without
+`Inputs`/`Outputs` — `AtomicCli` itself writes each file write-if-different instead
+(see its `Execute` method), which is what actually lets the consuming project's own
+incremental compile skip recompiling either generated file when nothing changed. See
+`Examples/Enx.Atomic.Avalonia.Example.App` for a working end-to-end example.
 
 ### Known constraint: custom components and the build cycle
 

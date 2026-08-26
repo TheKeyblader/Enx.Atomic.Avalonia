@@ -12,6 +12,9 @@ public partial class App : Application
 #if DEBUG
         this.AttachDeveloperTools();
 #endif
+        // GenResources.g.cs (AtomicResources), like GenStyles.g.cs/AtomicStyles below, doesn't exist yet when
+        // App.axaml is parsed by the XAML compiler — merged here instead of via <ResourceDictionary.MergedDictionaries>.
+        Resources.MergedDictionaries.Add(AtomicResources.Build());
         Styles.Insert(0, new AtomicStyles());
     }
 

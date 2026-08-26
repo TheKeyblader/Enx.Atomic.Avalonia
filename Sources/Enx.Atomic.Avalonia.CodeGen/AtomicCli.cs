@@ -53,6 +53,14 @@ public sealed class AtomicCliSettings : CommandSettings
     [Description("Container query name passed to StyleEmitter.Emit. Defaults to 'top-level'.")]
     public string ContainerName { get; init; } = "top-level";
 
+    [CommandOption("--resources-output <PATH>")]
+    [Description("Path to write the generated resource-dictionary .g.cs file to. Omit to skip resource generation.")]
+    public string? ResourcesOutput { get; init; }
+
+    [CommandOption("--resources-class <NAME>")]
+    [Description("Name of the generated resource-dictionary class. Defaults to 'AtomicResources'.")]
+    public string ResourcesClassName { get; init; } = "AtomicResources";
+
     [CommandArgument(0, "[SOURCES]")]
     [Description("Source files (XAML/C#) to scan for utility tokens.")]
     public string[] Sources { get; init; } = [];
@@ -92,28 +100,40 @@ internal sealed class GenerateCommand<TTheme> : Command<AtomicCliSettings>
         }
 
         var emitted = StyleEmitter.Emit(utils, settings.Namespace, settings.ClassName, settings.ContainerName);
+        WriteIfDifferent(settings.Output, emitted, $"{utils.Count} style(s) from {settings.Sources.Length} source file(s)");
 
-        var outputDirectory = Path.GetDirectoryName(settings.Output);
-        if (!string.IsNullOrEmpty(outputDirectory))
-            Directory.CreateDirectory(outputDirectory);
-
-        // Write-if-different, not an unconditional write: this CLI runs on every build (see the .targets file
-        // — MSBuild's own Inputs/Outputs staleness check isn't reliable here, since a nested config-project
-        // build can touch its output assembly's timestamp for reasons unrelated to any actual rule/theme
-        // change), so leaving the output's mtime untouched when nothing actually changed is what lets the
-        // *consuming* project's own incremental compile still skip recompiling GenStyles.g.cs.
-        if (File.Exists(settings.Output) && File.ReadAllText(settings.Output) == emitted)
+        if (!string.IsNullOrWhiteSpace(settings.ResourcesOutput))
         {
-            AnsiConsole.MarkupLineInterpolated(
-                $"Enx.Atomic.Avalonia.CodeGen: {utils.Count} style(s) from {settings.Sources.Length} source file(s) unchanged at '{settings.Output}'."
+            var resourcesEmitted = ResourceDictionaryEmitter.Emit(
+                generator.ResolvedResources,
+                configuration.Theme,
+                settings.Namespace,
+                settings.ResourcesClassName
             );
-            return 0;
+            WriteIfDifferent(settings.ResourcesOutput, resourcesEmitted, $"{generator.ResolvedResources.Count} resource(s)");
         }
 
-        File.WriteAllText(settings.Output, emitted);
-        AnsiConsole.MarkupLineInterpolated(
-            $"Enx.Atomic.Avalonia.CodeGen: wrote {utils.Count} style(s) from {settings.Sources.Length} source file(s) to '{settings.Output}'."
-        );
         return 0;
+    }
+
+    // Write-if-different, not an unconditional write: this CLI runs on every build (see the .targets file —
+    // MSBuild's own Inputs/Outputs staleness check isn't reliable here, since a nested config-project build
+    // can touch its output assembly's timestamp for reasons unrelated to any actual rule/theme change), so
+    // leaving the output's mtime untouched when nothing actually changed is what lets the *consuming*
+    // project's own incremental compile still skip recompiling the generated file.
+    private static void WriteIfDifferent(string path, string content, string what)
+    {
+        var directory = Path.GetDirectoryName(path);
+        if (!string.IsNullOrEmpty(directory))
+            Directory.CreateDirectory(directory);
+
+        if (File.Exists(path) && File.ReadAllText(path) == content)
+        {
+            AnsiConsole.MarkupLineInterpolated($"Enx.Atomic.Avalonia.CodeGen: {what} unchanged at '{path}'.");
+            return;
+        }
+
+        File.WriteAllText(path, content);
+        AnsiConsole.MarkupLineInterpolated($"Enx.Atomic.Avalonia.CodeGen: wrote {what} to '{path}'.");
     }
 }

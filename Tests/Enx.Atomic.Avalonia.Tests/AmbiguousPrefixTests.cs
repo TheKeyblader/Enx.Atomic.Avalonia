@@ -1,7 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Documents;
-using Avalonia.Media;
+using Avalonia.Markup.Xaml.MarkupExtensions;
 
 namespace Enx.Atomic.Avalonia.Tests;
 
@@ -48,7 +48,9 @@ public class AmbiguousPrefixTests
         var util = Assert.Single(results);
         var setter = Assert.Single(util.Body);
         Assert.Equal(Border.BorderBrushProperty, setter.Property);
-        Assert.Equal(Color.Parse("#ef4444"), Assert.IsType<SolidColorBrush>(setter.Value).Color);
+        // border-* now resolves to a resource-based value (StyleValue.Resource) — see BackgroundColorRule's
+        // sibling BorderColorRule and StyleValue.Resource.
+        Assert.Equal("Colors[red-500]", Assert.IsType<DynamicResourceExtension>(setter.Value).ResourceKey);
     }
 
     [AvaloniaFact]
@@ -74,6 +76,6 @@ public class AmbiguousPrefixTests
         var util = Assert.Single(results);
         var setter = Assert.Single(util.Body);
         Assert.Equal(TextElement.ForegroundProperty, setter.Property);
-        Assert.Equal(Color.Parse("#ef4444"), Assert.IsType<SolidColorBrush>(setter.Value).Color);
+        Assert.Equal("Colors[red-500]", Assert.IsType<DynamicResourceExtension>(setter.Value).ResourceKey);
     }
 }
