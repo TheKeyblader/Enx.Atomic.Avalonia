@@ -21,6 +21,11 @@ All notable changes to this project are documented here. The format follows
 - `AtomicCli`'s `--resources-output`/`--resources-class` options (optional — omitting
   `--resources-output` skips resource generation), and the matching
   `EnxAtomicResourcesOutputPath`/`EnxAtomicResourcesClassName` MSBuild properties.
+- Arbitrary values: UnoCSS/Tailwind's bracket syntax (`bg-[#ff0000]`, `w-[123px]`,
+  `m-[10px]`, `rounded-[6px]`, `border-[3px]`, `text-[18px]`) bypasses a token's theme
+  scale entirely — a literal color or a literal pixel value (no rem conversion), never
+  a `DynamicResource`. Covers every color rule (`bg-*`/`text-*`/`border-*`) and every
+  px-based scale (Spacing, Sizes, Radii, LineWidths, FontSizes).
 
 ### Changed
 

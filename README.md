@@ -80,8 +80,6 @@ tested MSBuild build system and a grid vocabulary — `grid-cols-*`/`grid-rows-*
 
 ### Beta — extend the vocabulary, lay down infrastructure
 
-- **Arbitrary values.** No `bg-[#ff0000]`/`w-[123px]`-style bracket syntax yet — every
-  dynamic token resolves strictly against the theme's scale dictionaries.
 - **A user-extensible ghost-property registry.** `GhostProperties.Map` is hardcoded
   today; a preset or app author can't register a ghost property for a struct-valued
   property this library doesn't already know about.

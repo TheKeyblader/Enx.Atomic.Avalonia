@@ -158,8 +158,8 @@ Notes:
 - **`rounded` alone does not match anything** — the value segment is mandatory. Use `rounded-DEFAULT`
   for the base 4px radius (unlike `border`, whose value segment is optional and also defaults to
   `DEFAULT`).
-- **No arbitrary values.** There's no `bg-[#ff0000]`-style bracket syntax — every dynamic token
-  resolves strictly against the theme's scale dictionaries; an unresolvable value produces no style.
+- **Arbitrary values** (`bg-[#ff0000]`, `w-[123px]`, `m-[10px]`, `rounded-[6px]`, `border-[3px]`,
+  `text-[18px]`) bypass the theme scale entirely — see [Arbitrary values](#arbitrary-values) below.
 - **`w-*`/`h-*` use the small named [Sizes](#sizes) scale, not [Spacing](#spacing)** — this differs
   from Tailwind, where `w-*` shares the spacing scale. A bare number here (e.g. `w-64`) that isn't a
   named `Sizes` key falls back to being read as **rem** (`64rem × 16 = 1024px`), not the spacing
@@ -167,6 +167,31 @@ Notes:
 - Every scale below also accepts a bare number with no unit as a fallback when the key isn't found
   by name — treated as **rem** (`× RemToPxFactor`, default 16) everywhere *except*
   [LineWidths](#linewidths), which treats it as raw **px** (matching UnoCSS's `lineWidth` scale).
+
+### Arbitrary values
+
+UnoCSS/Tailwind's bracket syntax, `{prefix}-[{value}]`, bypasses a token's theme scale entirely —
+an escape hatch for a one-off value not worth naming in the theme:
+
+```xml
+<Border Classes="bg-[#ff0000] w-[123px] rounded-[6px]" />
+```
+
+- **Colors** (`bg-{color}`, `text-{color}`, `border-{color}`) accept any
+  `Avalonia.Media.Color.TryParse`-compatible text — `#ff0000`, `#80ff0000` (ARGB), a named color
+  (`red`), `rgb(255,0,0)`. Always resolves to a fixed brush, never a `DynamicResource` — see
+  [Resource-based theming](../../ARCHITECTURE.md#build-time-c-code-generation) in
+  `ARCHITECTURE.md` for why an arbitrary value can't participate in that.
+- **Every px-based scale** (Spacing, Sizes, Radii, LineWidths, FontSizes — so `m-*`/`p-*`/`gap-*`,
+  `w-*`/`h-*`, `rounded-*`, `border-*` width, `text-*` size) accepts a number with an optional
+  trailing `px` (`w-[123px]` or `w-[123]` — both the same). Taken **literally as pixels**, unlike a
+  bare unbracketed number, which is read as **rem** (or raw px for `LineWidths`) — brackets always
+  mean "exactly this," no scale conversion applied.
+- Any other unit (`w-[50%]`, `w-[2em]`) or unparseable content doesn't match — the token falls
+  through as if no rule applied, same as an unresolvable named key.
+- No bracket support yet for non-numeric, non-color scale-driven values (there aren't any in this
+  preset today) or for structural tokens (`grid-cols-*`, `col-span-*`, ...), which don't read a
+  theme scale in the first place.
 
 ## Theme scales
 

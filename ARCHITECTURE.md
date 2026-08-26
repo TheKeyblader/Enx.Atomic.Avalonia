@@ -101,11 +101,22 @@ A string like `hover:bg-red-500` goes through four steps:
   corner-radius) are consolidated into a single class per family via named capture
   groups (`side`, `axis`, `bound`, `neg`) instead of one class per direction — e.g.
   `MarginRule` handles `m-*`, `mx-*`, `mt-*`, ... in a single `Match`.
-  - **`ThemeScale`** — resolves a theme key, falling back to a bare number.
-    `TryResolve` treats that number as **rem** (converted to px via
-    `RemToPxFactor`) — the behavior of most UnoCSS scales (`spacing`, `borderRadius`,
-    ...). `TryResolvePx` treats it as a **raw px** value, no conversion — UnoCSS's
-    `lineWidth` scale behavior (border/ring/outline).
+  - **`ThemeScale`** — resolves a theme key, falling back, in order, to an
+    `ArbitraryValue` then a bare number. `TryResolve` treats the bare-number fallback
+    as **rem** (converted to px via `RemToPxFactor`) — the behavior of most UnoCSS
+    scales (`spacing`, `borderRadius`, ...). `TryResolvePx` treats it as a **raw px**
+    value, no conversion — UnoCSS's `lineWidth` scale behavior (border/ring/outline).
+  - **`ArbitraryValue`** — UnoCSS/Tailwind's `{prefix}-[{value}]` bracket syntax,
+    bypassing the theme scale entirely (`w-[123px]`, `bg-[#ff0000]`). `TryUnwrap`
+    strips the brackets (underscore→space, since a class token can't contain a literal
+    space); every `ThemeScale` entry point checks it *first*, before the scale
+    dictionary or the bare-number fallback, and — when matched — parses the content
+    directly as pixels (an optional `px` suffix, any other unit rejected), never
+    rem-converted. Colors don't go through `ThemeScale`, so `ColorRules.cs` has its own
+    `ArbitraryColor` helper (`Color.TryParse` on the unwrapped content) shared by
+    `bg-*`/`text-*`/`border-*`. Either way the result is always a `StyleValue.Literal`,
+    never a `StyleValue.Resource` — an arbitrary value has no named theme member for a
+    `ThemeAccess` expression to point at.
 - **`Variants/`** — `PseudoClassVariant` (maps `hover:`, `disabled:`, ... onto real
   Avalonia pseudo-classes such as `:pointerover`) and `BreakpointVariant` (maps
   `sm:` / `max-sm:` onto container queries).

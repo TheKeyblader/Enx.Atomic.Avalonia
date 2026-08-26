@@ -3,8 +3,29 @@ using System.Text.RegularExpressions;
 using Avalonia.Controls;
 using Avalonia.Controls.Documents;
 using Avalonia.Controls.Primitives;
+using Avalonia.Media;
 
 namespace Enx.Atomic.Avalonia.Preset.Mini.Dynamic;
+
+/// <summary>
+/// Parses an <see cref="ArbitraryValue"/> (<c>[#ff0000]</c>) shared by every color rule below — always a
+/// <see cref="StyleValue.Literal{TValue}"/>, never a <see cref="StyleValue.Resource"/>, since an arbitrary value
+/// has no named theme entry for a <c>ThemeAccess</c> expression to point at.
+/// </summary>
+file static class ArbitraryColor
+{
+    public static bool TryParse(string value, out IBrush brush)
+    {
+        if (ArbitraryValue.TryUnwrap(value, out var content) && Color.TryParse(content, out var color))
+        {
+            brush = new SolidColorBrush(color);
+            return true;
+        }
+
+        brush = null!;
+        return false;
+    }
+}
 
 /// <summary>Dynamic rule setting <see cref="Border.BackgroundProperty"/> from <see cref="IColorPart.Colors"/> (<c>bg-*</c>).</summary>
 public partial class BackgroundColorRule<TTheme> : IDynamicRule<TTheme>
@@ -16,18 +37,27 @@ public partial class BackgroundColorRule<TTheme> : IDynamicRule<TTheme>
     public ImmutableArray<StyleValue> Match(Match match, RuleContext<TTheme> context)
     {
         var value = match.Groups["value"].Value;
+
+        // Border.BackgroundProperty and TemplatedControl.BackgroundProperty are the exact same AvaloniaProperty
+        // instance (TemplatedControl adds itself as an owner of Border's property) — its OwnerType always
+        // reports Border, the original registrant, regardless of which static field this was accessed through.
+        // Without an explicit targetType here, this second entry would collapse into the same group as the one
+        // above and never produce a selector matching Button/ComboBox/etc., which derive from TemplatedControl,
+        // not Border.
+        if (ArbitraryColor.TryParse(value, out var arbitraryBrush))
+            return
+            [
+                Border.BackgroundProperty.ToLiteral(arbitraryBrush),
+                TemplatedControl.BackgroundProperty.ToLiteral(arbitraryBrush, typeof(TemplatedControl)),
+                Panel.BackgroundProperty.ToLiteral(arbitraryBrush, typeof(Panel)),
+            ];
+
         if (!context.Theme.Colors.ContainsKey(value))
             return [];
 
         return
         [
             Border.BackgroundProperty.ToResource((TTheme t) => t.Colors[value]),
-            // Border.BackgroundProperty and TemplatedControl.BackgroundProperty are the exact same
-            // AvaloniaProperty instance (TemplatedControl adds itself as an owner of Border's property) — its
-            // OwnerType always reports Border, the original registrant, regardless of which static field this
-            // was accessed through. Without an explicit targetType here, this second entry would collapse into
-            // the same group as the one above and never produce a selector matching Button/ComboBox/etc., which
-            // derive from TemplatedControl, not Border.
             TemplatedControl.BackgroundProperty.ToResource((TTheme t) => t.Colors[value], typeof(TemplatedControl)),
             Panel.BackgroundProperty.ToResource((TTheme t) => t.Colors[value], typeof(Panel)),
         ];
@@ -50,6 +80,10 @@ public partial class ForegroundColorRule<TTheme> : IDynamicRule<TTheme>
     public ImmutableArray<StyleValue> Match(Match match, RuleContext<TTheme> context)
     {
         var value = match.Groups["value"].Value;
+
+        if (ArbitraryColor.TryParse(value, out var arbitraryBrush))
+            return [TextElement.ForegroundProperty.ToLiteral(arbitraryBrush)];
+
         if (!context.Theme.Colors.ContainsKey(value))
             return [];
 
@@ -73,6 +107,10 @@ public partial class BorderColorRule<TTheme> : IDynamicRule<TTheme>
     public ImmutableArray<StyleValue> Match(Match match, RuleContext<TTheme> context)
     {
         var value = match.Groups["value"].Value;
+
+        if (ArbitraryColor.TryParse(value, out var arbitraryBrush))
+            return [Border.BorderBrushProperty.ToLiteral(arbitraryBrush)];
+
         if (!context.Theme.Colors.ContainsKey(value))
             return [];
 
