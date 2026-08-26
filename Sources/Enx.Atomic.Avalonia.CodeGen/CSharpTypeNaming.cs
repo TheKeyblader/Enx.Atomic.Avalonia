@@ -1,7 +1,7 @@
 namespace Enx.Atomic.Avalonia.CodeGen;
 
 /// <summary>Converts a runtime <see cref="Type"/> into the C# type name text an emitted source file would reference it by.</summary>
-public static class CSharpTypeNaming
+internal static class CSharpTypeNaming
 {
     private static readonly Dictionary<Type, string> BuiltIns = new()
     {

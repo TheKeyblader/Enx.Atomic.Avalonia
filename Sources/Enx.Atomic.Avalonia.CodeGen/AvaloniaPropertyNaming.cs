@@ -9,7 +9,7 @@ namespace Enx.Atomic.Avalonia.CodeGen;
 /// that exact instance — the same technique <c>SelectorExpression.PropertyEquals</c> uses to rebuild a
 /// <see cref="System.Linq.Expressions.MemberExpression"/>, just producing text instead.
 /// </summary>
-public static class AvaloniaPropertyNaming
+internal static class AvaloniaPropertyNaming
 {
     private static readonly Dictionary<(AvaloniaProperty Property, Type DeclaringType), string> FieldNameCache = [];
 

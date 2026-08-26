@@ -9,8 +9,9 @@ namespace Enx.Atomic.Avalonia.CodeGen;
 /// transformers and ghost properties"/"Build-time C# code generation" sections of <c>ARCHITECTURE.md</c> for
 /// why that distinction matters.
 /// </summary>
-public static class SelectorEmitter
+internal static class SelectorEmitter
 {
+    /// <summary>Emits <paramref name="expression"/>'s full chain as C# text, recursing over <c>.Previous</c> and adding any namespace it needs to <paramref name="namespaces"/>.</summary>
     public static string Emit(SelectorExpression expression, ISet<string> namespaces, ValueEmitterRegistry values)
     {
         var previous = expression.Previous is null ? "selector" : Emit(expression.Previous, namespaces, values);

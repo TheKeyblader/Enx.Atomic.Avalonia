@@ -9,10 +9,13 @@ namespace Enx.Atomic.Avalonia.CodeGen.Values;
 /// </summary>
 public sealed class GridDefinitionsValueEmitter : IValueEmitter
 {
+    /// <inheritdoc/>
     public bool CanHandle(Type type) => type == typeof(ColumnDefinitions) || type == typeof(RowDefinitions);
 
+    /// <inheritdoc/>
     public IEnumerable<string> GetNamespaces(object value) => ["Avalonia.Controls"];
 
+    /// <inheritdoc/>
     public string Emit(object value) =>
         value switch
         {

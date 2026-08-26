@@ -22,10 +22,13 @@ public sealed class PrimitiveValueEmitter : IValueEmitter
         typeof(string),
     ];
 
+    /// <inheritdoc/>
     public bool CanHandle(Type type) => Supported.Contains(type);
 
+    /// <inheritdoc/>
     public IEnumerable<string> GetNamespaces(object value) => [];
 
+    /// <inheritdoc/>
     public string Emit(object value) =>
         value switch
         {

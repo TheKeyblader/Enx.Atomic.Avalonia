@@ -4,8 +4,9 @@ using System.Text;
 namespace Enx.Atomic.Avalonia.CodeGen;
 
 /// <summary>Formats primitive .NET values as the C# literal text an emitted source file would use.</summary>
-public static class CSharpLiteral
+internal static class CSharpLiteral
 {
+    /// <summary>Formats <paramref name="value"/> as a double-quoted C# string literal, escaping <c>"</c>, <c>\</c>, and the common whitespace escapes.</summary>
     public static string String(string value)
     {
         var builder = new StringBuilder(value.Length + 2).Append('"');
@@ -42,6 +43,7 @@ public static class CSharpLiteral
     // is for, say, a Thickness(double, double, double, double) constructor argument. Boxed as the wrong CLR
     // type, it then fails at runtime when Avalonia expects a boxed double. The "d" suffix, like Float's "f",
     // forces the literal to always parse as double regardless of whether it has a fractional part.
+    /// <summary>Formats <paramref name="value"/> as a C# <c>double</c> literal (always with the <c>d</c> suffix, even for a whole number) — see the remarks above on why the suffix matters.</summary>
     public static string Double(double value) =>
         value switch
         {
@@ -51,5 +53,6 @@ public static class CSharpLiteral
             _ => $"{value.ToString(CultureInfo.InvariantCulture)}d",
         };
 
+    /// <summary>Formats <paramref name="value"/> as a C# <c>float</c> literal (always with the <c>f</c> suffix) — same rationale as <see cref="Double"/>.</summary>
     public static string Float(float value) => $"{value.ToString(CultureInfo.InvariantCulture)}f";
 }

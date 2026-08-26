@@ -9,7 +9,7 @@ namespace Enx.Atomic.Avalonia.CodeGen;
 /// references), so a preset can define a new embeddable ghost property host without this project knowing
 /// about it ahead of time.
 /// </summary>
-public static class EmittableGhostPropertyEmitter
+internal static class EmittableGhostPropertyEmitter
 {
     /// <summary>
     /// Returns <paramref name="declaringType"/>'s <c>EmbeddableSource</c> if it's marked <see cref="EmittableGhostPropertyHostAttribute"/>, or <see langword="null"/> otherwise.

@@ -3,8 +3,9 @@ using Enx.Atomic.Avalonia.Compact;
 namespace Enx.Atomic.Avalonia.CodeGen;
 
 /// <summary>Emits a <see cref="StyleQueryExpression"/> chain as C# text, walking the data tree directly — see <see cref="SelectorEmitter"/>.</summary>
-public static class StyleQueryEmitter
+internal static class StyleQueryEmitter
 {
+    /// <summary>Emits <paramref name="expression"/>'s full chain as C# text, recursing over <c>.Previous</c> and adding any namespace it needs to <paramref name="namespaces"/>.</summary>
     public static string Emit(StyleQueryExpression expression, ISet<string> namespaces)
     {
         namespaces.Add("Avalonia.Styling");

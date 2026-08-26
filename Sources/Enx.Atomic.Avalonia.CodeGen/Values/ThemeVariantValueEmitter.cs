@@ -11,10 +11,13 @@ namespace Enx.Atomic.Avalonia.CodeGen.Values;
 /// </summary>
 public sealed class ThemeVariantValueEmitter : IValueEmitter
 {
+    /// <inheritdoc/>
     public bool CanHandle(Type type) => type == typeof(ThemeVariant);
 
+    /// <inheritdoc/>
     public IEnumerable<string> GetNamespaces(object value) => CSharpTypeNaming.GetNamespaces(typeof(ThemeVariant));
 
+    /// <inheritdoc/>
     public string Emit(object value)
     {
         foreach (var prop in typeof(ThemeVariant).GetProperties(BindingFlags.Public | BindingFlags.Static))

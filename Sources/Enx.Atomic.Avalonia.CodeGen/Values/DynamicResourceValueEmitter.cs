@@ -10,10 +10,13 @@ namespace Enx.Atomic.Avalonia.CodeGen.Values;
 /// </summary>
 public sealed class DynamicResourceValueEmitter : IValueEmitter
 {
+    /// <inheritdoc/>
     public bool CanHandle(Type type) => type == typeof(DynamicResourceExtension);
 
+    /// <inheritdoc/>
     public IEnumerable<string> GetNamespaces(object value) => ["Avalonia.Markup.Xaml.MarkupExtensions"];
 
+    /// <inheritdoc/>
     public string Emit(object value) =>
         $"new DynamicResourceExtension({CSharpLiteral.String(((DynamicResourceExtension)value).ResourceKey?.ToString() ?? string.Empty)})";
 }

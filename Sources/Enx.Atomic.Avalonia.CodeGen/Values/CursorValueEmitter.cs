@@ -11,10 +11,13 @@ namespace Enx.Atomic.Avalonia.CodeGen.Values;
 /// </summary>
 public sealed class CursorValueEmitter : IValueEmitter
 {
+    /// <inheritdoc/>
     public bool CanHandle(Type type) => type == typeof(Cursor);
 
+    /// <inheritdoc/>
     public IEnumerable<string> GetNamespaces(object value) => ["Avalonia.Input"];
 
+    /// <inheritdoc/>
     public string Emit(object value)
     {
         var name = value.ToString();
