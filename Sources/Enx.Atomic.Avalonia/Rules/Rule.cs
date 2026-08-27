@@ -49,9 +49,6 @@ public abstract record Rule : IRule
         where TTheme : class
     {
         /// <inheritdoc/>
-        public ImmutableArray<StyleValue> Match(Match match, RuleContext<TTheme> context)
-            => Matcher(match, context);
+        public ImmutableArray<StyleValue> Match(Match match, RuleContext<TTheme> context) => Matcher(match, context);
     }
 }
-
-

@@ -76,11 +76,17 @@ internal sealed class GenerateCommand<TTheme> : Command<AtomicCliSettings>
 {
     internal static AtomicConfiguration<TTheme>? Configuration { get; set; }
 
-    protected override int Execute(CommandContext context, AtomicCliSettings settings, CancellationToken cancellationToken)
+    protected override int Execute(
+        CommandContext context,
+        AtomicCliSettings settings,
+        CancellationToken cancellationToken
+    )
     {
-        var configuration = Configuration ?? throw new InvalidOperationException(
-            $"{nameof(GenerateCommand<TTheme>)}.{nameof(Configuration)} was not set before running the command — call it through {nameof(AtomicCli)}.{nameof(AtomicCli.Run)}."
-        );
+        var configuration =
+            Configuration
+            ?? throw new InvalidOperationException(
+                $"{nameof(GenerateCommand<TTheme>)}.{nameof(Configuration)} was not set before running the command — call it through {nameof(AtomicCli)}.{nameof(AtomicCli.Run)}."
+            );
 
         var generator = new AtomicGenerator<TTheme>(configuration);
         var utils = new List<StringifiedUtil>();
@@ -100,7 +106,11 @@ internal sealed class GenerateCommand<TTheme> : Command<AtomicCliSettings>
         }
 
         var emitted = StyleEmitter.Emit(utils, settings.Namespace, settings.ClassName, settings.ContainerName);
-        WriteIfDifferent(settings.Output, emitted, $"{utils.Count} style(s) from {settings.Sources.Length} source file(s)");
+        WriteIfDifferent(
+            settings.Output,
+            emitted,
+            $"{utils.Count} style(s) from {settings.Sources.Length} source file(s)"
+        );
 
         if (!string.IsNullOrWhiteSpace(settings.ResourcesOutput))
         {
@@ -110,7 +120,11 @@ internal sealed class GenerateCommand<TTheme> : Command<AtomicCliSettings>
                 settings.Namespace,
                 settings.ResourcesClassName
             );
-            WriteIfDifferent(settings.ResourcesOutput, resourcesEmitted, $"{generator.ResolvedResources.Count} resource(s)");
+            WriteIfDifferent(
+                settings.ResourcesOutput,
+                resourcesEmitted,
+                $"{generator.ResolvedResources.Count} resource(s)"
+            );
         }
 
         return 0;

@@ -53,7 +53,8 @@ public static class StyleEmitter
                     // compiles into (see EmittableGhostPropertyHostAttribute) — embed a self-contained copy
                     // once instead of referencing the original.
                     embeddedTypes[declaringType.Name] = embeddableSource;
-                    propertyText = $"{declaringType.Name}.{AvaloniaPropertyNaming.GetFieldName(setter.Property, declaringType)}";
+                    propertyText =
+                        $"{declaringType.Name}.{AvaloniaPropertyNaming.GetFieldName(setter.Property, declaringType)}";
                 }
                 else
                 {

@@ -17,7 +17,9 @@ public partial class FontSizeRule<TTheme> : IDynamicRule<TTheme>
 
     public ImmutableArray<StyleValue> Match(Match match, RuleContext<TTheme> context)
     {
-        if (!context.Theme.FontSizes.TryResolve(match.Groups["value"].Value, context.Theme.RemToPxFactor, out var value))
+        if (
+            !context.Theme.FontSizes.TryResolve(match.Groups["value"].Value, context.Theme.RemToPxFactor, out var value)
+        )
             return [];
 
         return [TextElement.FontSizeProperty.ToLiteral(value)];

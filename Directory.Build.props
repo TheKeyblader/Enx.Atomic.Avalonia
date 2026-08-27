@@ -1,5 +1,4 @@
 <Project>
-
     <!--
       Central package metadata and versioning for every project in the repo. MinVer derives Version from the
       nearest git tag (tags are pushed as "vX.Y.Z" — see .github/workflows/release.yml) instead of any project
@@ -25,5 +24,4 @@
     <ItemGroup>
         <PackageReference Include="MinVer" Version="7.0.0" PrivateAssets="All" />
     </ItemGroup>
-
 </Project>

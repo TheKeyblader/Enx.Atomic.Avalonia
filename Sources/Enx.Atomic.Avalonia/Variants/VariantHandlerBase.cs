@@ -15,6 +15,8 @@ public abstract record VariantHandlerBase
     public int Order { get; init; }
 
     /// <summary>Applies this variant's transformation to <paramref name="input"/>, then calls <paramref name="next"/> to continue the pipeline.</summary>
-    public abstract VariantHandlerContext Handle(VariantHandlerContext input,
-        Func<VariantHandlerContext, VariantHandlerContext> next);
+    public abstract VariantHandlerContext Handle(
+        VariantHandlerContext input,
+        Func<VariantHandlerContext, VariantHandlerContext> next
+    );
 }

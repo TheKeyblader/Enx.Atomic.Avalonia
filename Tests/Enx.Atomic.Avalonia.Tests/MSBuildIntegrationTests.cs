@@ -13,7 +13,10 @@ namespace Enx.Atomic.Avalonia.Tests;
 /// </summary>
 public sealed class MSBuildIntegrationTests : IDisposable
 {
-    private readonly string _root = Path.Combine(Path.GetTempPath(), "enx-atomic-msbuild-tests-" + Guid.NewGuid().ToString("N"));
+    private readonly string _root = Path.Combine(
+        Path.GetTempPath(),
+        "enx-atomic-msbuild-tests-" + Guid.NewGuid().ToString("N")
+    );
 
     public void Dispose()
     {
@@ -183,9 +186,18 @@ public sealed class MSBuildIntegrationTests : IDisposable
 
         var repoRoot = RepoRoot();
         var sourcesDir = Path.Combine(repoRoot, "Sources");
-        var targetsPath = Path.Combine(sourcesDir, "Enx.Atomic.Avalonia.CodeGen", "build", "Enx.Atomic.Avalonia.CodeGen.targets");
+        var targetsPath = Path.Combine(
+            sourcesDir,
+            "Enx.Atomic.Avalonia.CodeGen",
+            "build",
+            "Enx.Atomic.Avalonia.CodeGen.targets"
+        );
         var engineProj = Path.Combine(sourcesDir, "Enx.Atomic.Avalonia", "Enx.Atomic.Avalonia.csproj");
-        var miniProj = Path.Combine(sourcesDir, "Enx.Atomic.Avalonia.Preset.Mini", "Enx.Atomic.Avalonia.Preset.Mini.csproj");
+        var miniProj = Path.Combine(
+            sourcesDir,
+            "Enx.Atomic.Avalonia.Preset.Mini",
+            "Enx.Atomic.Avalonia.Preset.Mini.csproj"
+        );
         var codeGenProj = Path.Combine(sourcesDir, "Enx.Atomic.Avalonia.CodeGen", "Enx.Atomic.Avalonia.CodeGen.csproj");
 
         File.WriteAllText(
@@ -259,11 +271,11 @@ public sealed class MSBuildIntegrationTests : IDisposable
 
     private static string WidgetsSource(string classes) =>
         $$"""
-        internal static class Widgets
-        {
-            public const string Classes = "{{classes}}";
-        }
-        """;
+            internal static class Widgets
+            {
+                public const string Classes = "{{classes}}";
+            }
+            """;
 
     private static (int ExitCode, string Output) DotnetBuild(string projectDir)
     {
@@ -275,7 +287,8 @@ public sealed class MSBuildIntegrationTests : IDisposable
             UseShellExecute = false,
         };
 
-        using var process = Process.Start(startInfo) ?? throw new InvalidOperationException("Failed to start 'dotnet build'.");
+        using var process =
+            Process.Start(startInfo) ?? throw new InvalidOperationException("Failed to start 'dotnet build'.");
         var stdout = process.StandardOutput.ReadToEnd();
         var stderr = process.StandardError.ReadToEnd();
         process.WaitForExit();
@@ -293,6 +306,8 @@ public sealed class MSBuildIntegrationTests : IDisposable
             dir = Path.GetDirectoryName(dir);
         }
 
-        throw new InvalidOperationException("Could not locate the repository root ('Enx.Atomic.Avalonia.slnx') above the test assembly.");
+        throw new InvalidOperationException(
+            "Could not locate the repository root ('Enx.Atomic.Avalonia.slnx') above the test assembly."
+        );
     }
 }

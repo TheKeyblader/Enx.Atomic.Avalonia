@@ -97,7 +97,8 @@ public class ResourceDictionaryEmitterTests
     private class FakeTheme
     {
         public Themed<IBrush> Plain { get; init; } = SolidColorBrush.Parse("#ff0000");
-        public Themed<IBrush> ThemedBrush { get; init; } = new(SolidColorBrush.Parse("#ffffff"), SolidColorBrush.Parse("#000000"));
+        public Themed<IBrush> ThemedBrush { get; init; } =
+            new(SolidColorBrush.Parse("#ffffff"), SolidColorBrush.Parse("#000000"));
     }
 
     [AvaloniaFact]

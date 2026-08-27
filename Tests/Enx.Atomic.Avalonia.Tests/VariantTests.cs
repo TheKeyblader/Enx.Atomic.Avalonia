@@ -68,10 +68,7 @@ public class VariantTests
         var results = generator.ParseToken("dark:bg-red-500");
 
         Assert.Equal(3, results.Length);
-        Assert.All(
-            results,
-            util => Assert.Contains("[ActualThemeVariant=Dark]", util.ResolveSelector().ToString())
-        );
+        Assert.All(results, util => Assert.Contains("[ActualThemeVariant=Dark]", util.ResolveSelector().ToString()));
     }
 
     [AvaloniaFact]

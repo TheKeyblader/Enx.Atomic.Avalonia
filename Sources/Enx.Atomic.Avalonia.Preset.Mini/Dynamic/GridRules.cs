@@ -27,16 +27,12 @@ namespace Enx.Atomic.Avalonia.Preset.Mini.Dynamic;
 public static class GridDefinitions
 {
     public static readonly AttachedProperty<ColumnDefinitions?> ColumnDefinitionsProperty =
-        AvaloniaProperty.RegisterAttached<Grid, ColumnDefinitions?>(
-            "EnxColumnDefinitions",
-            typeof(GridDefinitions)
-        );
+        AvaloniaProperty.RegisterAttached<Grid, ColumnDefinitions?>("EnxColumnDefinitions", typeof(GridDefinitions));
 
-    public static readonly AttachedProperty<RowDefinitions?> RowDefinitionsProperty =
-        AvaloniaProperty.RegisterAttached<Grid, RowDefinitions?>(
-            "EnxRowDefinitions",
-            typeof(GridDefinitions)
-        );
+    public static readonly AttachedProperty<RowDefinitions?> RowDefinitionsProperty = AvaloniaProperty.RegisterAttached<
+        Grid,
+        RowDefinitions?
+    >("EnxRowDefinitions", typeof(GridDefinitions));
 
     /// <summary>Kept in sync by hand with this class's own body — see the type's remarks.</summary>
     public const string EmbeddableSource = """

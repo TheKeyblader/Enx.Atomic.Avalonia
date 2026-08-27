@@ -101,11 +101,7 @@ public class AtomicGenerator<TTheme>
     /// <param name="id">Optional identifier passed to extractors that need to scope tokens to this source.</param>
     /// <param name="extracted">An existing set to add tokens to, useful for accumulating across multiple files. A new set is created if omitted.</param>
     /// <returns>The set of tokens extracted, including any pre-existing entries from <paramref name="extracted"/>.</returns>
-    public HashSet<string> ApplyExtractors(
-        string code,
-        string? id = null,
-        HashSet<string>? extracted = null
-    )
+    public HashSet<string> ApplyExtractors(string code, string? id = null, HashSet<string>? extracted = null)
     {
         extracted ??= [];
 
@@ -272,10 +268,7 @@ public class AtomicGenerator<TTheme>
     /// Resolves a variant-stripped token against the configured rules: a matching static rule wins outright,
     /// otherwise dynamic rules are tried in declaration order and the first one that yields styles is used.
     /// </summary>
-    private ParsedUtil[] ParseUtil(
-        VariantMatchedResult<TTheme> matched,
-        RuleContext<TTheme> context
-    )
+    private ParsedUtil[] ParseUtil(VariantMatchedResult<TTheme> matched, RuleContext<TTheme> context)
     {
         var raw = matched.Raw;
         var processed = matched.Current;
@@ -283,9 +276,7 @@ public class AtomicGenerator<TTheme>
 
         var scopeContext = context with { Handlers = [.. variantHandlers] };
 
-        var staticRule = this
-            .Configuration.Rules.OfType<IStaticRule>()
-            .FirstOrDefault(s => s.Name == processed);
+        var staticRule = this.Configuration.Rules.OfType<IStaticRule>().FirstOrDefault(s => s.Name == processed);
         if (staticRule?.Styles.Any() == true)
             return ResolveStylingResult(raw, staticRule.Styles, staticRule, scopeContext);
 
@@ -349,10 +340,7 @@ public class AtomicGenerator<TTheme>
                 {
                     Selector = util.Selector,
                     SelectorData = util.SelectorData,
-                    Body =
-                    [
-                        .. util.Entries.Select(x => new Setter(x.UntypedProperty, x.UntypedValue)),
-                    ],
+                    Body = [.. util.Entries.Select(x => new Setter(x.UntypedProperty, x.UntypedValue))],
                     Index = parsed.Index,
                     Metadata = parsed.Metadata,
                     ContainerQuery = util.ContainerQuery,
@@ -393,9 +381,7 @@ public class AtomicGenerator<TTheme>
         var variantContextResult = handler(
             new VariantHandlerContext
             {
-                Selector = SelectorsExpression
-                    .Is(null, parsed.StyleEntries[0].TargetType)
-                    .Class(parsed.Raw),
+                Selector = SelectorsExpression.Is(null, parsed.StyleEntries[0].TargetType).Class(parsed.Raw),
                 ContainerQuery = null,
                 Entries = parsed.StyleEntries,
             }

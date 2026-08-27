@@ -58,14 +58,12 @@ public class SourceTransformerPipelineTests
     }
 }
 
-file sealed class MarkerTransformer(string marker, SourceTransformerEnforce enforce)
-    : ISourceTransformer<MiniTheme>
+file sealed class MarkerTransformer(string marker, SourceTransformerEnforce enforce) : ISourceTransformer<MiniTheme>
 {
     public string Name { get; } = $"marker:{marker}";
     public SourceTransformerEnforce Enforce { get; } = enforce;
     public Func<string, bool>? IdFilter { get; init; }
     public Func<string, string?, bool>? CodeFilter { get; init; }
 
-    public string Transform(string code, string? id, AtomicGenerator<MiniTheme> generator) =>
-        $"{code}[{marker}]";
+    public string Transform(string code, string? id, AtomicGenerator<MiniTheme> generator) => $"{code}[{marker}]";
 }

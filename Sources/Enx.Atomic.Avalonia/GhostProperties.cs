@@ -20,22 +20,70 @@ public static class GhostProperties
     public static readonly IReadOnlyDictionary<AvaloniaProperty, Entry> Map = new Dictionary<AvaloniaProperty, Entry>
     {
         // Margin: Thickness slot order is Left, Top, Right, Bottom.
-        [SpecialProperties.MarginLeftProperty] = new(Layoutable.MarginProperty, 0, ThicknessSetter(Layoutable.MarginProperty)),
-        [SpecialProperties.MarginTopProperty] = new(Layoutable.MarginProperty, 1, ThicknessSetter(Layoutable.MarginProperty)),
-        [SpecialProperties.MarginRightProperty] = new(Layoutable.MarginProperty, 2, ThicknessSetter(Layoutable.MarginProperty)),
-        [SpecialProperties.MarginBottomProperty] = new(Layoutable.MarginProperty, 3, ThicknessSetter(Layoutable.MarginProperty)),
+        [SpecialProperties.MarginLeftProperty] = new(
+            Layoutable.MarginProperty,
+            0,
+            ThicknessSetter(Layoutable.MarginProperty)
+        ),
+        [SpecialProperties.MarginTopProperty] = new(
+            Layoutable.MarginProperty,
+            1,
+            ThicknessSetter(Layoutable.MarginProperty)
+        ),
+        [SpecialProperties.MarginRightProperty] = new(
+            Layoutable.MarginProperty,
+            2,
+            ThicknessSetter(Layoutable.MarginProperty)
+        ),
+        [SpecialProperties.MarginBottomProperty] = new(
+            Layoutable.MarginProperty,
+            3,
+            ThicknessSetter(Layoutable.MarginProperty)
+        ),
 
         // Padding: same Thickness slot order.
-        [SpecialProperties.PaddingLeftProperty] = new(Decorator.PaddingProperty, 0, ThicknessSetter(Decorator.PaddingProperty)),
-        [SpecialProperties.PaddingTopProperty] = new(Decorator.PaddingProperty, 1, ThicknessSetter(Decorator.PaddingProperty)),
-        [SpecialProperties.PaddingRightProperty] = new(Decorator.PaddingProperty, 2, ThicknessSetter(Decorator.PaddingProperty)),
-        [SpecialProperties.PaddingBottomProperty] = new(Decorator.PaddingProperty, 3, ThicknessSetter(Decorator.PaddingProperty)),
+        [SpecialProperties.PaddingLeftProperty] = new(
+            Decorator.PaddingProperty,
+            0,
+            ThicknessSetter(Decorator.PaddingProperty)
+        ),
+        [SpecialProperties.PaddingTopProperty] = new(
+            Decorator.PaddingProperty,
+            1,
+            ThicknessSetter(Decorator.PaddingProperty)
+        ),
+        [SpecialProperties.PaddingRightProperty] = new(
+            Decorator.PaddingProperty,
+            2,
+            ThicknessSetter(Decorator.PaddingProperty)
+        ),
+        [SpecialProperties.PaddingBottomProperty] = new(
+            Decorator.PaddingProperty,
+            3,
+            ThicknessSetter(Decorator.PaddingProperty)
+        ),
 
         // Border width: same Thickness slot order.
-        [SpecialProperties.BorderThicknessLeftProperty] = new(Border.BorderThicknessProperty, 0, ThicknessSetter(Border.BorderThicknessProperty)),
-        [SpecialProperties.BorderThicknessTopProperty] = new(Border.BorderThicknessProperty, 1, ThicknessSetter(Border.BorderThicknessProperty)),
-        [SpecialProperties.BorderThicknessRightProperty] = new(Border.BorderThicknessProperty, 2, ThicknessSetter(Border.BorderThicknessProperty)),
-        [SpecialProperties.BorderThicknessBottomProperty] = new(Border.BorderThicknessProperty, 3, ThicknessSetter(Border.BorderThicknessProperty)),
+        [SpecialProperties.BorderThicknessLeftProperty] = new(
+            Border.BorderThicknessProperty,
+            0,
+            ThicknessSetter(Border.BorderThicknessProperty)
+        ),
+        [SpecialProperties.BorderThicknessTopProperty] = new(
+            Border.BorderThicknessProperty,
+            1,
+            ThicknessSetter(Border.BorderThicknessProperty)
+        ),
+        [SpecialProperties.BorderThicknessRightProperty] = new(
+            Border.BorderThicknessProperty,
+            2,
+            ThicknessSetter(Border.BorderThicknessProperty)
+        ),
+        [SpecialProperties.BorderThicknessBottomProperty] = new(
+            Border.BorderThicknessProperty,
+            3,
+            ThicknessSetter(Border.BorderThicknessProperty)
+        ),
 
         // Corner radius: CornerRadius slot order is TopLeft, TopRight, BottomRight, BottomLeft.
         [SpecialProperties.CornerRadiusTopLeftProperty] = new(Border.CornerRadiusProperty, 0, CornerRadiusSetter),

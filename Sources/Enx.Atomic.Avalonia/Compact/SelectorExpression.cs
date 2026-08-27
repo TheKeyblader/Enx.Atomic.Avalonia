@@ -104,10 +104,8 @@ public abstract record SelectorExpression
         static Class()
         {
             CallInfo =
-                typeof(Selectors).GetMethod(
-                    nameof(Selectors.Class),
-                    [typeof(Selector), typeof(string)]
-                ) ?? throw new InvalidOperationException();
+                typeof(Selectors).GetMethod(nameof(Selectors.Class), [typeof(Selector), typeof(string)])
+                ?? throw new InvalidOperationException();
         }
 
         /// <summary>The style class name to match.</summary>
@@ -143,12 +141,7 @@ public abstract record SelectorExpression
         /// <inheritdoc/>
         public override Expression ToExpressionCore(Expression parameter)
         {
-            return Expression.Call(
-                typeof(Selectors),
-                nameof(Selectors.Is),
-                [TargetType],
-                [parameter]
-            );
+            return Expression.Call(typeof(Selectors), nameof(Selectors.Is), [TargetType], [parameter]);
         }
     }
 
@@ -168,12 +161,7 @@ public abstract record SelectorExpression
         /// <inheritdoc/>
         public override Expression ToExpressionCore(Expression parameter)
         {
-            return Expression.Call(
-                typeof(Selectors),
-                nameof(Selectors.OfType),
-                [TargetType],
-                [parameter]
-            );
+            return Expression.Call(typeof(Selectors), nameof(Selectors.OfType), [TargetType], [parameter]);
         }
     }
 }

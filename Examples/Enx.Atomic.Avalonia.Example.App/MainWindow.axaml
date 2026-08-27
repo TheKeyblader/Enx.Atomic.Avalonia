@@ -1,17 +1,18 @@
 <Window
-  xmlns="https://github.com/avaloniaui"
-  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-  x:Class="Enx.Atomic.Avalonia.Example.App.MainWindow"
-  Classes="dark:bg-black"
-  Container.Name="top-level"
-  Container.Sizing="WidthAndHeight"
-  Title="Example"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    x:Class="Enx.Atomic.Avalonia.Example.App.MainWindow"
+    Container.Name="top-level"
+    Container.Sizing="WidthAndHeight"
+    Title="Example"
 >
-  <StackPanel Classes="flex-col p-2 lg:max-w-md">
-    <TextBlock Classes="hidden" Text="Hidden by default" />
-    <Button
-      Classes="hover:bg-red-500 dark:hover:bg-blue-500 cursor-pointer ml-1 mr-2"
-      Content="Hover me"
-    />
-  </StackPanel>
+    <StackPanel Classes="flex-col p-2 lg:max-w-md">
+        <TextBlock Classes="hidden" Text="Hidden by default" />
+        <Button Classes="hover:bg-red-500 dark:hover:bg-blue-500 cursor-pointer ml-1 mr-2" Content="Hover me" />
+        <Grid Classes="grid-cols-3">
+            <Panel Background="Blue" Height="400" />
+            <Panel Background="Red" Height="400" Classes="col-1" />
+            <Panel Background="Green" Height="400" Classes="col-2" />
+        </Grid>
+    </StackPanel>
 </Window>

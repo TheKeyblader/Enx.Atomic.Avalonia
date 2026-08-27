@@ -1,5 +1,4 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
     <PropertyGroup>
         <TargetFramework>net10.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
@@ -13,19 +12,18 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <!-- build/{PackageId}.targets is a NuGet convention: a project that references this package as a
+        <!-- build/{PackageId}.targets is a NuGet convention: a project that references this package as a
            PackageReference gets Enx.Atomic.Avalonia.CodeGen.targets auto-imported, no explicit <Import>
            needed (see EnxAtomicGenerateStyles's usage in ARCHITECTURE.md). -->
-      <None Include="build\Enx.Atomic.Avalonia.CodeGen.targets" Pack="true" PackagePath="build\" />
-      <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+        <None Include="build\Enx.Atomic.Avalonia.CodeGen.targets" Pack="true" PackagePath="build\" />
+        <None Include="..\..\README.md" Pack="true" PackagePath="\" />
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Enx.Atomic.Avalonia\Enx.Atomic.Avalonia.csproj" />
+        <ProjectReference Include="..\Enx.Atomic.Avalonia\Enx.Atomic.Avalonia.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="Spectre.Console.Cli" Version="0.55.0" />
+        <PackageReference Include="Spectre.Console.Cli" Version="0.55.0" />
     </ItemGroup>
-
 </Project>

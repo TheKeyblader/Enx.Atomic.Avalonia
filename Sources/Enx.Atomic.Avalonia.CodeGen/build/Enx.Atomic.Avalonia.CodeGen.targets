@@ -1,5 +1,4 @@
 <Project>
-
     <!--
       Wires a "configuration project" (an executable that calls Enx.Atomic.Avalonia.CodeGen.AtomicCli.Run) into
       this project's build: builds the config project, runs it against this project's source files, and adds
@@ -17,11 +16,14 @@
     -->
 
     <PropertyGroup>
-        <EnxAtomicStylesOutputPath Condition="'$(EnxAtomicStylesOutputPath)' == ''">$(MSBuildProjectDirectory)/GeneratedStyles/GenStyles.g.cs</EnxAtomicStylesOutputPath>
-        <EnxAtomicResourcesOutputPath Condition="'$(EnxAtomicResourcesOutputPath)' == ''">$(MSBuildProjectDirectory)/GeneratedStyles/GenResources.g.cs</EnxAtomicResourcesOutputPath>
+        <EnxAtomicStylesOutputPath Condition="'$(EnxAtomicStylesOutputPath)' == ''"
+            >$(MSBuildProjectDirectory)/GeneratedStyles/GenStyles.g.cs</EnxAtomicStylesOutputPath>
+        <EnxAtomicResourcesOutputPath Condition="'$(EnxAtomicResourcesOutputPath)' == ''"
+            >$(MSBuildProjectDirectory)/GeneratedStyles/GenResources.g.cs</EnxAtomicResourcesOutputPath>
         <EnxAtomicNamespace Condition="'$(EnxAtomicNamespace)' == ''">$(RootNamespace)</EnxAtomicNamespace>
         <EnxAtomicClassName Condition="'$(EnxAtomicClassName)' == ''">AtomicStyles</EnxAtomicClassName>
-        <EnxAtomicResourcesClassName Condition="'$(EnxAtomicResourcesClassName)' == ''">AtomicResources</EnxAtomicResourcesClassName>
+        <EnxAtomicResourcesClassName Condition="'$(EnxAtomicResourcesClassName)' == ''"
+            >AtomicResources</EnxAtomicResourcesClassName>
         <EnxAtomicContainerName Condition="'$(EnxAtomicContainerName)' == ''">top-level</EnxAtomicContainerName>
     </PropertyGroup>
 
@@ -63,10 +65,7 @@
       rather than the whole .slnx) would otherwise fail with NETSDK1004 the first time, since nothing else
       ever restored the config project.
     -->
-    <Target Name="EnxAtomicGenerateStyles"
-            Condition="'$(EnxAtomicConfigProject)' != ''"
-            BeforeTargets="CoreCompile">
-
+    <Target Name="EnxAtomicGenerateStyles" Condition="'$(EnxAtomicConfigProject)' != ''" BeforeTargets="CoreCompile">
         <MSBuild Projects="$(EnxAtomicConfigProject)" Targets="Restore;Build">
             <Output TaskParameter="TargetOutputs" ItemName="_EnxAtomicConfigOutput" />
         </MSBuild>
@@ -76,9 +75,15 @@
             <_EnxAtomicSource Include="@(Compile);@(AvaloniaXaml)" />
         </ItemGroup>
 
-        <Error Condition="'@(_EnxAtomicConfigAssembly)' == ''" Text="EnxAtomicGenerateStyles: could not resolve the built assembly for EnxAtomicConfigProject ('$(EnxAtomicConfigProject)')." />
+        <Error
+            Condition="'@(_EnxAtomicConfigAssembly)' == ''"
+            Text="EnxAtomicGenerateStyles: could not resolve the built assembly for EnxAtomicConfigProject ('$(EnxAtomicConfigProject)')."
+        />
 
-        <MakeDir Directories="$([System.IO.Path]::GetDirectoryName('$(EnxAtomicStylesOutputPath)'))" Condition="'$([System.IO.Path]::GetDirectoryName($(EnxAtomicStylesOutputPath)))' != ''" />
+        <MakeDir
+            Directories="$([System.IO.Path]::GetDirectoryName('$(EnxAtomicStylesOutputPath)'))"
+            Condition="'$([System.IO.Path]::GetDirectoryName($(EnxAtomicStylesOutputPath)))' != ''"
+        />
 
         <Exec Command="dotnet exec &quot;%(_EnxAtomicConfigAssembly.FullPath)&quot; --output &quot;$(EnxAtomicStylesOutputPath)&quot; --namespace &quot;$(EnxAtomicNamespace)&quot; --class &quot;$(EnxAtomicClassName)&quot; --container &quot;$(EnxAtomicContainerName)&quot; --resources-output &quot;$(EnxAtomicResourcesOutputPath)&quot; --resources-class &quot;$(EnxAtomicResourcesClassName)&quot; @(_EnxAtomicSource->'&quot;%(FullPath)&quot;', ' ')" />
 
@@ -89,5 +94,4 @@
             <FileWrites Include="$(EnxAtomicResourcesOutputPath)" />
         </ItemGroup>
     </Target>
-
 </Project>

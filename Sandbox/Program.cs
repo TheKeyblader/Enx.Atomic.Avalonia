@@ -20,7 +20,9 @@ static void AppMain(Application app, string[] args)
 
     // calling twice should not double-register anything (AddRuleOnce/AddVariantOnce/AddStaticRuleOnce)
     builder.AddMiniTheme(configuration);
-    Console.WriteLine($"after re-running AddMiniTheme -> rules: {configuration.Rules.Count}, variants: {configuration.Variants.Count}");
+    Console.WriteLine(
+        $"after re-running AddMiniTheme -> rules: {configuration.Rules.Count}, variants: {configuration.Variants.Count}"
+    );
     Console.WriteLine();
 
     // ISourceTransformer pipeline: staging order (pre -> default, declaration order within a
@@ -33,10 +35,7 @@ static void AppMain(Application app, string[] args)
         new MarkerTransformer("skipped", SourceTransformerEnforce.Default) { CodeFilter = (_, _) => false }
     );
     configuration.Transformers.Add(
-        new MarkerTransformer("wrong-id", SourceTransformerEnforce.Default)
-        {
-            IdFilter = id => id == "other.axaml",
-        }
+        new MarkerTransformer("wrong-id", SourceTransformerEnforce.Default) { IdFilter = id => id == "other.axaml" }
     );
 
     var generatorForTransformers = new AtomicGenerator<MiniTheme>(configuration);
@@ -147,8 +146,7 @@ static void AppMain(Application app, string[] args)
     // StyleEmitter: emit a real, compilable .cs file for a small representative set of tokens. Ghost
     // combining (ml-1 mr-2) happens transparently through Generate() here too.
     var codeGenGenerator = new AtomicGenerator<MiniTheme>(configuration);
-    var codeGenSource =
-        "Classes=\"ml-1 mr-2 hidden flex-row cursor-pointer no-underline hover:bg-red-500 sm:hidden\"";
+    var codeGenSource = "Classes=\"ml-1 mr-2 hidden flex-row cursor-pointer no-underline hover:bg-red-500 sm:hidden\"";
     var codeGenUtils = codeGenGenerator.Generate(
         codeGenSource,
         new AtomicGenerator<MiniTheme>.Options { Id = "demo.axaml" }

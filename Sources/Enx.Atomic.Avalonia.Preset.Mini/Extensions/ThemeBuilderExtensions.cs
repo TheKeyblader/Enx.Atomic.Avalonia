@@ -22,7 +22,10 @@ public static class ThemeBuilderExtensions
     }
 
     /// <summary>Adds <paramref name="variant"/> to <paramref name="configuration"/> unless a variant of the same type is already registered — see <see cref="AddRuleOnce{TTheme}"/>.</summary>
-    private static void AddVariantOnce<TTheme>(this AtomicConfiguration<TTheme> configuration, VariantBase<TTheme> variant)
+    private static void AddVariantOnce<TTheme>(
+        this AtomicConfiguration<TTheme> configuration,
+        VariantBase<TTheme> variant
+    )
         where TTheme : class
     {
         if (configuration.Variants.All(v => v.GetType() != variant.GetType()))

@@ -14,10 +14,7 @@ public static class SelfAlign
         new("justify-self-start", [Layoutable.HorizontalAlignmentProperty.ToLiteral(HorizontalAlignment.Left)]),
         new("justify-self-center", [Layoutable.HorizontalAlignmentProperty.ToLiteral(HorizontalAlignment.Center)]),
         new("justify-self-end", [Layoutable.HorizontalAlignmentProperty.ToLiteral(HorizontalAlignment.Right)]),
-        new(
-            "justify-self-stretch",
-            [Layoutable.HorizontalAlignmentProperty.ToLiteral(HorizontalAlignment.Stretch)]
-        ),
+        new("justify-self-stretch", [Layoutable.HorizontalAlignmentProperty.ToLiteral(HorizontalAlignment.Stretch)]),
         new("self-start", [Layoutable.VerticalAlignmentProperty.ToLiteral(VerticalAlignment.Top)]),
         new("self-center", [Layoutable.VerticalAlignmentProperty.ToLiteral(VerticalAlignment.Center)]),
         new("self-end", [Layoutable.VerticalAlignmentProperty.ToLiteral(VerticalAlignment.Bottom)]),

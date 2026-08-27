@@ -11,7 +11,12 @@ namespace Enx.Atomic.Avalonia.Preset.Mini.Dynamic;
 /// </summary>
 internal static class ThemeScale
 {
-    public static bool TryResolve(this Dictionary<string, float> scale, string key, float remToPxFactor, out float value)
+    public static bool TryResolve(
+        this Dictionary<string, float> scale,
+        string key,
+        float remToPxFactor,
+        out float value
+    )
     {
         if (ArbitraryValue.TryUnwrap(key, out var arbitrary))
             return TryParsePx(arbitrary, out value);
@@ -29,7 +34,12 @@ internal static class ThemeScale
         return false;
     }
 
-    public static bool TryResolve(this Dictionary<string, double> scale, string key, float remToPxFactor, out double value)
+    public static bool TryResolve(
+        this Dictionary<string, double> scale,
+        string key,
+        float remToPxFactor,
+        out double value
+    )
     {
         if (ArbitraryValue.TryUnwrap(key, out var arbitrary))
             return TryParsePx(arbitrary, out value);

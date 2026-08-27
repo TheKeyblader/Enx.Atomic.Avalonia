@@ -6,7 +6,10 @@ namespace Enx.Atomic.Avalonia.Tests;
 /// <summary>Builds a fresh, fully-wired Mini preset generator for a test. Each call is independent — no shared/cached state between tests.</summary>
 internal static class TestHelpers
 {
-    public static (AtomicConfiguration<MiniTheme> Configuration, AtomicGenerator<MiniTheme> Generator) CreateMiniGenerator()
+    public static (
+        AtomicConfiguration<MiniTheme> Configuration,
+        AtomicGenerator<MiniTheme> Generator
+    ) CreateMiniGenerator()
     {
         var builder = ThemeBuilder<MiniTheme>.Create();
         var configuration = new AtomicConfiguration<MiniTheme> { Theme = builder.Theme };

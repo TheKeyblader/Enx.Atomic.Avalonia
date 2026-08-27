@@ -47,11 +47,7 @@ public abstract record StyleQueryExpression
         public double Value { get; set; }
 
         /// <summary>Creates a width-comparison query node.</summary>
-        public Width(
-            StyleQueryExpression? previous,
-            StyleQueryComparisonOperator @operator,
-            double value
-        )
+        public Width(StyleQueryExpression? previous, StyleQueryComparisonOperator @operator, double value)
         {
             Previous = previous;
             Operator = @operator;
@@ -61,10 +57,7 @@ public abstract record StyleQueryExpression
         /// <inheritdoc/>
         public override Expression ToExpressionCore(Expression parameter)
         {
-            return Expression.Call(
-                CallInfo,
-                [parameter, Expression.Constant(Operator), Expression.Constant(Value)]
-            );
+            return Expression.Call(CallInfo, [parameter, Expression.Constant(Operator), Expression.Constant(Value)]);
         }
     }
 
@@ -90,11 +83,7 @@ public abstract record StyleQueryExpression
         public double Value { get; set; }
 
         /// <summary>Creates a height-comparison query node.</summary>
-        public Height(
-            StyleQueryExpression? previous,
-            StyleQueryComparisonOperator @operator,
-            double value
-        )
+        public Height(StyleQueryExpression? previous, StyleQueryComparisonOperator @operator, double value)
         {
             Previous = previous;
             Operator = @operator;
@@ -104,10 +93,7 @@ public abstract record StyleQueryExpression
         /// <inheritdoc/>
         public override Expression ToExpressionCore(Expression parameter)
         {
-            return Expression.Call(
-                CallInfo,
-                [parameter, Expression.Constant(Operator), Expression.Constant(Value)]
-            );
+            return Expression.Call(CallInfo, [parameter, Expression.Constant(Operator), Expression.Constant(Value)]);
         }
     }
 
@@ -200,14 +186,10 @@ public static class StyleQueriesExtensions
     ) => new StyleQueryExpression.Width(previous, @operator, value);
 
     /// <summary>Appends a <see cref="StyleQueryExpression.Or"/> node combining <paramref name="queries"/>.</summary>
-    public static StyleQueryExpression Or(
-        this StyleQueryExpression? previous,
-        StyleQueryExpression[] queries
-    ) => new StyleQueryExpression.Or(previous, queries);
+    public static StyleQueryExpression Or(this StyleQueryExpression? previous, StyleQueryExpression[] queries) =>
+        new StyleQueryExpression.Or(previous, queries);
 
     /// <summary>Appends a <see cref="StyleQueryExpression.And"/> node combining <paramref name="queries"/>.</summary>
-    public static StyleQueryExpression And(
-        this StyleQueryExpression? previous,
-        StyleQueryExpression[] queries
-    ) => new StyleQueryExpression.And(previous, queries);
+    public static StyleQueryExpression And(this StyleQueryExpression? previous, StyleQueryExpression[] queries) =>
+        new StyleQueryExpression.And(previous, queries);
 }

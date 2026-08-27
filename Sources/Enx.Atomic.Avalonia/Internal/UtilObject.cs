@@ -1,5 +1,5 @@
-using Avalonia.Styling;
 using System.Linq.Expressions;
+using Avalonia.Styling;
 using Enx.Atomic.Avalonia.Compact;
 
 namespace Enx.Atomic.Avalonia.Internal;

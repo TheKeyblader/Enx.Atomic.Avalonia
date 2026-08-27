@@ -59,14 +59,7 @@ public class SpacingRuleTests
         var results = generator.ParseToken("gap-4");
 
         Assert.Equal(3, results.Length);
-        Assert.All(
-            results,
-            util =>
-                Assert.All(
-                    util.Body,
-                    setter => Assert.Equal(16.0, setter.Value)
-                )
-        );
+        Assert.All(results, util => Assert.All(util.Body, setter => Assert.Equal(16.0, setter.Value)));
     }
 
     [AvaloniaFact]

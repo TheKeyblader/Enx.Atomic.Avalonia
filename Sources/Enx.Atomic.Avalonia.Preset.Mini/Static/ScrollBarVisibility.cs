@@ -11,10 +11,7 @@ public static class ScrollBarVisibilityRules
 {
     public static readonly Rule.Static[] All =
     [
-        new(
-            "scroll-x-auto",
-            [ScrollViewer.HorizontalScrollBarVisibilityProperty.ToLiteral(ScrollBarVisibility.Auto)]
-        ),
+        new("scroll-x-auto", [ScrollViewer.HorizontalScrollBarVisibilityProperty.ToLiteral(ScrollBarVisibility.Auto)]),
         new(
             "scroll-x-hidden",
             [ScrollViewer.HorizontalScrollBarVisibilityProperty.ToLiteral(ScrollBarVisibility.Hidden)]
@@ -27,10 +24,7 @@ public static class ScrollBarVisibilityRules
             "scroll-x-disabled",
             [ScrollViewer.HorizontalScrollBarVisibilityProperty.ToLiteral(ScrollBarVisibility.Disabled)]
         ),
-        new(
-            "scroll-y-auto",
-            [ScrollViewer.VerticalScrollBarVisibilityProperty.ToLiteral(ScrollBarVisibility.Auto)]
-        ),
+        new("scroll-y-auto", [ScrollViewer.VerticalScrollBarVisibilityProperty.ToLiteral(ScrollBarVisibility.Auto)]),
         new(
             "scroll-y-hidden",
             [ScrollViewer.VerticalScrollBarVisibilityProperty.ToLiteral(ScrollBarVisibility.Hidden)]

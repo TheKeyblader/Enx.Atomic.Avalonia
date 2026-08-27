@@ -1,5 +1,4 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
     <PropertyGroup>
         <TargetFramework>net10.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
@@ -34,5 +33,4 @@
         <ProjectReference Include="..\..\Sources\Enx.Atomic.Avalonia.Preset.Mini\Enx.Atomic.Avalonia.Preset.Mini.csproj" />
         <ProjectReference Include="..\..\Sources\Enx.Atomic.Avalonia.CodeGen\Enx.Atomic.Avalonia.CodeGen.csproj" />
     </ItemGroup>
-
 </Project>

@@ -29,14 +29,8 @@ public static class ItemsAlign
             [ContentControl.HorizontalContentAlignmentProperty.ToLiteral(HorizontalAlignment.Stretch)]
         ),
         new("items-start", [ContentControl.VerticalContentAlignmentProperty.ToLiteral(VerticalAlignment.Top)]),
-        new(
-            "items-center",
-            [ContentControl.VerticalContentAlignmentProperty.ToLiteral(VerticalAlignment.Center)]
-        ),
+        new("items-center", [ContentControl.VerticalContentAlignmentProperty.ToLiteral(VerticalAlignment.Center)]),
         new("items-end", [ContentControl.VerticalContentAlignmentProperty.ToLiteral(VerticalAlignment.Bottom)]),
-        new(
-            "items-stretch",
-            [ContentControl.VerticalContentAlignmentProperty.ToLiteral(VerticalAlignment.Stretch)]
-        ),
+        new("items-stretch", [ContentControl.VerticalContentAlignmentProperty.ToLiteral(VerticalAlignment.Stretch)]),
     ];
 }

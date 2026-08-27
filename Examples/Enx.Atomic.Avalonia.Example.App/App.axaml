@@ -1,14 +1,14 @@
 <Application
-  xmlns="https://github.com/avaloniaui"
-  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-  RequestedThemeVariant="Dark"
-  x:Class="Enx.Atomic.Avalonia.Example.App.App"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    RequestedThemeVariant="Dark"
+    x:Class="Enx.Atomic.Avalonia.Example.App.App"
 >
-  <!-- GenStyles.g.cs, produced at build time by Enx.Atomic.Avalonia.CodeGen from the utility classes used
+    <!-- GenStyles.g.cs, produced at build time by Enx.Atomic.Avalonia.CodeGen from the utility classes used
          below, is compiled into this assembly as the `AtomicStyles` partial class and added in App.axaml.cs's
          Initialize() (Styles.Add(new AtomicStyles())) — it can't be referenced from XAML since it doesn't exist
          yet when this file is parsed by the XAML compiler. -->
-  <Application.Styles>
-    <!--<FluentTheme />-->
-  </Application.Styles>
+    <Application.Styles>
+        <!--<FluentTheme />-->
+    </Application.Styles>
 </Application>

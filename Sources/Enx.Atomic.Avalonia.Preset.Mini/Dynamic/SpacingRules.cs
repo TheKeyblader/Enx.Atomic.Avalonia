@@ -115,16 +115,8 @@ public partial class GapRule<TTheme> : IDynamicRule<TTheme>
 
         return match.Groups["axis"].Value switch
         {
-            "x" =>
-            [
-                Grid.ColumnSpacingProperty.ToLiteral(v),
-                UniformGrid.ColumnSpacingProperty.ToLiteral(v),
-            ],
-            "y" =>
-            [
-                Grid.RowSpacingProperty.ToLiteral(v),
-                UniformGrid.RowSpacingProperty.ToLiteral(v),
-            ],
+            "x" => [Grid.ColumnSpacingProperty.ToLiteral(v), UniformGrid.ColumnSpacingProperty.ToLiteral(v)],
+            "y" => [Grid.RowSpacingProperty.ToLiteral(v), UniformGrid.RowSpacingProperty.ToLiteral(v)],
             _ =>
             [
                 StackPanel.SpacingProperty.ToLiteral(v),
