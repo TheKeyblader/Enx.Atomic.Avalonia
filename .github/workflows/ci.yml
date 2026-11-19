@@ -18,6 +18,11 @@ jobs:
       - name: Restore
         run: dotnet restore Enx.Atomic.Avalonia.slnx
 
+      - name: Check formatting (CSharpier)
+        run: |
+          dotnet tool restore
+          dotnet csharpier check .
+
       - name: Build
         run: dotnet build Enx.Atomic.Avalonia.slnx --no-restore --configuration Release
 

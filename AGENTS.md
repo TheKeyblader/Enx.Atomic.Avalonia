@@ -17,7 +17,7 @@ runtime parity — a connector detecting newly-used classes live, not a one-shot
 would eventually land, deliberately last). Don't "fix" this gap by adding ad hoc runtime support
 for one feature; it needs the connector or nothing.
 
-**This is not a typical business-rules backend** — none of dotnet-claude-kit's four
+**This is not a typical business-rules backend** — none of the usual application
 architectures (VSA / Clean Architecture / DDD / Modular Monolith) apply. It's closer to a small
 compiler: tokens → matched rules/variants → `StyleValue`s → emitted C# source (build time) or,
 for the subset that supports it, compiled `Selector` expressions (runtime — see above). The
@@ -35,12 +35,57 @@ Sources/
 Tests/Enx.Atomic.Avalonia.Tests/    # xUnit v3 + Avalonia.Headless.XUnit, single test project for everything
 Examples/                           # End-to-end build-time codegen example (config project + consuming app)
 Sandbox/                            # Manual runtime-resolution test bed
+.opencode/skills/                   # Step-by-step workflows (add a rule/variant/emitter, port from UnoCSS)
+.opencode/commands/                 # /verify, /update-docs
+opencode.jsonc                      # Permissions, CSharpier formatter, Roslyn MCP, upstream references
 ```
 
 Every `Sources/*` project targets `net10.0`, `<ImplicitUsings>enable</ImplicitUsings>`,
 `<Nullable>enable</Nullable>`, and references `Roslynator.Analyzers`. `Directory.Build.props`
-centralizes package metadata; `MinVer` derives the version from the nearest `vX.Y.Z` git tag —
-no project hand-maintains a version number.
+centralizes package metadata and turns on `EnforceCodeStyleInBuild` (so `.editorconfig`'s style
+rules show up as build warnings); `MinVer` derives the version from the nearest `vX.Y.Z` git tag —
+no project hand-maintains a version number. `global.json` pins the .NET 10 SDK (`latestFeature`
+roll-forward) — a newer major SDK installed side by side is deliberately not picked up. Avalonia is
+on **12.x**.
+
+**Where to look things up** — don't guess a token name, an Avalonia API, or an UnoCSS behavior:
+
+- Every token Preset.Mini registers, and the Avalonia property it sets:
+  `Sources/Enx.Atomic.Avalonia.Preset.Mini/README.md`. Check it before adding a "new" rule.
+- UnoCSS upstream (the `unocss` reference in `opencode.jsonc`):
+  `packages-presets/preset-mini/src/{_rules,_theme,_variants}`, `packages-presets/rule-utils`.
+- Avalonia source at the referenced version (`avalonia` reference, branch `release/12.1.3`) and its
+  docs (`avalonia-docs` reference) — for `Selector`/`StyleQuery`/`AddOwner`/`DynamicResource`
+  semantics.
+
+## Known Pitfalls
+
+Each of these has already cost a debugging session. Details in `ARCHITECTURE.md`.
+
+- **Static beats dynamic; among dynamic rules, registration order wins.** Two rules sharing a
+  prefix (`border-2` width vs `border-red-500` color, `text-lg` size vs `text-red-500` color) rely
+  on `AddMiniTheme` registering the more specific one first. A new rule on an existing prefix
+  needs a case in `AmbiguousPrefixTests.cs`.
+- **Per-side utilities must target ghost properties**, never the real struct property:
+  `ml-1 mr-2` would otherwise be two `Style`s each setting the whole `Thickness`, the later one
+  winning. See `SpecialProperties`, `GhostProperties.Map`, `GhostPropertyCombiner<TTheme>`.
+- **`AddOwner` hides the declaring type.** `AvaloniaProperty.OwnerType` reports the *original*
+  (sometimes non-public) owner, so selectors/emitters that need the public declaring type must be
+  given it explicitly (see `StyleValue.TargetType`, `DarkVariant`).
+- **Boxed numeric types must match exactly.** `Setter.Value` is `object?`: a `float` or `int`
+  for a `double` property compiles in emitted code and only fails when Avalonia applies it.
+  `CodeGenTests` exists to catch this; extend it rather than relying on a source-text check.
+- **Arbitrary values (`[...]`) are always `StyleValue.Literal`, never `Resource`**, always pixels,
+  never rem-converted; the bare-number fallback *is* rem (`TryResolve`) except line widths
+  (`TryResolvePx`).
+- **Static init needs Avalonia's headless platform.** Some static rules (`Cursors`) construct real
+  Avalonia types; a config project or test touching `AddMiniTheme` must bootstrap headless first
+  (tests use `[AvaloniaFact]`, not `[Fact]`).
+- **`CodeGen` never references `Preset.Mini`** — generated code must compile standalone.
+- **Grid utilities and resource theming are codegen-only** (see Project Context) — a runtime-path
+  test for them asserting "nothing resolves" is correct, not a bug.
+- **`GeneratedStyles/` is output**, regenerated on every build (edits are denied in
+  `opencode.jsonc`). Fix the rule or the emitter, never the `.g.cs`.
 
 ## Coding Standards
 
@@ -50,8 +95,7 @@ no project hand-maintains a version number.
 - **File-scoped namespaces**, always.
 - **No regions.**
 - **Extend-only for the two shipped presets/engine** — this is still pre-1.0 (`0.0.x`), so
-  breaking a public member is acceptable when there's a real reason (see the `csharp-api-design`
-  skill), but check whether the old surface is actually load-bearing (used by a real rule/test)
+  breaking a public member is acceptable when there's a real reason, but check whether the old surface is actually load-bearing (used by a real rule/test)
   before assuming a break is low-risk — it usually is, since most consumer-facing surface is
   exercised by the shipped `Preset.Mini` itself.
 - **Never decompile a compiled `Expression`** — the codegen pipeline (`StyleEmitter`,
@@ -64,7 +108,7 @@ no project hand-maintains a version number.
   `IValueEmitter` and its implementations, since `StyleEmitter.Emit`/`ValueEmitterRegistry` both
   accept a caller-supplied `IEnumerable<IValueEmitter>`). Naming/formatting helpers, reflection
   lookups, and anything with no plausible external call site (`CSharpLiteral`,
-  `AvaloniaPropertyNaming`, `SelectorEmitter`, ...) should be `internal`. A `/health-check` run
+  `AvaloniaPropertyNaming`, `SelectorEmitter`, ...) should be `internal`. A past review
   already caught and fixed a batch of these in `Enx.Atomic.Avalonia.CodeGen` — don't
   re-introduce the pattern of defaulting new emitter/naming helpers to `public`.
 
@@ -85,31 +129,59 @@ no project hand-maintains a version number.
   asked** ("mets à jour ..."), not proactively after every change — but when asked, update all
   four together, keep the CHANGELOG's `[Unreleased]` section current, and keep the root
   README's Roadmap in sync (remove a bullet once it ships).
-- **Verify before reporting done**: `dotnet build Enx.Atomic.Avalonia.slnx` and
-  `dotnet test Tests/Enx.Atomic.Avalonia.Tests/Enx.Atomic.Avalonia.Tests.csproj` must both be
-  clean. New engine mechanisms get real regression tests (a Roslyn compile-and-run check for
-  anything touching codegen, mirroring `CodeGenTests.cs`/`GridRuleTests.cs`), not just
-  hand-verification.
+- **Verify before reporting done** (`/verify` runs all three): `dotnet build Enx.Atomic.Avalonia.slnx`
+  with no warnings, `dotnet test Tests/Enx.Atomic.Avalonia.Tests/Enx.Atomic.Avalonia.Tests.csproj`
+  green, and `dotnet csharpier check .` clean (CI enforces it). New engine mechanisms get real
+  regression tests (a Roslyn compile-and-run check for anything touching codegen, mirroring
+  `CodeGenTests.cs`/`GridRuleTests.cs`), not just hand-verification.
 - Communication in this repo's sessions is primarily in French; code, comments, docs, and commit
   messages stay in English.
 
-## MCP Tools (cwm-roslyn-navigator)
+## MCP Tools (`roslyn` server — cwm-roslyn-navigator)
 
-Available via the `dotnet-claude-kit` plugin. Prefer these over grep for anything touching public
-API surface or cross-project usage:
+Configured in `opencode.jsonc` as the `roslyn` MCP server, pinned as a local tool in
+`dotnet-tools.json` (run `dotnet tool restore` once after cloning). Under Code Mode its tools are
+under `tools.roslyn.*` — discover exact signatures with `search({ namespace: "roslyn" })`. Prefer
+them over grep for anything touching public API surface or cross-project usage:
 
-- `find_symbol` / `get_public_api` before modifying a type.
-- `find_references` / `find_implementations` before touching a shared type like `StyleValue`,
-  `IValueEmitter`, or `IDynamicRule<TTheme>` — several presets/emitters key off these.
-- `get_project_graph` to confirm a change doesn't introduce a dependency cycle between
-  `Enx.Atomic.Avalonia` → `Preset.Mini` → `CodeGen` (that's the intended direction; `CodeGen`
-  never references `Preset.Mini`, since generated code must compile standalone — see
+- `find_symbol` / `get_public_api` / `get_symbol_source` before modifying a type.
+- `find_references` / `find_implementations` / `find_callers` before touching a shared type like
+  `StyleValue`, `IValueEmitter`, or `IDynamicRule<TTheme>` — several presets/emitters key off these.
+- `get_project_graph` / `detect_circular_dependencies` to confirm a change doesn't break the
+  intended direction `Enx.Atomic.Avalonia` → `Preset.Mini`, `Enx.Atomic.Avalonia` → `CodeGen`
+  (`CodeGen` never references `Preset.Mini`, since generated code must compile standalone — see
   `EmittableGhostPropertyHostAttribute` in `ARCHITECTURE.md`).
 - `get_diagnostics` after non-trivial edits, same role as `dotnet build`/an IDE.
+
+If the server isn't connected (it loads the whole solution, which takes a few seconds), fall back
+to `dotnet build` + grep rather than skipping the check.
+
+## Skills & Commands
+
+Load the matching skill before starting one of these tasks — each encodes the files to touch,
+the registration order, and the tests expected:
+
+| Skill | When |
+|---|---|
+| `add-static-rule` | A fixed-name token (`cursor-pointer`, `truncate`) |
+| `add-dynamic-rule` | A regex/theme-driven token family (`m-*`, `bg-*`, `rounded-tl-*`) |
+| `add-variant` | A prefix like `hover:`, `sm:`, `dark:` |
+| `add-value-emitter` | Codegen fails with `No value emitter registered for type ...` |
+| `port-unocss-rule` | Bringing an upstream `@unocss/preset-mini` rule/variant/scale over |
+
+Commands: `/verify` (build + test + format check), `/update-docs` (the four docs together, when
+asked).
 
 ## Commands
 
 ```bash
+# Once after cloning: CSharpier + the Roslyn MCP server (pinned in dotnet-tools.json)
+dotnet tool restore
+
+# Format (OpenCode runs this automatically after each edit) / check, as CI does
+dotnet csharpier format .
+dotnet csharpier check .
+
 # Build everything
 dotnet build Enx.Atomic.Avalonia.slnx
 

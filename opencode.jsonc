@@ -1,0 +1,65 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+
+  // Project guidance lives in AGENTS.md.
+  // Area-specific workflows are skills under .opencode/skills/, commands under .opencode/commands/.
+
+  "permissions": [
+    // Never commit/push/tag/publish without an explicit request in that turn — see AGENTS.md#workflow-conventions.
+    { "action": "shell", "resource": "git commit *", "effect": "ask" },
+    { "action": "shell", "resource": "git push *", "effect": "ask" },
+    { "action": "shell", "resource": "git tag *", "effect": "ask" },
+    { "action": "shell", "resource": "git reset --hard *", "effect": "ask" },
+    { "action": "shell", "resource": "dotnet nuget push *", "effect": "deny" },
+    { "action": "shell", "resource": "dotnet pack *", "effect": "ask" },
+
+    // Regenerated on every build by Enx.Atomic.Avalonia.CodeGen — fix the emitter/rule instead.
+    { "action": "edit", "resource": "*GeneratedStyles/*", "effect": "deny" },
+    { "action": "edit", "resource": "*/bin/*", "effect": "deny" },
+    { "action": "edit", "resource": "*/obj/*", "effect": "deny" },
+  ],
+
+  // CSharpier is the repo's formatter (.csharpierrc.json, pinned in dotnet-tools.json). Run after every
+  // write/edit so the agent never leaves a diff that `dotnet csharpier check .` (CI) would reject.
+  "formatter": {
+    "csharpier": {
+      "command": ["dotnet", "csharpier", "format", "$FILE"],
+      "extensions": [".cs", ".csproj", ".props", ".targets"],
+    },
+  },
+
+  "mcp": {
+    "servers": {
+      // Roslyn-backed navigation (find_symbol, find_references, get_public_api, get_project_graph,
+      // get_diagnostics, ...). Pinned as a local tool in dotnet-tools.json — needs `dotnet tool restore` once.
+      // Auto-discovers Enx.Atomic.Avalonia.slnx from the working directory.
+      "roslyn": {
+        "type": "local",
+        "command": ["dotnet", "tool", "run", "cwm-roslyn-navigator"],
+        "cwd": ".",
+      },
+    },
+  },
+
+  "references": {
+    "unocss": {
+      "repository": "unocss/unocss",
+      "branch": "main",
+      "description": "Upstream of Preset.Mini. Read packages-presets/preset-mini/src/_rules, _theme and _variants (and packages-presets/rule-utils) before porting or extending a rule/variant/theme scale — port from the real source, not from memory.",
+    },
+    "avalonia": {
+      "repository": "AvaloniaUI/Avalonia",
+      "branch": "release/12.1.3",
+      "description": "Avalonia source at the version this repo references (12.1.3). Use for Selector/Selectors, StyleQuery/StyleQueries, ContainerQuery, AvaloniaProperty/AddOwner, Setter and DynamicResourceExtension semantics (src/Avalonia.Base/Styling, src/Avalonia.Base/AvaloniaProperty*.cs).",
+    },
+    "avalonia-docs": {
+      "repository": "AvaloniaUI/avalonia-docs",
+      "branch": "main",
+      "description": "Official Avalonia documentation — styling, selectors, pseudo-classes, container queries, theme variants and resources.",
+    },
+  },
+
+  "watcher": {
+    "ignore": ["**/bin/**", "**/obj/**", "coverage/**", "**/GeneratedStyles/**"],
+  },
+}

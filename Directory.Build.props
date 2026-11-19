@@ -21,6 +21,14 @@
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
     </PropertyGroup>
 
+    <!--
+      Surfaces .editorconfig's style rules (file-scoped namespaces, unused usings, naming, ...) as real build
+      warnings, so `dotnet build` is the single feedback loop for conventions — not only the IDE.
+    -->
+    <PropertyGroup>
+        <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    </PropertyGroup>
+
     <ItemGroup>
         <PackageReference Include="MinVer" Version="7.0.0" PrivateAssets="All" />
     </ItemGroup>

@@ -432,3 +432,6 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+
+# OpenCode — local plugin installs; config, skills and commands under .opencode/ are versioned
+.opencode/node_modules/
