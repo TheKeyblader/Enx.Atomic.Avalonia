@@ -16,6 +16,7 @@
         <!-- Headless, not Desktop: this is a CLI tool, no window is ever shown — it only needs a platform
              registered in AvaloniaLocator because some static rules (e.g. Cursors) construct real Avalonia
              types (Cursor) at static-init time. -->
-        <PackageReference Include="Avalonia.Headless" Version="12.1.1" />
+        <PackageReference Include="Avalonia.Headless" Version="12.1.3" />
+        <PackageReference Update="MinVer" Version="8.0.0" />
     </ItemGroup>
 </Project>

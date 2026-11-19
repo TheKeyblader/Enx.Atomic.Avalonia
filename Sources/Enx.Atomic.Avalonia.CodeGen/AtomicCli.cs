@@ -76,11 +76,7 @@ internal sealed class GenerateCommand<TTheme> : Command<AtomicCliSettings>
 {
     internal static AtomicConfiguration<TTheme>? Configuration { get; set; }
 
-    protected override int Execute(
-        CommandContext context,
-        AtomicCliSettings settings,
-        CancellationToken cancellationToken
-    )
+    public override int Execute(CommandContext context, AtomicCliSettings settings, CancellationToken cancellationToken)
     {
         var configuration =
             Configuration
