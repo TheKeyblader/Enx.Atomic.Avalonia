@@ -40,7 +40,6 @@ public partial class RoundedRule<TTheme> : IOrderRankedDynamicRule<TTheme>
         if (!context.Theme.Radii.TryResolve(match.Groups["value"].Value, context.Theme.RemToPxFactor, out var value))
             return [];
 
-
         return match.Groups["side"].Value switch
         {
             "t" =>

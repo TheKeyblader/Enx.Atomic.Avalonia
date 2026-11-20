@@ -1,4 +1,4 @@
-using System.Reflection;
+﻿using System.Reflection;
 using Avalonia.Data;
 using Avalonia.Styling;
 using Enx.Atomic.Avalonia.CodeGen;
@@ -37,7 +37,7 @@ public class CodeGenTests
         var (_, generator) = TestHelpers.CreateMiniGenerator();
 
         var source =
-            "Classes=\"ml-1 mr-2 p-2 border-2 border-t-4 rounded-md rounded-tl-lg hidden flex-row cursor-pointer no-underline truncate text-ellipsis hover:bg-red-500 sm:hidden max-w-md dark:bg-red-500 grid-cols-3 col-span-2 bg-[#123456] w-[123px]\"";
+            "Classes=\"ml-1 mr-2 p-2 border-2 border-t-4 rounded-md rounded-tl-lg hidden flex-row cursor-pointer no-underline truncate text-ellipsis hover:bg-red-500 sm:hidden max-w-md dark:bg-red-500 grid-cols-3 col-span-2 bg-[#123456] w-[123px] w-full w-auto\"";
 
         var utils = generator.Generate(source, new AtomicGenerator<MiniTheme>.Options { Id = "test.axaml" });
         Assert.NotEmpty(utils);

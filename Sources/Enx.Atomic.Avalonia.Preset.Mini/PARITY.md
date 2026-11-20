@@ -211,10 +211,10 @@ upstream's order.
 | `w-{n}` / `h-{n}` | ✅ ported | `Dynamic/SizeRules.cs` (`SizeRule<TTheme>`) | `w-4`, `h-4`, `w-[123px]` | `Layoutable.WidthProperty`/`HeightProperty`; reads the `Sizes` scale, then bare rem. |
 | `min-w-*` / `max-w-*` / `min-h-*` / `max-h-*` | ✅ ported | `Dynamic/SizeRules.cs` (`SizeRule<TTheme>`) | `min-w-4`, `max-h-4` | Respective `Layoutable` properties. |
 | `size-{n}`, `size-min-*`, `size-max-*` | ⏳ todo | — | | Sets width *and* height (two to four properties); not registered. |
-| `w-full` / `h-full` | ⏳ todo | — | | Needs design: `Layoutable.Width` is an absolute `double`, so 100% isn't representable directly. The closest idiom is `HorizontalAlignment=Stretch` / `VerticalAlignment=Stretch` (plus clearing `Width`/`Height`), which only fills the space the parent panel offers — decide whether that approximation is acceptable under the upstream name. |
+| `w-full` / `h-full` | 🟡 partial | `Dynamic/SizeRules.cs` (`SizeRule<TTheme>`) | `w-full`, `h-full` | No percentage lengths in Avalonia: clears `Width`/`Height` (`double.NaN`) and sets `HorizontalAlignment`/`VerticalAlignment` to `Stretch`. Fills the space the parent offers (a Grid cell, a DockPanel, a StackPanel's cross axis) but cannot express "100%" on a StackPanel's main axis. Ranks above a concrete size, so it wins over `w-4` in either source order. |
 | `w-screen` / `h-screen`, `w-{a/b}` fractions | ❌ dropped | — | | Viewport units and percentages aren't representable: `Layoutable.Width` is an absolute `double`. |
 | `w-min` / `w-max` / `w-fit` | ❌ dropped | — | | No content-based (`min-content`/`fit-content`) sizing. |
-| `w-auto` / `h-auto` | ⏳ todo | — | | `double.NaN` means "unset/auto"; trivial. |
+| `w-auto` / `h-auto` | ✅ ported | `Dynamic/SizeRules.cs` (`SizeRule<TTheme>`) | `w-auto`, `h-auto` | Clears `Width`/`Height` to `double.NaN` (auto sizing) and leaves the alignment untouched. Ranks below a concrete size, so `w-4` still wins. |
 | `block-*` / `inline-*` (logical sizes) | ❌ dropped | — | | `Width`/`Height` are physical only. |
 | `w-screen-{breakpoint}` / `h-screen-{breakpoint}` | ❌ dropped | — | | No viewport units. |
 | `aspect-*` (`aspect-ratio`) | ❌ dropped | — | | No aspect-ratio property; `Viewbox` approximates but is a different control. |
@@ -489,7 +489,7 @@ whether the corresponding utilities can read it — and its examples are tokens 
 | Upstream | Status | Here | Examples | Notes |
 |---|---|---|---|---|
 | `baseSize` | 🟡 partial | `Extensions/DefaultTheme.cs` (`Sizes`) | `w-xs`, `h-md` | rem converted to px; `prose` (`65ch`) dropped — no character-based unit. |
-| `width` / `height` / `maxWidth` / `maxHeight` / `minWidth` / `minHeight` | 🟡 partial | `Extensions/DefaultTheme.cs` (`Sizes`) + `Dynamic/SizeRules.cs` | `w-4`, `max-w-4` | Same `baseSize` keys shared by all size properties (upstream adds `auto`/`screen`/`none`/`full`/fractions); no percentages or viewport units, and `auto`/`none` are expressible but not registered. |
+| `width` / `height` / `maxWidth` / `maxHeight` / `minWidth` / `minHeight` | 🟡 partial | `Extensions/DefaultTheme.cs` (`Sizes`) + `Dynamic/SizeRules.cs` | `w-4`, `max-w-4` | Same `baseSize` keys shared by all size properties. Upstream's `auto`/`full` are mapped outside the scale (`w-auto`, `w-full`); `none`, `screen` and fractions are not registered — no percentages or viewport units. |
 | `inlineSize` / `blockSize` / `maxInlineSize` / `maxBlockSize` / `minInlineSize` / `minBlockSize` | ❌ dropped | — | | Logical sizes have no physical Avalonia counterpart. |
 | `containers` | ⏳ todo | — | | Only needed once the `@container` variant lands. |
 
@@ -504,10 +504,10 @@ whether the corresponding utilities can read it — and its examples are tokens 
 
 | Section | ✅ ported | 🟡 partial | ❌ dropped | ⏳ todo | Total |
 |---|---|---|---|---|---|
-| Rules | 33 | 10 | 71 | 48 | 162 |
+| Rules | 34 | 11 | 71 | 46 | 162 |
 | Variants | 3 | 1 | 19 | 7 | 30 |
 | Theme scales | 3 | 6 | 6 | 14 | 29 |
-| **Total** | **39** | **17** | **96** | **69** | **221** |
+| **Total** | **40** | **18** | **96** | **67** | **221** |
 
 > Counts are asserted by `ParityMatrixTests.Counts_MatchSummary` — update this table when rows change.
 

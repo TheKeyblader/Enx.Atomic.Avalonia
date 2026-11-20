@@ -44,7 +44,6 @@ public partial class MarginRule<TTheme> : IOrderRankedDynamicRule<TTheme>
         if (match.Groups["neg"].Success)
             value = -value;
 
-
         return match.Groups["side"].Value switch
         {
             "x" =>
@@ -118,7 +117,6 @@ public partial class PaddingRule<TTheme> : IOrderRankedDynamicRule<TTheme>
     {
         if (!context.Theme.Spacing.TryResolve(match.Groups["value"].Value, context.Theme.RemToPxFactor, out var value))
             return [];
-
 
         return match.Groups["side"].Value switch
         {

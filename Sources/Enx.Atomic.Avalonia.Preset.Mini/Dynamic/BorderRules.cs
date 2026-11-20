@@ -44,7 +44,6 @@ public partial class BorderWidthRule<TTheme> : IOrderRankedDynamicRule<TTheme>
         if (!context.Theme.LineWidths.TryResolvePx(key, out var value))
             return [];
 
-
         return match.Groups["side"].Value switch
         {
             "t" => [BorderThicknessSides.BorderThicknessTopProperty.ToLiteral(value, typeof(Control))],
