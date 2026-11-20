@@ -35,6 +35,20 @@ configuration.Shortcuts.Add(Shortcut.Dynamic<MiniTheme>(
 
 A plain utility written next to a shortcut overrides it (`btn-blue bg-red-500` is red).
 
+Tokens no scanned source contains (built at runtime, or used by a referenced library's
+compiled XAML) can be listed in a **safelist**, in the configuration or from the app's
+project file:
+
+```csharp
+configuration.Safelist.AddRange(["hover:bg-blue-600", .. new[] { "red", "green" }.Select(c => $"bg-{c}-500")]);
+```
+
+```xml
+<ItemGroup>
+    <EnxAtomicSafelist Include="bg-amber-500;sm:flex-col" />
+</ItemGroup>
+```
+
 See [ARCHITECTURE.md](ARCHITECTURE.md) for how the engine actually works — rules,
 variants, source transformers, the Mini preset, and build-time code generation.
 
@@ -130,12 +144,6 @@ outstanding right now.
 
 ### v1 — ready to build a real app on
 
-- **Manual safelist.** A way to explicitly tell `AtomicCli` "generate a style for
-  these tokens too," beyond whatever it finds by scanning `@(Compile)`/`@(AvaloniaXaml)`
-  — needed the moment a token only exists somewhere the extractor doesn't look
-  (built dynamically, or coming from a referenced library's compiled XAML). The
-  ecosystem-wide automated version of this is in v2 below; this is the manual
-  escape hatch an app can already reach for on its own.
 - **`/template/` selector support.** `SelectorExpression` (`Compact/SelectorExpression.cs`)
   has no node for Avalonia's `Template` combinator (`Selectors.Template`, XAML's
   `/template/`) — there's currently no way for a rule/variant to express a style
@@ -151,8 +159,8 @@ outstanding right now.
   extension works. Would need its own token/scale data source (this repo's
   `Preset.Mini` rules aren't in a machine-readable form yet) plus one integration
   per IDE.
-- **Safelists discovered from referenced libraries, automatically.** The v1 manual
-  safelist above solves this per app; this is the automated version for an actual
+- **Safelists discovered from referenced libraries, automatically.** The manual
+  safelist (`AtomicConfiguration.Safelist`, `@(EnxAtomicSafelist)`) solves this per app; this is the automated version for an actual
   ecosystem of component libraries built on this engine — a library would emit its
   own list of tokens it needs (e.g. as a packaged file, the way
   `Enx.Atomic.Avalonia.CodeGen.targets` itself ships under `build/`), and a
