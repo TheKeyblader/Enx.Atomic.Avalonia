@@ -101,7 +101,13 @@ internal sealed class GenerateCommand<TTheme> : Command<AtomicCliSettings>
             utils.AddRange(generator.Generate(content, new AtomicGenerator<TTheme>.Options { Id = source }));
         }
 
-        var emitted = StyleEmitter.Emit(utils, settings.Namespace, settings.ClassName, settings.ContainerName);
+        // Sort the concatenation, not each file's slice: a variant declared in one file must still be emitted after
+        // the base utility another file declares (Avalonia's equal-priority cascade is insertion order — see
+        // StyleOrdering). Per-file sorting is what generator.Generate already does; the global pass is
+        // what makes the emitted class correct across the whole source set.
+        var ordered = StyleOrdering.Sort(utils);
+
+        var emitted = StyleEmitter.Emit(ordered, settings.Namespace, settings.ClassName, settings.ContainerName);
         WriteIfDifferent(
             settings.Output,
             emitted,

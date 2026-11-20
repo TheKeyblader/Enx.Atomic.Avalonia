@@ -15,6 +15,13 @@ public record StringifiedUtil
     /// <summary>The declaration order of the originating rule, used to keep emitted styles deterministically ordered.</summary>
     public required int Index { get; init; }
 
+    /// <summary>
+    /// Relative ordering hint a variant handler may set (propagated from <c>VariantHandlerContext.Sort</c>), used by
+    /// <see cref="StyleOrdering"/> as a tie-breaker after the rule index — the equivalent of UnoCSS's per-rule
+    /// <c>sort</c> context. No variant in the Mini preset sets it today; it stays <c>0</c> for every rule.
+    /// </summary>
+    public int Sort { get; init; }
+
     /// <summary>Expression building the Avalonia <see cref="Selector"/> this style applies to.</summary>
     public required Expression<Func<Selector, Selector>> Selector { get; set; }
 

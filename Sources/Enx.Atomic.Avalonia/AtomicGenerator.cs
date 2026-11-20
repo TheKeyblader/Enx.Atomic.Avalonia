@@ -345,6 +345,7 @@ public class AtomicGenerator<TTheme>
                     Metadata = parsed.Metadata,
                     ContainerQuery = util.ContainerQuery,
                     ContainerQueryData = util.ContainerQueryData,
+                    Sort = util.Sort,
                 }
             );
         }
@@ -421,14 +422,23 @@ public class AtomicGenerator<TTheme>
     /// <summary>Extracts utility tokens from <paramref name="input"/> and resolves them all into styles.</summary>
     /// <param name="input">The source text to scan.</param>
     /// <param name="options">Generation options, including the optional source identifier used during extraction.</param>
+    /// <remarks>
+    /// Utilities are returned in <see cref="StyleOrdering"/>'s canonical emission order — Avalonia resolves equal
+    /// priority frames by insertion order, so the order a <c>Styles</c> collection is populated in <em>is</em> the
+    /// cascade (see <see cref="StyleOrdering"/>).
+    /// </remarks>
     public StringifiedUtil[] Generate(string input, Options options)
     {
         var transformed = ApplyTransformers(input, options.Id);
         var tokens = ApplyExtractors(transformed, options.Id);
-        return [.. Generate(tokens, options), .. _pendingUtils];
+
+        // Sort once more over the concatenation: utils a transformer registered through AddUtil (ghost-combined
+        // styles) are only known after ApplyTransformers ran, and must be ordered together with the rest.
+        return StyleOrdering.Sort([.. Generate(tokens, options), .. _pendingUtils]);
     }
 
     /// <summary>Resolves an already-extracted set of tokens into styles, skipping duplicates and tokens that match no rule.</summary>
+    /// <remarks>Utilities are returned in <see cref="StyleOrdering"/>'s canonical emission order.</remarks>
     public StringifiedUtil[] Generate(ISet<string> tokens, Options options)
     {
         var matched = new HashSet<string>();
@@ -454,7 +464,7 @@ public class AtomicGenerator<TTheme>
             sheet.AddRange(payload);
         }
 
-        return [.. sheet];
+        return StyleOrdering.Sort(sheet);
     }
 
     /// <summary>Options controlling a single <see cref="Generate(string, Options)"/> call.</summary>
