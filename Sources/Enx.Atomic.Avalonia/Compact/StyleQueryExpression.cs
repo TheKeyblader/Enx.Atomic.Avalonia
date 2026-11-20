@@ -1,6 +1,7 @@
 using System.Linq.Expressions;
 using System.Reflection;
 using Avalonia.Styling;
+using Enx.Atomic.Avalonia.Internal;
 
 namespace Enx.Atomic.Avalonia.Compact;
 
@@ -32,15 +33,13 @@ public abstract record StyleQueryExpression
 
         static Width()
         {
-            CallInfo =
-                typeof(StyleQueries).GetMethod(
-                    nameof(StyleQueries.Width),
-                    BindingFlags.Static | BindingFlags.Public,
-                    [typeof(StyleQuery), typeof(StyleQueryComparisonOperator), typeof(double)]
-                )
-                ?? throw new InvalidOperationException(
-                    "Could not find StyleQueries.Width(StyleQuery, StyleQueryComparisonOperator, double); Avalonia's public API no longer matches what StyleQueryExpression.Width expects."
-                );
+            CallInfo = ReflectedApi.RequireStaticMethod(
+                typeof(StyleQueries),
+                nameof(StyleQueries.Width),
+                typeof(StyleQuery),
+                typeof(StyleQueryComparisonOperator),
+                typeof(double)
+            );
         }
 
         /// <summary>The comparison to apply.</summary>
@@ -71,15 +70,13 @@ public abstract record StyleQueryExpression
 
         static Height()
         {
-            CallInfo =
-                typeof(StyleQueries).GetMethod(
-                    nameof(StyleQueries.Height),
-                    BindingFlags.Static | BindingFlags.Public,
-                    [typeof(StyleQuery), typeof(StyleQueryComparisonOperator), typeof(double)]
-                )
-                ?? throw new InvalidOperationException(
-                    "Could not find StyleQueries.Height(StyleQuery, StyleQueryComparisonOperator, double); Avalonia's public API no longer matches what StyleQueryExpression.Height expects."
-                );
+            CallInfo = ReflectedApi.RequireStaticMethod(
+                typeof(StyleQueries),
+                nameof(StyleQueries.Height),
+                typeof(StyleQuery),
+                typeof(StyleQueryComparisonOperator),
+                typeof(double)
+            );
         }
 
         /// <summary>The comparison to apply.</summary>
@@ -110,15 +107,11 @@ public abstract record StyleQueryExpression
 
         static Or()
         {
-            CallInfo =
-                typeof(StyleQueries).GetMethod(
-                    nameof(StyleQueries.Or),
-                    BindingFlags.Static | BindingFlags.Public,
-                    [typeof(StyleQuery[])]
-                )
-                ?? throw new InvalidOperationException(
-                    "Could not find StyleQueries.Or(StyleQuery[]); Avalonia's public API no longer matches what StyleQueryExpression.Or expects."
-                );
+            CallInfo = ReflectedApi.RequireStaticMethod(
+                typeof(StyleQueries),
+                nameof(StyleQueries.Or),
+                typeof(StyleQuery[])
+            );
         }
 
         /// <summary>The queries to OR together.</summary>
@@ -148,15 +141,11 @@ public abstract record StyleQueryExpression
 
         static And()
         {
-            CallInfo =
-                typeof(StyleQueries).GetMethod(
-                    nameof(StyleQueries.And),
-                    BindingFlags.Static | BindingFlags.Public,
-                    [typeof(StyleQuery[])]
-                )
-                ?? throw new InvalidOperationException(
-                    "Could not find StyleQueries.And(StyleQuery[]); Avalonia's public API no longer matches what StyleQueryExpression.And expects."
-                );
+            CallInfo = ReflectedApi.RequireStaticMethod(
+                typeof(StyleQueries),
+                nameof(StyleQueries.And),
+                typeof(StyleQuery[])
+            );
         }
 
         /// <summary>The queries to AND together.</summary>

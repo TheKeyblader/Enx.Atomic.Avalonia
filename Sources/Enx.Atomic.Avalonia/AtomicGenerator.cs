@@ -216,8 +216,6 @@ public class AtomicGenerator<TTheme>
     )
     {
         var applied = true;
-        var handlers = result.Handlers;
-        var variants = result.Variants;
         while (applied)
         {
             applied = false;
@@ -248,18 +246,15 @@ public class AtomicGenerator<TTheme>
                         $"MultiPass variant '{variant.GetType().FullName}' matched token '{processed}' ambiguously ({handler.Length} handlers). A MultiPass variant may match more than once, but each match must be unambiguous; make its Match return a single handler per pass, or drop MultiPass."
                     );
 
-                var subMatchings = handler.Select(h =>
+                // Each branch continues from everything matched so far (this pass's earlier variants included),
+                // not from the state the call started with.
+                var current = result;
+                var subMatchings = handler.Select(h => new VariantMatchedResult<TTheme>
                 {
-                    var _processed = h.Matcher ?? processed;
-                    VariantHandlerBase[] _handlers = [h, .. handlers];
-                    HashSet<VariantBase<TTheme>> _variants = [variant, .. variants];
-                    return new VariantMatchedResult<TTheme>
-                    {
-                        Raw = result.Raw,
-                        Current = _processed,
-                        Handlers = _handlers,
-                        Variants = _variants,
-                    };
+                    Raw = current.Raw,
+                    Current = h.Matcher ?? processed,
+                    Handlers = [h, .. current.Handlers],
+                    Variants = [variant, .. current.Variants],
                 });
 
                 return [.. subMatchings.Select(c => MatchVariants(c, context)).SelectMany(x => x)];
@@ -267,7 +262,7 @@ public class AtomicGenerator<TTheme>
             if (!applied)
                 break;
 
-            if (handlers.Length > 500)
+            if (result.Handlers.Length > 500)
                 throw new InvalidOperationException(
                     $"More than 500 variant handlers were accumulated while resolving token '{result.Raw}' (current: '{result.Current}'). This usually means a variant keeps re-matching its own output, i.e. a cyclic variant; check MultiPass variants that rewrite the token into a form they still accept."
                 );
