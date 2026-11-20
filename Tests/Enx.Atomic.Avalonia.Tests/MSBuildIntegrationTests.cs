@@ -48,6 +48,22 @@ public sealed class MSBuildIntegrationTests : IDisposable
     }
 
     [Fact]
+    public void Build_WithSafelistItems_GeneratesStylesAndResourcesNotFoundInSource()
+    {
+        var (appDir, _) = Scaffold(safelist: "bg-red-500;hover:p-4");
+
+        var (exitCode, output) = DotnetBuild(appDir);
+
+        Assert.True(exitCode == 0, output);
+        var generated = ReadGenerated(appDir, output);
+        Assert.Contains(".Class(\"bg-red-500\")", generated);
+        Assert.Contains(".Class(\"hover:p-4\")", generated);
+        Assert.Contains(".Class(\"flex-row\")", generated);
+        var resources = File.ReadAllText(Path.Combine(appDir, "GeneratedStyles", "GenResources.g.cs"));
+        Assert.Contains("Colors[red-500]", resources);
+    }
+
+    [Fact]
     public void Build_WithGridUtilityClasses_EmbedsSelfContainedGhostPropertyClass()
     {
         // Regression test: grid-cols-*/grid-rows-* resolve to a Setter targeting a ghost AvaloniaProperty
@@ -178,7 +194,7 @@ public sealed class MSBuildIntegrationTests : IDisposable
     }
 
     /// <summary>Writes a throwaway config project + app project pair (mirroring <c>Examples/</c>) under <see cref="_root"/>, referencing this repo's real <c>Sources/</c> projects by absolute path, and returns both directories.</summary>
-    private (string AppDir, string ConfigDir) Scaffold()
+    private (string AppDir, string ConfigDir) Scaffold(string? safelist = null)
     {
         var configDir = Path.Combine(_root, "Config");
         var appDir = Path.Combine(_root, "App");
@@ -243,6 +259,7 @@ public sealed class MSBuildIntegrationTests : IDisposable
             """
         );
 
+        var safelistItem = safelist is null ? "" : $"""<EnxAtomicSafelist Include="{safelist}" />""";
         File.WriteAllText(
             Path.Combine(appDir, "ThrowawayApp.csproj"),
             $"""
@@ -257,6 +274,7 @@ public sealed class MSBuildIntegrationTests : IDisposable
                 </PropertyGroup>
                 <ItemGroup>
                     <PackageReference Include="Avalonia" Version="12.1.1" />
+                    {safelistItem}
                 </ItemGroup>
                 <Import Project="{targetsPath}" />
             </Project>

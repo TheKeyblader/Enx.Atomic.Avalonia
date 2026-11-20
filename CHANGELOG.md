@@ -31,6 +31,15 @@ All notable changes to this project are documented here. The format follows
   warning. `AtomicGenerator.GetShortcutExpansion(raw)` returns a shortcut's leaf tokens.
 - `probe` shows a shortcut's expansion (`shortcut` in `--json`) and each style's layer in its
   sort key (`sortKey.layer`).
+- A manual safelist, for tokens no scanned source contains (built at runtime, or used by a
+  referenced library's compiled XAML): `AtomicConfiguration.Safelist` lists tokens that are
+  always generated. An entry may hold several tokens separated by spaces. `AtomicGenerator.Options.Safelist`
+  adds entries for a single call and `Options.IncludeSafelist = false` skips them. They are
+  generated in the usual order and resolved once when a source also contains them. The
+  caller's token set is not modified. A safelisted token that matches nothing is reported in
+  `Diagnostics`. `AtomicCli generate` takes a repeatable `--safelist <TOKEN>` on top of the
+  configuration's list, and the MSBuild wiring passes one per `@(EnxAtomicSafelist)` item
+  (`<EnxAtomicSafelist Include="bg-red-500;hover:p-4" />`). `probe` ignores the safelist.
 
 ### Fixed
 

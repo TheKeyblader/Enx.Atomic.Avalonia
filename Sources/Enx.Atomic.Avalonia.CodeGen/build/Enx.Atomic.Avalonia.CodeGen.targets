@@ -88,7 +88,13 @@
             Condition="'$([System.IO.Path]::GetDirectoryName($(EnxAtomicStylesOutputPath)))' != ''"
         />
 
-        <Exec Command="dotnet exec &quot;%(_EnxAtomicConfigAssembly.FullPath)&quot; --output &quot;$(EnxAtomicStylesOutputPath)&quot; --namespace &quot;$(EnxAtomicNamespace)&quot; --class &quot;$(EnxAtomicClassName)&quot; --container &quot;$(EnxAtomicContainerName)&quot; --resources-output &quot;$(EnxAtomicResourcesOutputPath)&quot; --resources-class &quot;$(EnxAtomicResourcesClassName)&quot; @(_EnxAtomicSource->'&quot;%(FullPath)&quot;', ' ')" />
+        <!--
+          A consuming project can add <EnxAtomicSafelist Include="bg-red-500;hover:p-4" /> to an ItemGroup
+          for classes its sources don't contain. MSBuild splits Include on semicolons and treats * and ? as
+          wildcards: escape those characters if they are meant literally. Each item adds one quoted argument
+          to supplement the configuration project's safelist; no items means no extra arguments.
+        -->
+        <Exec Command="dotnet exec &quot;%(_EnxAtomicConfigAssembly.FullPath)&quot; --output &quot;$(EnxAtomicStylesOutputPath)&quot; --namespace &quot;$(EnxAtomicNamespace)&quot; --class &quot;$(EnxAtomicClassName)&quot; --container &quot;$(EnxAtomicContainerName)&quot; --resources-output &quot;$(EnxAtomicResourcesOutputPath)&quot; --resources-class &quot;$(EnxAtomicResourcesClassName)&quot; @(_EnxAtomicSource->'&quot;%(FullPath)&quot;', ' ') @(EnxAtomicSafelist->'--safelist &quot;%(Identity)&quot;', ' ')" />
 
         <ItemGroup>
             <Compile Include="$(EnxAtomicStylesOutputPath)" />

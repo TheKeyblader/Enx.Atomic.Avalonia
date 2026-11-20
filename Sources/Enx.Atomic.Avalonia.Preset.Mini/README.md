@@ -35,7 +35,10 @@ shortcut, whose name is a plain token:
 `configuration.Shortcuts.Add(Shortcut.Static("done", "line-through dark:text-gray-400"))`, then
 `Classes.done="{Binding IsDone}"`. Shortcuts belong to the engine rather than to this preset (see
 the root [README.md](../../README.md) and [ARCHITECTURE.md](../../ARCHITECTURE.md)), and any token
-documented here can appear in one.
+documented here can appear in one. The same goes for the engine's safelist
+(`configuration.Safelist`, or `@(EnxAtomicSafelist)` items), which generates a token documented
+here even when no scanned source contains it, for example one built at runtime
+(`Classes.Add($"bg-{color}-500")`).
 
 ## Variants
 

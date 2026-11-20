@@ -30,6 +30,17 @@ public class AtomicConfiguration<TTheme>
     /// </summary>
     public List<Extractor> Extractors { get; set; } = [new SplitExtractor(), new ClassesAttributeExtractor()];
 
+    /// <summary>
+    /// Utility tokens to generate even when no scanned source contains them, for example when built dynamically
+    /// at runtime or used in a referenced library's compiled XAML. Each entry may contain multiple
+    /// whitespace-separated tokens; blank entries are ignored.
+    /// </summary>
+    /// <remarks>
+    /// No UnoCSS-style callback is needed: the configuration project is plain C# and already has the theme
+    /// instance, so it can compute entries directly, e.g. <c>Safelist = [.. colors.Select(c => $"bg-{c}-500")]</c>.
+    /// </remarks>
+    public List<string> Safelist { get; set; } = [];
+
     /// <summary>Variants (e.g. <c>hover:</c>, <c>dark:</c>) that can be stripped from the front of a token before rule matching.</summary>
     public List<VariantBase<TTheme>> Variants { get; set; } = [];
 

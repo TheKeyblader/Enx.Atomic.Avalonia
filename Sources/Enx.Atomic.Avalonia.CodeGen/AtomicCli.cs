@@ -103,6 +103,13 @@ public sealed class AtomicCliSettings : CommandSettings
     [Description("Name of the generated resource-dictionary class. Defaults to 'AtomicResources'.")]
     public string ResourcesClassName { get; init; } = "AtomicResources";
 
+    /// <summary>Lets a caller request utilities not found in source without modifying the configuration project.</summary>
+    [CommandOption("--safelist <TOKEN>")]
+    [Description(
+        "Extra utility tokens to generate in addition to the configured safelist. Repeatable; accepts whitespace-separated tokens."
+    )]
+    public string[] Safelist { get; init; } = [];
+
     [CommandArgument(0, "[SOURCES]")]
     [Description("Source files (XAML/C#) to scan for utility tokens.")]
     public string[] Sources { get; init; } = [];
@@ -145,14 +152,13 @@ internal sealed class GenerateCommand<TTheme> : Command<AtomicCliSettings>
             pendingUtils.AddRange(generator.PendingUtils);
         }
 
-        // One resolution pass over the union of every source's tokens, then the transformer-registered styles,
-        // deduplicated and sorted together. Sorting the concatenation — not each file's slice — keeps a variant
-        // declared in one file emitted after the base utility another file declares (Avalonia's equal-priority
-        // cascade is insertion order — see StyleOrdering).
-        var utils = new List<StringifiedUtil>(generator.Generate(tokens, new AtomicGenerator<TTheme>.Options()));
+        // Resolve the union of all extracted and safelisted tokens, then deduplicate and sort together with
+        // transformer-registered styles. Sorting the concatenation — not each file's slice — keeps a variant
+        // after its base utility even when they come from different sources (see StyleOrdering).
+        var utils = new List<StringifiedUtil>(generator.Generate(tokens, new() { Safelist = settings.Safelist }));
 
-        // A shortcut expanding to a token no rule matches is a configuration typo, not a build failure: the rest
-        // of the shortcut still applies, so report it like the missing-source warning above and keep going.
+        // Unmatched shortcut expansions and safelist entries can be configuration typos, not build failures:
+        // report them like the missing-source warning above and keep going.
         foreach (var diagnostic in generator.Diagnostics)
             console.MarkupLineInterpolated($"[yellow]Enx.Atomic.Avalonia.CodeGen: {diagnostic}.[/]");
 

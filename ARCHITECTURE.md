@@ -145,7 +145,21 @@ A string like `hover:bg-red-500` goes through four steps:
   a variant (`dark:`, `hover:`) under a binding-toggled class, since the XML attribute
   name itself can't carry one.
 - **`AtomicConfiguration<TTheme>`** — assembles `Transformers`, `PreProcessors`,
-  `Rules`, `Shortcuts`, `Variants`, `Extractors`, and the `TTheme` instance.
+  `Rules`, `Shortcuts`, `Variants`, `Extractors`, `Safelist`, and the `TTheme` instance.
+- **Safelist** (`AtomicConfiguration.Safelist`, UnoCSS's `safelist`) — tokens generated
+  even though no scanned source contains them: built dynamically
+  (`Classes.Add($"bg-{color}-500")`), or used by a referenced library's compiled XAML,
+  which the extractors never see. Each entry is whitespace-split like a static shortcut's
+  expansion. There is no callback form like UnoCSS's `(context) => string[]`: the
+  configuration project is plain C# that already holds the theme instance, so it computes
+  the list directly. `Generate(ISet<string>, Options)` unions the safelist into a *copy*
+  of the caller's set (so a safelisted token also found in a source resolves once), then
+  everything goes through `StyleOrdering.Sort` as usual — a safelisted `hover:w-8` still
+  sorts after an extracted `w-4`. `Options.Safelist` adds entries for one call (that's
+  how `AtomicCli --safelist` supplements the configuration without mutating it), and
+  `Options.IncludeSafelist = false` skips both. A safelisted token nothing matches is
+  recorded in `Diagnostics`, since unlike an extracted string (most of which are not
+  tokens at all) it was written on purpose; an unmatched extracted token stays silent.
 - **`AtomicGenerator<TTheme>`** — the engine itself. `Generate(...)` runs the full
   pipeline above and returns `StringifiedUtil[]`, cached by raw token, in
   `StyleOrdering`'s canonical emission order (see "Emission order" below). Also
@@ -467,8 +481,13 @@ extraction into **one shared token set**, then resolves that union once, merges 
 set with `StyleOrdering.Sort`, and only then calls `StyleEmitter.Emit`. Resolving per
 file and concatenating used to emit a token used by two files twice, and ordering per
 file let a variant declared in one file sort before its base declared in another.
+`--safelist <TOKEN>` (repeatable, whitespace-split like a configured entry) adds
+safelisted tokens on top of `AtomicConfiguration.Safelist`, through `Options.Safelist`,
+so an app can extend the list without touching a configuration project it may share
+with other apps; with a safelist, `generate` produces styles even with no source file.
 Each entry of `AtomicGenerator.Diagnostics` (a shortcut expanding to a token nothing
-matches) is printed as a yellow warning, like a missing source file; the build goes on.
+matches, or a safelisted token nothing matches) is printed as a yellow warning, like a
+missing source file; the build goes on.
 `--resources-output`/`--resources-class` (optional — omitting `--resources-output` skips
 resource generation entirely) do the same for `ResourceDictionaryEmitter`. See
 `Examples/Enx.Atomic.Avalonia.Example.Config` for a minimal config project — it
@@ -498,7 +517,9 @@ applies the styles in emitted order plus a resource dictionary built the way
 `ResourceDictionaryEmitter` builds one, and reports the values Avalonia actually ended
 up with — composite properties included, with the sides they were recomposed from.
 `--json` prints one stable document (`tokens`/`resources`/`control`, documented on
-`ProbeSettings`) for agents and scripts. It deliberately goes through the same public
+`ProbeSettings`) for agents and scripts. The safelist is deliberately left out: `probe`
+resolves exactly the tokens it is given, so unrelated safelisted styles can't shift the
+reported positions. It deliberately goes through the same public
 API the runtime and build-time paths use, so what it reports is what `generate`
 emits. The repo's `/probe` OpenCode command runs it against
 `Examples/Enx.Atomic.Avalonia.Example.Config`.
@@ -520,7 +541,9 @@ standard NuGet convention). During the consuming project's build, the target:
 1. Builds the configuration project via `<MSBuild Targets="Restore;Build">` and
    resolves its output assembly.
 2. Runs it with `dotnet exec` against the consuming project's `@(Compile)` and
-   `@(AvaloniaXaml)` items.
+   `@(AvaloniaXaml)` items, passing one `--safelist` per `@(EnxAtomicSafelist)` item
+   (`<EnxAtomicSafelist Include="bg-red-500;hover:p-4" />` — `Include` splits on `;`
+   and expands `*`/`?` as wildcards, so escape those if a token needs them literally).
 3. Writes the result to `GeneratedStyles/GenStyles.g.cs` and
    `GeneratedStyles/GenResources.g.cs`, next to the project file (not hidden under
    `obj/`, so they're easy to read) — overridable via `EnxAtomicStylesOutputPath`/

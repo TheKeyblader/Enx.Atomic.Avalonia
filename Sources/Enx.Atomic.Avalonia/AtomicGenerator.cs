@@ -2,6 +2,7 @@ using System.Linq.Expressions;
 using Avalonia.Styling;
 using Enx.Atomic.Avalonia.Compact;
 using Enx.Atomic.Avalonia.Internal;
+using Enx.Atomic.Avalonia.Shortcuts;
 
 namespace Enx.Atomic.Avalonia;
 
@@ -42,10 +43,9 @@ public class AtomicGenerator<TTheme>
     public IReadOnlyDictionary<string, StyleValue.Resource> ResolvedResources => _resolvedResources;
 
     /// <summary>
-    /// Non-fatal problems found while resolving shortcuts — today only an expansion token no rule or shortcut
-    /// matched (a configuration typo). Deduplicated in first-seen order, so a token used across several sources
-    /// reports once. A build must not fail on these: the rest of the shortcut still applies, so <c>AtomicCli</c>
-    /// prints them as warnings rather than throwing.
+    /// Non-fatal problems found while resolving explicitly configured tokens, such as unmatched shortcut
+    /// expansions or safelist entries. Accumulated and deduplicated in first-seen order across calls on this
+    /// generator. <c>AtomicCli</c> prints them as warnings rather than failing the build.
     /// </summary>
     public IReadOnlyList<string> Diagnostics => _diagnostics;
 
@@ -681,23 +681,34 @@ public class AtomicGenerator<TTheme>
         return StyleOrdering.Sort([.. Generate(tokens, options), .. _pendingUtils]);
     }
 
-    /// <summary>Resolves an already-extracted set of tokens into styles, skipping duplicates and tokens that match no rule.</summary>
+    /// <summary>
+    /// Resolves an already-extracted set of tokens and, by default, the safelist into styles without mutating
+    /// the supplied set. Duplicate tokens are resolved once; unmatched tokens are omitted. Unmatched
+    /// safelist entries are reported to <see cref="Diagnostics"/>; other unmatched inputs are not.
+    /// </summary>
     /// <remarks>Utilities are returned in <see cref="StyleOrdering"/>'s canonical emission order.</remarks>
     public StringifiedUtil[] Generate(ISet<string> tokens, Options options)
     {
-        var matched = new HashSet<string>();
+        var safelist = options.IncludeSafelist
+            ? ShortcutExpansion
+                .Split(Configuration.Safelist.Concat(options.Safelist ?? []))
+                .ToHashSet(StringComparer.Ordinal)
+            : [];
+        var combined = new HashSet<string>(tokens, StringComparer.Ordinal);
+        combined.UnionWith(safelist);
+
         List<StringifiedUtil> sheet = [];
 
-        foreach (var token in tokens)
+        foreach (var token in combined)
         {
-            if (matched.Contains(token))
-                continue;
-
             var payload = ParseToken(token);
             if (payload.Length == 0)
+            {
+                if (safelist.Contains(token))
+                    AddDiagnostic($"Safelisted token '{token}' matched no rule");
                 continue;
+            }
 
-            matched.Add(token);
             sheet.AddRange(payload);
         }
 
@@ -709,5 +720,17 @@ public class AtomicGenerator<TTheme>
     {
         /// <summary>Identifier scoping extracted tokens to a particular source, forwarded to extractors.</summary>
         public string? Id { get; init; }
+
+        /// <summary>
+        /// Includes both configured and per-call safelist entries by default. Disable to resolve only tokens
+        /// supplied by the caller or found in the input.
+        /// </summary>
+        public bool IncludeSafelist { get; init; } = true;
+
+        /// <summary>
+        /// Additional whitespace-separated safelist entries for this call, so callers can request extra
+        /// utilities without changing the shared configuration. Ignored when <see cref="IncludeSafelist"/> is disabled.
+        /// </summary>
+        public IEnumerable<string>? Safelist { get; init; }
     }
 }
