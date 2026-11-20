@@ -7,6 +7,8 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.0.8] - 2026-11-20
+
 ### Added
 
 - Shortcuts, UnoCSS-style: `AtomicConfiguration.Shortcuts` expands one token into several
@@ -337,7 +339,8 @@ Initial release.
   by pushing a `vX.Y.Z` tag.
 - MIT license.
 
-[Unreleased]: https://github.com/TheKeyblader/Enx.Atomic.Avalonia/compare/v0.0.7...HEAD
+[Unreleased]: https://github.com/TheKeyblader/Enx.Atomic.Avalonia/compare/v0.0.8...HEAD
+[0.0.8]: https://github.com/TheKeyblader/Enx.Atomic.Avalonia/compare/v0.0.7...v0.0.8
 [0.0.7]: https://github.com/TheKeyblader/Enx.Atomic.Avalonia/compare/v0.0.6...v0.0.7
 [0.0.6]: https://github.com/TheKeyblader/Enx.Atomic.Avalonia/compare/v0.0.5...v0.0.6
 [0.0.5]: https://github.com/TheKeyblader/Enx.Atomic.Avalonia/compare/v0.0.4...v0.0.5
