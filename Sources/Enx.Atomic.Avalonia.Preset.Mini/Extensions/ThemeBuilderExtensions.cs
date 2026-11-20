@@ -208,7 +208,7 @@ public static class ThemeBuilderExtensions
         return builder;
     }
 
-    /// <summary>Registers <see cref="LineHeightRule{TTheme}"/> and <see cref="LetterSpacingRule{TTheme}"/>. No scale is seeded: upstream's line-height entries are unitless multipliers and its letter-spacing entries are in <c>em</c>, neither of which an absolute Avalonia pixel length can express — only the arbitrary-px and bare-rem forms resolve.</summary>
+    /// <summary>Registers <see cref="LineHeightRule{TTheme}"/> and <see cref="LetterSpacingRule{TTheme}"/>. No scale is seeded: upstream's line-height entries are unitless multipliers and its letter-spacing entries are in <c>em</c>, neither of which an absolute Avalonia pixel length can express — only the arbitrary-px and bare-number forms resolve.</summary>
     public static ThemeBuilder<TTheme> AddTypographyLengthRules<TTheme>(
         this ThemeBuilder<TTheme> builder,
         AtomicConfiguration<TTheme> configuration

@@ -114,7 +114,7 @@ public class SizeRuleTests
         var window = utils.ShowWithStyles(border);
         try
         {
-            Assert.Equal(64, border.Width);
+            Assert.Equal(16, border.Width);
         }
         finally
         {
@@ -160,7 +160,7 @@ public class SizeRuleTests
     }
 
     [AvaloniaTheory]
-    [InlineData("size-4", 64)]
+    [InlineData("size-4", 16)]
     [InlineData("size-[123px]", 123)]
     public void Size_BareAndArbitraryValuesResolveToPixels(string token, double expected)
     {
@@ -224,8 +224,8 @@ public class SizeRuleTests
 
     /// <summary>
     /// <c>size-*</c> is registered before <c>w-*</c>/<c>h-*</c> (as upstream declares them), so an axis-specific
-    /// token wins only its own property, in either source order: the width is <c>w-8</c>'s 128px, the height stays
-    /// <c>size-4</c>'s 64px.
+    /// token wins only its own property, in either source order: the width is <c>w-8</c>'s 32px, the height stays
+    /// <c>size-4</c>'s 16px.
     /// </summary>
     [AvaloniaTheory]
     [InlineData("size-4 w-8")]
@@ -239,8 +239,8 @@ public class SizeRuleTests
         var window = utils.ShowWithStyles(border);
         try
         {
-            Assert.Equal(128, border.Width);
-            Assert.Equal(64, border.Height);
+            Assert.Equal(32, border.Width);
+            Assert.Equal(16, border.Height);
         }
         finally
         {

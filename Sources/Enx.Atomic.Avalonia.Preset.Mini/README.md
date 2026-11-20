@@ -201,10 +201,10 @@ Notes:
   `shadow-inset` modifier, `shadow-opacity-*` and arbitrary values are not implemented.
 - **`w-*`/`h-*` use the small named [Sizes](#sizes) scale, not [Spacing](#spacing)** — this differs
   from Tailwind, where `w-*` shares the spacing scale. A bare number here (e.g. `w-64`) that isn't a
-  named `Sizes` key falls back to being read as **rem** (`64rem × 16 = 1024px`), not the spacing
-  scale's `64 → 256px`.
+  named `Sizes` key falls back to UnoCSS's bare-number convention, **quarter-rems**
+  (`64 / 4 = 16rem × 16 = 256px`), so it lands on the same value the spacing scale gives `m-64`.
 - **`size-*` sets both lengths and is registered before `w-*`/`h-*`** (upstream's order), so an
-  axis-specific token wins only its own property: `size-4 w-8` is 128px wide and 64px tall in either
+  axis-specific token wins only its own property: `size-4 w-8` is 32px wide and 16px tall in either
   source order. Inside the rule `size-auto` < a concrete size < `size-full`, as for `w-auto`/`w-full`.
 - **`opacity-*`/`op-*` read a bare token as a percentage** (UnoCSS's `h.bracket.percent`), so
   `opacity-50` is `0.5` and `opacity-0.5` is `0.005`; an arbitrary value is taken as written —
@@ -214,7 +214,7 @@ Notes:
   means "as if unset", which an `int` cannot express.
 - **`leading-*`/`tracking-*` are absolute-length only.** Avalonia's `TextBlock.LineHeight` and
   `TextElement.LetterSpacing` are pixels, so an arbitrary value (`leading-[24px]`) or a bare number
-  read as rem (`leading-4` = 64px) resolves; upstream's named scales are unitless line-height
+  in quarter-rems (`leading-4` = 16px) resolves; upstream's named scales are unitless line-height
   multipliers and `em` letter-spacing values, which a style cannot resolve against the element's own
   font size, so `leading-tight`/`tracking-wide`/... do not resolve.
 - **`font-sans`/`font-serif`/`font-mono` come from the [FontFamilies](#fontfamilies) scale** and set
@@ -358,7 +358,7 @@ list, in upstream's order but without the web-only generic keywords (`ui-sans-se
 
 `leading-*`/`lh-*`/`line-height-*` and `tracking-*` have no scale: upstream's entries are unitless
 line-height multipliers and `em` letter-spacing values, which have no absolute Avalonia equivalent —
-only their `[Npx]` and bare-rem forms resolve.
+only their `[Npx]` and bare-number forms resolve.
 
 ### Breakpoints
 

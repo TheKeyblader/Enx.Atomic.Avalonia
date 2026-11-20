@@ -12,8 +12,8 @@ namespace Enx.Atomic.Avalonia.Preset.Mini.Dynamic;
 /// Avalonia's <c>LetterSpacing</c> is documented and implemented in <em>pixels</em> (it feeds the glyph shaper as an
 /// absolute advance adjustment), while every upstream <c>letterSpacing</c> entry is in <c>em</c> — relative to the
 /// element's own resolved font size, which a style cannot read. So only the absolute forms are ported: an arbitrary
-/// pixel value (<c>tracking-[2px]</c>) or a bare number read as rem (<c>tracking-4</c> = 64px, this preset's
-/// bare-number convention). The named scale (<c>tracking-tight</c>, <c>tracking-wide</c>, …) is therefore dropped
+/// pixel value (<c>tracking-[2px]</c>) or a bare number in quarter-rems (<c>tracking-4</c> = 1rem = 16px,
+/// UnoCSS's bare-number convention). The named scale (<c>tracking-tight</c>, <c>tracking-wide</c>, …) is therefore dropped
 /// rather than baked against a guessed font size — see <see cref="ThemeScale.TryResolveUnscaled"/>.
 /// </para>
 /// </summary>

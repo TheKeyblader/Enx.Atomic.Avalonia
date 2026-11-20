@@ -120,10 +120,12 @@ A string like `hover:bg-red-500` goes through four steps:
   order; `StringifiedUtil.Rank` carries it to `StyleOrdering`.
   - **`ThemeScale`** — resolves a theme key, falling back, in order, to an
     `ArbitraryValue` then a bare number. `TryResolve` treats the bare-number fallback
-    as **rem** (converted to px via `RemToPxFactor`) — the behavior of most UnoCSS
-    scales (`spacing`, `borderRadius`, ...). `TryResolvePx` treats it as a **raw px**
+    as **quarter-rems**, like UnoCSS's `rem` handler (`n` → `n / 4` rem, so `w-4` =
+    1rem = 16px, then px via `RemToPxFactor`) — the behavior of most UnoCSS scales
+    (`spacing`, `borderRadius`, ...), and consistent with the spacing scale's own
+    numeric keys. `TryResolvePx` treats it as a **raw px**
     value, no conversion — UnoCSS's `lineWidth` scale behavior (border/ring/outline).
-    `TryResolveUnscaled` keeps only the arbitrary-px and bare-rem fallbacks, for a family
+    `TryResolveUnscaled` keeps only the arbitrary-px and bare-number fallbacks, for a family
     whose upstream scale has no portable entries at all (`leading-*`'s unitless
     multipliers, `tracking-*`'s `em` values — both absolute pixels in Avalonia).
   - **`ArbitraryValue`** — UnoCSS/Tailwind's `{prefix}-[{value}]` bracket syntax,

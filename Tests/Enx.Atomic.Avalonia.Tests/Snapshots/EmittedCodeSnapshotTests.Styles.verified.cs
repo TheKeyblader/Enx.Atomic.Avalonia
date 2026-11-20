@@ -174,11 +174,11 @@ public partial class AtomicStyles : Styles
         style45.Setters.Add(new Setter(Canvas.TopProperty, 16d));
         Add(style45);
         var style46 = new Style(selector => selector.Is<Layoutable>().Class("size-4"));
-        style46.Setters.Add(new Setter(Layoutable.WidthProperty, 64d));
-        style46.Setters.Add(new Setter(Layoutable.HeightProperty, 64d));
+        style46.Setters.Add(new Setter(Layoutable.WidthProperty, 16d));
+        style46.Setters.Add(new Setter(Layoutable.HeightProperty, 16d));
         Add(style46);
         var style47 = new Style(selector => selector.Is<Layoutable>().Class("h-8"));
-        style47.Setters.Add(new Setter(Layoutable.HeightProperty, 128d));
+        style47.Setters.Add(new Setter(Layoutable.HeightProperty, 32d));
         Add(style47);
         var style48 = new Style(selector => selector.Is<Layoutable>().Class("max-w-xl"));
         style48.Setters.Add(new Setter(Layoutable.MaxWidthProperty, 576d));
@@ -187,7 +187,7 @@ public partial class AtomicStyles : Styles
         style49.Setters.Add(new Setter(Layoutable.MinWidthProperty, 0d));
         Add(style49);
         var style50 = new Style(selector => selector.Is<Layoutable>().Class("w-4"));
-        style50.Setters.Add(new Setter(Layoutable.WidthProperty, 64d));
+        style50.Setters.Add(new Setter(Layoutable.WidthProperty, 16d));
         Add(style50);
         var style51 = new Style(selector => selector.Is<Layoutable>().Class("w-[123px]"));
         style51.Setters.Add(new Setter(Layoutable.WidthProperty, 123d));
@@ -311,7 +311,7 @@ public partial class AtomicStyles : Styles
         style85.Setters.Add(new Setter(Grid.RowSpanProperty, 2));
         Add(style85);
         var style86 = new Style(selector => selector.Is<Layoutable>().Class("max-sm:w-4"));
-        style86.Setters.Add(new Setter(Layoutable.WidthProperty, 64d));
+        style86.Setters.Add(new Setter(Layoutable.WidthProperty, 16d));
         var style86Query = new ContainerQuery(query => query.Width(StyleQueryComparisonOperator.LessThanOrEquals, 640d), "top-level");
         style86Query.Add(style86);
         Add(style86Query);
@@ -341,7 +341,7 @@ public partial class AtomicStyles : Styles
         style91Query.Add(style91);
         Add(style91Query);
         var style92 = new Style(selector => selector.Is<Layoutable>().Class("hover:w-8").Class(":pointerover"));
-        style92.Setters.Add(new Setter(Layoutable.WidthProperty, 128d));
+        style92.Setters.Add(new Setter(Layoutable.WidthProperty, 32d));
         Add(style92);
         var style93 = new Style(selector => selector.Is<Border>().Class("dark:bg-slate-800").PropertyEquals(ThemeVariantScope.ActualThemeVariantProperty, ThemeVariant.Dark));
         style93.Setters.Add(new Setter(Border.BackgroundProperty, new DynamicResourceExtension("Colors[slate-800]")));

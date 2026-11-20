@@ -11,7 +11,7 @@ namespace Enx.Atomic.Avalonia.Preset.Mini.Dynamic;
 /// <para>
 /// Avalonia's <c>LineHeight</c> is an <em>absolute</em> pixel height (<c>double.NaN</c> meaning "derive it from the
 /// font metrics"), so only the absolute forms are ported: an arbitrary pixel value (<c>leading-[24px]</c>) or a bare
-/// number read as rem (<c>leading-4</c> = 64px, this preset's bare-number convention). Upstream's named entries
+/// number in quarter-rems (<c>leading-4</c> = 1rem = 16px, UnoCSS's bare-number convention). Upstream's named entries
 /// (<c>leading-none</c> = 1, <c>leading-tight</c> = 1.25, <c>leading-normal</c> = 1.5, …) are unitless multipliers,
 /// and a style cannot multiply an absolute height by the element's resolved <c>FontSize</c> at application time, so
 /// they are deliberately dropped rather than baked against a guessed font size — see

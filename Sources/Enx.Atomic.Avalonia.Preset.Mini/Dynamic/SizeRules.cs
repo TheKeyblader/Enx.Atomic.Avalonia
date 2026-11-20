@@ -34,7 +34,7 @@ public partial class SizeRule<TTheme> : IOrderRankedDynamicRule<TTheme>
     /// <summary>Rank of a self-sizing keyword below a concrete size (<c>w-auto</c>).</summary>
     private const int AutoRank = 0;
 
-    /// <summary>Rank of a concrete size resolved from the scale, a bare rem number or an arbitrary value.</summary>
+    /// <summary>Rank of a concrete size resolved from the scale, a bare number or an arbitrary value.</summary>
     private const int SizeRank = 1;
 
     /// <summary>Rank of a self-sizing keyword above a concrete size (<c>w-full</c>).</summary>
@@ -95,7 +95,7 @@ public partial class SizeRule<TTheme> : IOrderRankedDynamicRule<TTheme>
 /// <summary>
 /// Dynamic rule setting both <see cref="Layoutable.WidthProperty"/> and <see cref="Layoutable.HeightProperty"/> from
 /// <see cref="ISizePart.Sizes"/> (<c>size-*</c>, <c>size-min-*</c>, <c>size-max-*</c>) — the two-axis form of
-/// <see cref="SizeRule{TTheme}"/>, resolving through the same scale, bare-rem fallback and arbitrary px escape hatch.
+/// <see cref="SizeRule{TTheme}"/>, resolving through the same scale, bare-number (quarter-rem) fallback and arbitrary px escape hatch.
 /// The self-sizing keywords expand to both axes: <c>size-full</c> is <c>w-full h-full</c> (clear both lengths and
 /// stretch both axes) and <c>size-auto</c> is <c>w-auto h-auto</c> (clear both lengths, leave the alignment alone).
 ///
@@ -113,7 +113,7 @@ public partial class SizeBothRule<TTheme> : IOrderRankedDynamicRule<TTheme>
     /// <summary>Rank of a self-sizing keyword below a concrete size (<c>size-auto</c>).</summary>
     private const int AutoRank = 0;
 
-    /// <summary>Rank of a concrete size resolved from the scale, a bare rem number or an arbitrary value.</summary>
+    /// <summary>Rank of a concrete size resolved from the scale, a bare number or an arbitrary value.</summary>
     private const int SizeRank = 1;
 
     /// <summary>Rank of a self-sizing keyword above a concrete size (<c>size-full</c>).</summary>

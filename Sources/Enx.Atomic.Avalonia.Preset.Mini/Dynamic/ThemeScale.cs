@@ -6,8 +6,13 @@ namespace Enx.Atomic.Avalonia.Preset.Mini.Dynamic;
 /// Resolves a dynamic rule's captured value against a theme's scale dictionary (e.g. <see cref="ISpacingPart.Spacing"/>),
 /// falling back, in order, to: an <see cref="ArbitraryValue"/> (<c>[123px]</c>, taken as a literal pixel value,
 /// no rem conversion — an explicit escape hatch, so it skips the scale entirely rather than trying it first),
-/// then a bare <c>rem</c> number — converted to pixels via <see cref="IRemToPxPart.RemToPxFactor"/> — when it
-/// isn't a named entry in the scale either.
+/// then a bare number when it isn't a named entry in the scale either.
+/// <para>
+/// A bare number counts in quarter-rems, as UnoCSS's <c>rem</c> handler does (<c>n</c> → <c>n / 4</c> rem, so
+/// <c>w-4</c> is 1rem = 16px and <c>w-0.5</c> is 2px), then is converted to pixels via
+/// <see cref="IRemToPxPart.RemToPxFactor"/>. That keeps a bare number consistent with the spacing scale, whose
+/// numeric keys follow the same convention (<c>m-4</c> = 16px).
+/// </para>
 /// <para>
 /// Every scale and the factor are <see cref="double"/>, the type of every Avalonia length property, so a resolved
 /// value can be boxed into a setter as-is instead of being widened (and possibly rounded through <c>float</c>)
@@ -29,20 +34,13 @@ internal static class ThemeScale
         if (scale.TryGetValue(key, out value))
             return true;
 
-        if (double.TryParse(key, NumberStyles.Float, CultureInfo.InvariantCulture, out var rem))
-        {
-            value = rem * remToPxFactor;
-            return true;
-        }
-
-        value = default;
-        return false;
+        return TryParseBare(key, remToPxFactor, out value);
     }
 
     /// <summary>
     /// Like <see cref="TryResolve(Dictionary{string, double}, string, double, out double)"/>, for a family whose upstream
     /// scale has no portable entries at all: it tries only an <see cref="ArbitraryValue"/> (as pixels) and then a bare
-    /// number (as rem). UnoCSS's <c>lineHeight</c> scale is made of unitless multipliers and its <c>letterSpacing</c>
+    /// number (in quarter-rems). UnoCSS's <c>lineHeight</c> scale is made of unitless multipliers and its <c>letterSpacing</c>
     /// scale of <c>em</c> values, while Avalonia's <c>LineHeight</c>/<c>LetterSpacing</c> are absolute pixels — a style
     /// cannot resolve either against the element's own font size — so those named entries are dropped rather than
     /// approximated (see <c>LineHeightRule</c>/<c>LetterSpacingRule</c>).
@@ -52,21 +50,27 @@ internal static class ThemeScale
         if (ArbitraryValue.TryUnwrap(key, out var arbitrary))
             return TryParsePx(arbitrary, out value);
 
-        if (double.TryParse(key, NumberStyles.Float, CultureInfo.InvariantCulture, out var rem))
+        return TryParseBare(key, remToPxFactor, out value);
+    }
+
+    /// <summary>A bare number in quarter-rems (UnoCSS's <c>rem</c> handler), converted to pixels.</summary>
+    private static bool TryParseBare(string key, double remToPxFactor, out double value)
+    {
+        if (!double.TryParse(key, NumberStyles.Float, CultureInfo.InvariantCulture, out var quarterRems))
         {
-            value = rem * remToPxFactor;
-            return true;
+            value = default;
+            return false;
         }
 
-        value = default;
-        return false;
+        value = quarterRems / 4 * remToPxFactor;
+        return true;
     }
 
     /// <summary>
     /// Like <see cref="TryResolve(Dictionary{string, double}, string, double, out double)"/>, but falls back to
-    /// treating an unmatched raw token as a bare <c>px</c> number instead of <c>rem</c> — matching UnoCSS's
+    /// treating an unmatched raw token as a bare <c>px</c> number instead of quarter-rems — matching UnoCSS's
     /// <c>lineWidth</c> scale (border/ring/outline thickness), which resolves unmatched numbers directly in
-    /// pixels rather than rem. An <see cref="ArbitraryValue"/> resolves the same way either way.
+    /// pixels. An <see cref="ArbitraryValue"/> resolves the same way either way.
     /// </summary>
     public static bool TryResolvePx(this Dictionary<string, double> scale, string key, out double value)
     {

@@ -6,16 +6,16 @@ namespace Enx.Atomic.Avalonia.Tests;
 
 /// <summary>
 /// <c>leading-*</c>/<c>lh-*</c>/<c>line-height-*</c> and <c>tracking-*</c>: Avalonia's <c>LineHeight</c> and
-/// <c>LetterSpacing</c> are absolute pixels, so only the arbitrary-px and bare-rem forms resolve — upstream's
+/// <c>LetterSpacing</c> are absolute pixels, so only the arbitrary-px and bare-number forms resolve — upstream's
 /// unitless-multiplier and <c>em</c> scale entries are deliberately not ported (they would need the element's own
 /// resolved font size, which a style cannot read).
 /// </summary>
 public class TypographyLengthRuleTests
 {
     [AvaloniaTheory]
-    [InlineData("leading-4", 64)]
-    [InlineData("lh-2", 32)]
-    [InlineData("line-height-1", 16)]
+    [InlineData("leading-4", 16)]
+    [InlineData("lh-2", 8)]
+    [InlineData("line-height-1", 4)]
     [InlineData("leading-[24px]", 24)]
     public void LineHeight_ResolvesAbsoluteLengths(string token, double expected)
     {
@@ -54,7 +54,7 @@ public class TypographyLengthRuleTests
     }
 
     [AvaloniaTheory]
-    [InlineData("tracking-2", 32)]
+    [InlineData("tracking-2", 8)]
     [InlineData("tracking-[2px]", 2)]
     [InlineData("tracking-[0]", 0)]
     public void LetterSpacing_ResolvesAbsoluteLengths(string token, double expected)
@@ -115,7 +115,7 @@ public class TypographyLengthRuleTests
         var window = utils.ShowWithStyles(text);
         try
         {
-            Assert.Equal(128, text.LineHeight);
+            Assert.Equal(32, text.LineHeight);
         }
         finally
         {

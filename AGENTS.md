@@ -95,8 +95,8 @@ Each of these has already cost a debugging session. Details in `ARCHITECTURE.md`
   but a rule that computes its own value must still box the exact type. `CodeGenTests` exists
   to catch this; extend it rather than relying on a source-text check.
 - **Arbitrary values (`[...]`) are always `StyleValue.Literal`, never `Resource`**, always pixels,
-  never rem-converted; the bare-number fallback *is* rem (`TryResolve`) except line widths
-  (`TryResolvePx`).
+  never rem-converted; the bare-number fallback is quarter-rems like UnoCSS (`TryResolve`:
+  `w-4` = 1rem = 16px) except line widths, which are raw px (`TryResolvePx`).
 - **Static init needs Avalonia's headless platform.** Some static rules (`Cursors`) construct real
   Avalonia types; a config project or test touching `AddMiniTheme` must bootstrap headless first
   (tests use `[AvaloniaFact]`, not `[Fact]`).

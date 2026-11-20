@@ -18,7 +18,7 @@ public class EmissionOrderTests
 {
     /// <summary>
     /// The failure case: the variant is written <em>before</em> its base. Emission order must not depend on source
-    /// order, so <c>hover:w-8 w-4</c> must behave exactly like <c>w-4 hover:w-8</c>: 64 at rest, 128 while hovered.
+    /// order, so <c>hover:w-8 w-4</c> must behave exactly like <c>w-4 hover:w-8</c>: 16 at rest, 32 while hovered.
     /// </summary>
     [AvaloniaFact]
     public void HoverVariantWrittenFirst_StillWinsOverItsBase()
@@ -29,13 +29,13 @@ public class EmissionOrderTests
         var window = utils.ShowWithStyles(border);
         try
         {
-            Assert.Equal(64, border.Width);
+            Assert.Equal(16, border.Width);
 
             border.SetPseudoClass(":pointerover", true);
-            Assert.Equal(128, border.Width);
+            Assert.Equal(32, border.Width);
 
             border.SetPseudoClass(":pointerover", false);
-            Assert.Equal(64, border.Width);
+            Assert.Equal(16, border.Width);
         }
         finally
         {
@@ -53,10 +53,10 @@ public class EmissionOrderTests
         var window = utils.ShowWithStyles(border);
         try
         {
-            Assert.Equal(64, border.Width);
+            Assert.Equal(16, border.Width);
 
             border.SetPseudoClass(":pointerover", true);
-            Assert.Equal(128, border.Width);
+            Assert.Equal(32, border.Width);
         }
         finally
         {
@@ -66,7 +66,7 @@ public class EmissionOrderTests
 
     /// <summary>
     /// A breakpoint written before its base: while the container is wide enough for <c>sm</c> the scoped value must
-    /// win (128), and once it drops below 640 only the base applies (64). The container sizing is set up by
+    /// win (32), and once it drops below 640 only the base applies (16). The container sizing is set up by
     /// <see cref="TestHelpers.ShowWithStyles(IEnumerable{StringifiedUtil}, double, Control[])"/>.
     /// </summary>
     [AvaloniaFact]
@@ -78,15 +78,15 @@ public class EmissionOrderTests
         var window = utils.ShowWithStyles(800, border);
         try
         {
-            Assert.Equal(128, border.Width);
+            Assert.Equal(32, border.Width);
 
             window.Width = 500;
             Dispatcher.UIThread.RunJobs();
-            Assert.Equal(64, border.Width);
+            Assert.Equal(16, border.Width);
 
             window.Width = 800;
             Dispatcher.UIThread.RunJobs();
-            Assert.Equal(128, border.Width);
+            Assert.Equal(32, border.Width);
         }
         finally
         {
@@ -108,17 +108,17 @@ public class EmissionOrderTests
         var window = utils.ShowWithStyles(800, border);
         try
         {
-            // Wide, not hovered: only the breakpoint applies (96).
-            Assert.Equal(96, border.Width);
+            // Wide, not hovered: only the breakpoint applies (24).
+            Assert.Equal(24, border.Width);
 
-            // Wide and hovered: both apply, and the more specific selector wins (128).
+            // Wide and hovered: both apply, and the more specific selector wins (32).
             border.SetPseudoClass(":pointerover", true);
-            Assert.Equal(128, border.Width);
+            Assert.Equal(32, border.Width);
 
             // Narrow and hovered: the breakpoint no longer applies, hover still does.
             window.Width = 500;
             Dispatcher.UIThread.RunJobs();
-            Assert.Equal(128, border.Width);
+            Assert.Equal(32, border.Width);
 
             // Narrow, not hovered: nothing applies, back to the unset value.
             border.SetPseudoClass(":pointerover", false);
@@ -132,7 +132,7 @@ public class EmissionOrderTests
 
     /// <summary>
     /// The upper-bound counterpart: <c>max-sm:</c> is a "width at most 640" condition, so it must still be emitted
-    /// after an unconditional base utility (128 while narrow, 64 once the container is wide enough that only the
+    /// after an unconditional base utility (32 while narrow, 16 once the container is wide enough that only the
     /// base applies). Among several upper bounds the narrowest wins, which is why the group orders them by
     /// descending threshold.
     /// </summary>
@@ -145,15 +145,15 @@ public class EmissionOrderTests
         var window = utils.ShowWithStyles(500, border);
         try
         {
-            Assert.Equal(128, border.Width);
+            Assert.Equal(32, border.Width);
 
             window.Width = 800;
             Dispatcher.UIThread.RunJobs();
-            Assert.Equal(64, border.Width);
+            Assert.Equal(16, border.Width);
 
             window.Width = 500;
             Dispatcher.UIThread.RunJobs();
-            Assert.Equal(128, border.Width);
+            Assert.Equal(32, border.Width);
         }
         finally
         {
@@ -162,7 +162,7 @@ public class EmissionOrderTests
     }
 
     /// <summary>
-    /// Two breakpoints written in reverse: both match at 800, and the larger one (<c>md</c>, 128) must win because
+    /// Two breakpoints written in reverse: both match at 800, and the larger one (<c>md</c>, 32) must win because
     /// wider breakpoints are emitted later — mirroring CSS, where the ascending media blocks put <c>md</c> after
     /// <c>sm</c>.
     /// </summary>
@@ -175,11 +175,11 @@ public class EmissionOrderTests
         var window = utils.ShowWithStyles(800, border);
         try
         {
-            Assert.Equal(128, border.Width);
+            Assert.Equal(32, border.Width);
 
             window.Width = 700;
             Dispatcher.UIThread.RunJobs();
-            Assert.Equal(96, border.Width);
+            Assert.Equal(24, border.Width);
 
             window.Width = 500;
             Dispatcher.UIThread.RunJobs();
