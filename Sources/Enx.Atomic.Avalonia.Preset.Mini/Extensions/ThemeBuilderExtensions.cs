@@ -208,6 +208,18 @@ public static class ThemeBuilderExtensions
         return builder;
     }
 
+    /// <summary>Registers <see cref="LineHeightRule{TTheme}"/> and <see cref="LetterSpacingRule{TTheme}"/>. No scale is seeded: upstream's line-height entries are unitless multipliers and its letter-spacing entries are in <c>em</c>, neither of which an absolute Avalonia pixel length can express — only the arbitrary-px and bare-rem forms resolve.</summary>
+    public static ThemeBuilder<TTheme> AddTypographyLengthRules<TTheme>(
+        this ThemeBuilder<TTheme> builder,
+        AtomicConfiguration<TTheme> configuration
+    )
+        where TTheme : class, IRemToPxPart, new()
+    {
+        configuration.AddRuleOnce(new LineHeightRule<TTheme>());
+        configuration.AddRuleOnce(new LetterSpacingRule<TTheme>());
+        return builder;
+    }
+
     /// <summary>Registers <see cref="DarkVariant{TTheme}"/> onto <see cref="AtomicConfiguration{TTheme}.Variants"/>. Not tied to any theme part.</summary>
     public static ThemeBuilder<TTheme> AddDarkVariant<TTheme>(
         this ThemeBuilder<TTheme> builder,
@@ -270,6 +282,7 @@ public static class ThemeBuilderExtensions
             .AddSizeRules(configuration)
             .AddOpacityRules(configuration)
             .AddZIndexRules(configuration)
+            .AddTypographyLengthRules(configuration)
             .AddRadiusRules(configuration)
             .AddLineWidthRules(configuration)
             .AddBoxShadowRules(configuration)

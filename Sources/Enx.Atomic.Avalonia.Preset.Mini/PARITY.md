@@ -303,9 +303,9 @@ key on both axes, and this port has no `DEFAULT` spacing key (see [Theme scales]
 | `color-*` / `c-*` | ⏳ todo | — | | Alias of the `text-{color}` family; low value but trivial. |
 | `text-opacity-*` | ❌ dropped | — | | Alpha lives in the brush; no separate channel. |
 | `font-{weight}` | 🟡 partial | `Static/FontWeights.cs` (`FontWeights`) | `font-bold`, `font-thin` | 9 named weights only; numeric `font-{100..900}` and the `fw-*` alias are missing. |
-| `leading-*` / `lh-*` / `line-height-*` | ⏳ todo | — | | `TextBlock.LineHeightProperty` (`double`), plus the `lineHeight` scale (none/tight/.../loose). |
+| `leading-*` / `lh-*` / `line-height-*` | 🟡 partial | `Dynamic/LineHeightRules.cs` (`LineHeightRule<TTheme>`) | `leading-4`, `leading-[24px]` | `TextBlock.LineHeightProperty` (absolute px) from an arbitrary px value or a bare rem number. Upstream's named scale (`none`=1, `tight`=1.25, ...) is unitless and Avalonia has no relative line height, so those tokens don't resolve. |
 | `font-synthesis-*` | ❌ dropped | — | | No font-synthesis. |
-| `tracking-*` (`letter-spacing`) | ⏳ todo | — | | `TextElement.LetterSpacingProperty`. |
+| `tracking-*` (`letter-spacing`) | 🟡 partial | `Dynamic/LetterSpacingRules.cs` (`LetterSpacingRule<TTheme>`) | `tracking-2`, `tracking-[2px]` | `TextElement.LetterSpacingProperty` (px) from an arbitrary px value or a bare rem number. Upstream's scale is in `em` (relative to the element's font size), which has no Avalonia equivalent, so `tracking-tight`/`tracking-wide`/... don't resolve. |
 | `word-spacing-*` | ❌ dropped | — | | Avalonia has no `word-spacing` property. |
 | `font-stretch-*` | ⏳ todo | — | | `TextElement.FontStretchProperty` (`FontStretch`). |
 | `font-{family}` | ⏳ todo | — | | `TextElement.FontFamilyProperty`; needs a `fontFamily` scale (not ported). |
@@ -459,8 +459,8 @@ whether the corresponding utilities can read it — and its examples are tokens 
 | `fontWeight` | 🟡 partial | `Static/FontWeights.cs` (`FontWeights`) | `font-bold` | Ported as 9 static rules rather than a scale; numeric weights missing. |
 | `textIndent` | ❌ dropped | — | | No text-indent. |
 | `textStrokeWidth` | ❌ dropped | — | | No text stroke. |
-| `lineHeight` | ⏳ todo | — | | `TextBlock.LineHeightProperty`; no `leading-*` rule yet. |
-| `letterSpacing` | ⏳ todo | — | | `TextElement.LetterSpacingProperty`; values are in `em` upstream and would need px conversion. |
+| `lineHeight` | ❌ dropped | — | | Upstream's entries are unitless multipliers and Avalonia's `LineHeight` is an absolute pixel height — no relative form exists. The `leading-*` rule still resolves px/rem forms — see its rules row. |
+| `letterSpacing` | ❌ dropped | — | | Upstream's entries are in `em` (relative to the element's resolved font size); Avalonia's `LetterSpacing` is absolute px. The `tracking-*` rule still resolves px/rem forms — see its rules row. |
 | `textShadow` | ⏳ todo | — | | `Visual.Effect` can approximate one shadow; no text-shadow utility. |
 | `wordSpacing` | ❌ dropped | — | | Avalonia has no `word-spacing` property. |
 
@@ -505,10 +505,10 @@ whether the corresponding utilities can read it — and its examples are tokens 
 
 | Section | ✅ ported | 🟡 partial | ❌ dropped | ⏳ todo | Total |
 |---|---|---|---|---|---|
-| Rules | 38 | 12 | 71 | 41 | 162 |
+| Rules | 38 | 14 | 71 | 39 | 162 |
 | Variants | 3 | 1 | 19 | 7 | 30 |
-| Theme scales | 3 | 7 | 7 | 12 | 29 |
-| **Total** | **44** | **20** | **97** | **60** | **221** |
+| Theme scales | 3 | 7 | 9 | 10 | 29 |
+| **Total** | **44** | **22** | **99** | **56** | **221** |
 
 > Counts are asserted by `ParityMatrixTests.Counts_MatchSummary` — update this table when rows change.
 
@@ -520,10 +520,6 @@ above.
 1. **`size-*`** — sets `Width` + `Height` (and their `min`/`max` forms) from the existing `Sizes`
    scale; the only new part is emitting two to four properties per token.
 2. **`w-auto` / `h-auto`** — `double.NaN` is exactly "auto"; trivial, and completes the size family.
-5. **`leading-*` / `lh-*` / `line-height-*`** — `TextBlock.LineHeightProperty` plus the (small)
-   `lineHeight` scale; very common in typography-heavy UIs.
-6. **`tracking-*`** — `TextElement.LetterSpacingProperty`; convert the `em`-based scale at
-   `RemToPxFactor`.
 7. **`font-{family}`** — `TextElement.FontFamilyProperty` plus the `fontFamily` scale (sans/serif/
    mono are already spelled out upstream).
 8. **`top/right/bottom/left-*` + `inset-*`** — `Canvas.Left/Top/Right/Bottom`; only meaningful in a
