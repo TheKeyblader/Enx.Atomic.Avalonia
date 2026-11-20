@@ -1,0 +1,4 @@
+# Verify snapshots must be checked out with LF endings on every OS: Verify rejects a verified file
+# containing \r, and Git on Windows (core.autocrlf=true) would otherwise convert them to CRLF.
+*.verified.cs text eol=lf
+*.verified.txt text eol=lf
