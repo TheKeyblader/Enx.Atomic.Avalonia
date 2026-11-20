@@ -180,7 +180,7 @@ upstream's order.
 | `place-items-*` | ⏳ todo | — | | Could set both `HorizontalContentAlignment` and `VerticalContentAlignment`; needs design. |
 | `place-self-*` | ⏳ todo | — | | Could set both `HorizontalAlignment` and `VerticalAlignment`; needs design. |
 | `flex-*` / `grid-*` prefixed aliases of justify/items/place | ❌ dropped | — | | Attributify-mode aliases; there is no attributify equivalent here. |
-| `inset-*`, `inset-x/y-*`, `top/right/bottom/left-*`, `start/end-*` | ⏳ todo | — | | `Canvas.Left/Top/Right/Bottom` are the direct equivalent (only meaningful inside a `Canvas`); spacing resolution is already in place. |
+| `inset-*`, `inset-x/y-*`, `top/right/bottom/left-*`, `start/end-*` | 🟡 partial | `Dynamic/InsetRules.cs` (`InsetRule<TTheme>`) | `inset-4`, `inset-x-2`, `top-4`, `-left-2` | `Canvas.Left/Top/Right/Bottom` from the spacing scale, with a leading `-` negating; uniform < axis < side rank, so `inset-0 top-4` composes. Only meaningful on a child of a `Canvas`. `start/end-*` and upstream's `auto`/fraction forms are dropped (Canvas sides are physical `double`s, `NaN` = unset). |
 | `float-*` | ❌ dropped | — | | No float layout. |
 | `clear-*` | ❌ dropped | — | | No float layout. |
 | `z-*` | ✅ ported | `Dynamic/ZIndexRules.cs` (`ZIndexRule<TTheme>`) | `z-10`, `z10`, `z-[5]` | `Visual.ZIndexProperty` (`int`); non-integral and `z-auto` values don't resolve (`auto` cannot be expressed as an `int`). |
@@ -505,10 +505,10 @@ whether the corresponding utilities can read it — and its examples are tokens 
 
 | Section | ✅ ported | 🟡 partial | ❌ dropped | ⏳ todo | Total |
 |---|---|---|---|---|---|
-| Rules | 39 | 14 | 71 | 38 | 162 |
+| Rules | 39 | 15 | 71 | 37 | 162 |
 | Variants | 3 | 1 | 19 | 7 | 30 |
 | Theme scales | 4 | 7 | 9 | 9 | 29 |
-| **Total** | **46** | **22** | **99** | **54** | **221** |
+| **Total** | **46** | **23** | **99** | **53** | **221** |
 
 > Counts are asserted by `ParityMatrixTests.Counts_MatchSummary` — update this table when rows change.
 

@@ -234,6 +234,17 @@ public static class ThemeBuilderExtensions
         return builder;
     }
 
+    /// <summary>Registers <see cref="InsetRule{TTheme}"/>. It reads the same <see cref="ISpacingPart.Spacing"/> scale as the margin/padding rules but targets <see cref="Canvas"/>'s attached placement properties, so it is chained next to <see cref="AddSpacingRules{TTheme}"/>.</summary>
+    public static ThemeBuilder<TTheme> AddInsetRules<TTheme>(
+        this ThemeBuilder<TTheme> builder,
+        AtomicConfiguration<TTheme> configuration
+    )
+        where TTheme : class, ISpacingPart, IRemToPxPart, new()
+    {
+        configuration.AddRuleOnce(new InsetRule<TTheme>());
+        return builder;
+    }
+
     /// <summary>Registers <see cref="DarkVariant{TTheme}"/> onto <see cref="AtomicConfiguration{TTheme}.Variants"/>. Not tied to any theme part.</summary>
     public static ThemeBuilder<TTheme> AddDarkVariant<TTheme>(
         this ThemeBuilder<TTheme> builder,
@@ -293,6 +304,7 @@ public static class ThemeBuilderExtensions
         builder
             .AddStaticRules(configuration)
             .AddSpacingRules(configuration)
+            .AddInsetRules(configuration)
             .AddSizeRules(configuration)
             .AddOpacityRules(configuration)
             .AddZIndexRules(configuration)
