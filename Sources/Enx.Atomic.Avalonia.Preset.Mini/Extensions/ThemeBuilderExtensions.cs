@@ -197,6 +197,17 @@ public static class ThemeBuilderExtensions
         return builder;
     }
 
+    /// <summary>Registers <see cref="ZIndexRule{TTheme}"/>. Not tied to any theme part — Avalonia's <c>int</c> z-index has no scale (upstream's <c>z-auto</c> cannot be expressed).</summary>
+    public static ThemeBuilder<TTheme> AddZIndexRules<TTheme>(
+        this ThemeBuilder<TTheme> builder,
+        AtomicConfiguration<TTheme> configuration
+    )
+        where TTheme : class, new()
+    {
+        configuration.AddRuleOnce(new ZIndexRule<TTheme>());
+        return builder;
+    }
+
     /// <summary>Registers <see cref="DarkVariant{TTheme}"/> onto <see cref="AtomicConfiguration{TTheme}.Variants"/>. Not tied to any theme part.</summary>
     public static ThemeBuilder<TTheme> AddDarkVariant<TTheme>(
         this ThemeBuilder<TTheme> builder,
@@ -258,6 +269,7 @@ public static class ThemeBuilderExtensions
             .AddSpacingRules(configuration)
             .AddSizeRules(configuration)
             .AddOpacityRules(configuration)
+            .AddZIndexRules(configuration)
             .AddRadiusRules(configuration)
             .AddLineWidthRules(configuration)
             .AddBoxShadowRules(configuration)

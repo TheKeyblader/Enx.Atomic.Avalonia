@@ -183,7 +183,7 @@ upstream's order.
 | `inset-*`, `inset-x/y-*`, `top/right/bottom/left-*`, `start/end-*` | ⏳ todo | — | | `Canvas.Left/Top/Right/Bottom` are the direct equivalent (only meaningful inside a `Canvas`); spacing resolution is already in place. |
 | `float-*` | ❌ dropped | — | | No float layout. |
 | `clear-*` | ❌ dropped | — | | No float layout. |
-| `z-*` | ⏳ todo | — | | `Visual.ZIndexProperty` (`int`). |
+| `z-*` | ✅ ported | `Dynamic/ZIndexRules.cs` (`ZIndexRule<TTheme>`) | `z-10`, `z10`, `z-[5]` | `Visual.ZIndexProperty` (`int`); non-integral and `z-auto` values don't resolve (`auto` cannot be expressed as an `int`). |
 | `box-border` / `box-content` | ❌ dropped | — | | Avalonia has no box-sizing switch. |
 
 ### `question-mark.ts`
@@ -476,7 +476,7 @@ whether the corresponding utilities can read it — and its examples are tokens 
 | `borderRadius` | ✅ ported | `Extensions/DefaultTheme.cs` (`Radii`) | `rounded-md`, `rounded-full` | rem converted to px at 16/rem. |
 | `boxShadow` | 🟡 partial | `Extensions/DefaultTheme.cs` (`BoxShadows`) + `Dynamic/ShadowRules.cs` | `shadow-md`, `shadow-inner` | Ported as `BoxShadows` values (DEFAULT, none, sm, md, lg, xl, 2xl, inner) with the `var(--un-shadow-inset)` placeholder dropped; shadow colors and opacity are not ported. |
 | `ringWidth` | ⏳ todo | — | | Needs the `ring-*` design. |
-| `zIndex` | ⏳ todo | — | | Only `auto` upstream; `Visual.ZIndex` takes an `int`, so no scale is needed — just the `z-*` rule. |
+| `zIndex` | ❌ dropped | — | | Upstream's only entry is `auto`, and `Visual.ZIndex` is an `int` — there is no "as if unset" value. The `z-*` rule takes the number directly, so no scale is needed. |
 | `media` | ❌ dropped | — | | No media queries. |
 
 ### `_theme/preflight.ts`
@@ -505,10 +505,10 @@ whether the corresponding utilities can read it — and its examples are tokens 
 
 | Section | ✅ ported | 🟡 partial | ❌ dropped | ⏳ todo | Total |
 |---|---|---|---|---|---|
-| Rules | 37 | 12 | 71 | 42 | 162 |
+| Rules | 38 | 12 | 71 | 41 | 162 |
 | Variants | 3 | 1 | 19 | 7 | 30 |
-| Theme scales | 3 | 7 | 6 | 13 | 29 |
-| **Total** | **43** | **20** | **96** | **62** | **221** |
+| Theme scales | 3 | 7 | 7 | 12 | 29 |
+| **Total** | **44** | **20** | **97** | **60** | **221** |
 
 > Counts are asserted by `ParityMatrixTests.Counts_MatchSummary` — update this table when rows change.
 
@@ -520,7 +520,6 @@ above.
 1. **`size-*`** — sets `Width` + `Height` (and their `min`/`max` forms) from the existing `Sizes`
    scale; the only new part is emitting two to four properties per token.
 2. **`w-auto` / `h-auto`** — `double.NaN` is exactly "auto"; trivial, and completes the size family.
-4. **`z-*`** — `Visual.ZIndexProperty`; accepts an integer directly (plus upstream's `auto`).
 5. **`leading-*` / `lh-*` / `line-height-*`** — `TextBlock.LineHeightProperty` plus the (small)
    `lineHeight` scale; very common in typography-heavy UIs.
 6. **`tracking-*`** — `TextElement.LetterSpacingProperty`; convert the `em`-based scale at
