@@ -7,6 +7,29 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- Shortcuts, UnoCSS-style: `AtomicConfiguration.Shortcuts` expands one token into several
+  utilities before any rule is tried. `Shortcut.Static("done", "line-through opacity-45")` matches
+  by exact name; `Shortcut.Dynamic<TTheme>(regex, (match, context) => ...)` computes the
+  expansion from a regex match and the theme. Expanded tokens may carry variants
+  (`dark:text-gray-400`) and reference other shortcuts (up to 5 levels; a cycle throws
+  `InvalidOperationException`), and a variant written on the shortcut itself (`hover:btn`) wraps
+  them all. Every resulting style selects on the class as written, so `Classes.done="{Binding
+  IsDone}"` gets variants, which a binding-toggled class name can't carry on its own. Each inner
+  utility stays its own `Style` (no setter merging), keeping its rule's order, and a shortcut
+  wins over a rule with the same name.
+- `StringifiedUtil.Layer` and `StyleLayer` (`Shortcuts` = 0, `Default` = 1): a new
+  `StyleOrdering` key, compared after specificity and before container order, so a plain
+  utility overrides an equally specific shortcut (`btn bg-red-500` is red even if `btn` contains
+  `sm:bg-blue-500`), while `hover:btn` still beats a plain utility. `StyleOrdering.SortKey` exposes
+  it, and `StyleOrdering.Distinct` compares it.
+- `AtomicGenerator.Diagnostics`: an expanded token nothing matches (a typo in a shortcut) is
+  recorded there and skipped instead of failing; `AtomicCli generate` prints each one as a
+  warning. `AtomicGenerator.GetShortcutExpansion(raw)` returns a shortcut's leaf tokens.
+- `probe` shows a shortcut's expansion (`shortcut` in `--json`) and each style's layer in its
+  sort key (`sortKey.layer`).
+
 ## [0.0.7] - 2026-11-20
 
 ### Added

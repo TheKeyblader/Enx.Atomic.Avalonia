@@ -19,6 +19,22 @@ hand-written XAML `Style`s.
 <TextBlock Classes="truncate" Classes.line-through="{Binding IsDone}" Text="{Binding Title}" />
 ```
 
+Several utilities can be grouped under one name with a **shortcut**, declared in the
+configuration — variants included, which a binding-toggled class can't carry otherwise:
+
+```csharp
+configuration.Shortcuts.Add(Shortcut.Static("done", "line-through opacity-45 dark:text-gray-400"));
+configuration.Shortcuts.Add(Shortcut.Dynamic<MiniTheme>(
+    new Regex("^btn-(.+)$"), (match, _) => $"bg-{match.Groups[1].Value}-500 hover:bg-{match.Groups[1].Value}-600 px-4 py-2 rounded"));
+```
+
+```xml
+<TextBlock Classes.done="{Binding IsDone}" Text="{Binding Title}" />
+<Button Classes="btn-blue" Content="Save" />
+```
+
+A plain utility written next to a shortcut overrides it (`btn-blue bg-red-500` is red).
+
 See [ARCHITECTURE.md](ARCHITECTURE.md) for how the engine actually works — rules,
 variants, source transformers, the Mini preset, and build-time code generation.
 

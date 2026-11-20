@@ -29,6 +29,9 @@ A string like `hover:bg-red-500` goes through four steps:
    (`hover:`) and remembers how it should transform the final selector or container
    query. This repeats until no variant matches, which is what makes chaining
    (`hover:focus:...`) work.
+   If what's left is a **shortcut** (`btn` → `bg-blue-500 px-4`), it is expanded here,
+   before any rule is tried, and each expanded token goes through steps 2–3 itself —
+   see `IShortcut<TTheme>` below.
 3. **Rule matching** — an `IRule` matches what's left of the token (`bg-red-500`)
    against either a fixed name (`IStaticRule`) or a regex (`IDynamicRule<TTheme>`),
    and produces one or more `StyleValue`s (a `Setter` value, fixed or resolved from
@@ -103,8 +106,43 @@ A string like `hover:bg-red-500` goes through four steps:
   prefix), an arbitrary `[...]` value or a `/`; a name containing `.` isn't matched.
   Those cases go through code-behind instead. A configuration replacing `Extractors`
   should keep both.
+- **`IShortcut<TTheme>`** (`Shortcuts/`) — UnoCSS's shortcuts: a token that expands to
+  other utility tokens. `Shortcut.Static("done", "line-through opacity-45")` matches by
+  exact name; `Shortcut.Dynamic<TTheme>(regex, (match, context) => ...)` computes the
+  expansion from a regex match and the theme (returning `null`/nothing is a miss, so
+  the next shortcut is tried). Expansions are whitespace-split, trimmed and
+  deduplicated. `IShortcut<in TTheme>` is contravariant and `IStaticShortcut` is an
+  `IShortcut<object>`, which is what keeps `Shortcut.Static` non-generic while
+  `Shortcuts` stays a `List<IShortcut<TTheme>>`. Resolution, in `ParseToken`:
+  - **Shortcuts are tried before rules**, in list order, on the variant-stripped token,
+    so a shortcut named like a rule wins.
+  - Each expanded token gets its own variant matching; one that is itself a shortcut is
+    expanded recursively (inner handlers combined with the enclosing ones, so a shortcut
+    may contain `hover:otherShortcut`), up to 5 nested levels — beyond that it is taken
+    for a cycle and throws `InvalidOperationException` naming the chain.
+  - Every resulting style selects on the **token the user wrote**:
+    `Is(TargetType).Class("hover:btn")`, never the inner `bg-blue-500`, with the inner
+    and outer variant handlers both applied. The inner tokens are neither cached nor
+    emitted under their own names. Leaves are deduplicated on their rewritten form
+    (`hover:opacity-50`), not on the bare base token, so two leaves differing only by
+    variant both survive.
+  - **No setter merging**, unlike UnoCSS, which folds a shortcut into one CSS rule: each
+    inner utility stays its own `StringifiedUtil` with its rule's index and rank. That
+    keeps the per-rule order (`p-2 px-4` inside a shortcut still composes uniform before
+    axis) and never puts two setters for the same property in one `Style`.
+  - Every shortcut style carries `StyleLayer.Shortcuts` (see "Emission order" below),
+    so a plain utility on the same element overrides it.
+  - An expanded token nothing matches is a configuration typo, not a fatal error: it is
+    recorded in `AtomicGenerator.Diagnostics` and skipped, and the rest of the shortcut
+    still applies. `GetShortcutExpansion(raw)` returns the leaf tokens a shortcut
+    resolved to, for `probe`.
+
+  Because the expansion happens inside the engine, a shortcut works everywhere a token
+  does — conditional `Classes.done="{Binding IsDone}"` included, which is the way to get
+  a variant (`dark:`, `hover:`) under a binding-toggled class, since the XML attribute
+  name itself can't carry one.
 - **`AtomicConfiguration<TTheme>`** — assembles `Transformers`, `PreProcessors`,
-  `Rules`, `Variants`, `Extractors`, and the `TTheme` instance.
+  `Rules`, `Shortcuts`, `Variants`, `Extractors`, and the `TTheme` instance.
 - **`AtomicGenerator<TTheme>`** — the engine itself. `Generate(...)` runs the full
   pipeline above and returns `StringifiedUtil[]`, cached by raw token, in
   `StyleOrdering`'s canonical emission order (see "Emission order" below). Also
@@ -189,23 +227,31 @@ same cascade. Its key, ascending:
    type column. `.hover\:bg-red-500:pointerover` (2) therefore beats
    `.sm\:bg-red-500` (1) regardless of where its container query falls, exactly as CSS
    compares specificity before the at-rule's position.
-2. **Container order** — unconditional utilities first, then `max-*` upper bounds
+2. **Layer** (`StringifiedUtil.Layer`) — styles expanded from a shortcut
+   (`StyleLayer.Shortcuts`, 0) before plain utilities (`StyleLayer.Default`, 1, also the
+   default for a util built outside token resolution), the equivalent of UnoCSS emitting
+   its `shortcuts` layer before `default`. Placed after specificity and before container
+   order, as a CSS block emitted earlier would be: `class="btn bg-red-500"` is red even
+   when `btn` contains `sm:bg-blue-500`, while `hover:btn` (two class-like nodes) still
+   beats a plain `bg-red-500`.
+3. **Container order** — unconditional utilities first, then `max-*` upper bounds
    (narrowest last, since the narrowest is the most specific), then the
    `sm:`/`md:`/... lower bounds ascending by breakpoint, mirroring ascending `@media`
    blocks where the later, wider block wins. An unrecognized query node sorts after
    unconditional utilities, so a future variant can't silently stop overriding its
    base.
-3. **Rule index** (`StringifiedUtil.Index`) — the originating rule's declaration order.
-4. **Rule rank** (`StringifiedUtil.Rank`) — an `IOrderRankedDynamicRule<TTheme>`'s
+4. **Rule index** (`StringifiedUtil.Index`) — the originating rule's declaration order.
+5. **Rule rank** (`StringifiedUtil.Rank`) — an `IOrderRankedDynamicRule<TTheme>`'s
    ordering of its own matches.
-5. **Variant sort hint** (`StringifiedUtil.Sort`) — UnoCSS's per-rule `sort`; no variant
+6. **Variant sort hint** (`StringifiedUtil.Sort`) — UnoCSS's per-rule `sort`; no variant
    in the Mini preset sets it today.
-6. **Selector text** — a culture-independent description, so otherwise identical styles
+7. **Selector text** — a culture-independent description, so otherwise identical styles
    still come out deterministic.
 
 The practical consequences: source order never matters, so a variant may be written
-before its base; a wider breakpoint wins over a narrower one when both match; and a more
-specific selector outranks any container query.
+before its base; a wider breakpoint wins over a narrower one when both match; a more
+specific selector outranks any container query; and a plain utility overrides an
+equally specific shortcut.
 
 `StyleOrdering.GetSortKey` exposes that key (`StyleOrdering.SortKey`, one field per
 step above) for diagnostics — `AtomicCli probe` prints it next to each style so a
@@ -215,7 +261,8 @@ surprising position can be explained without re-deriving the comparison by hand.
 output registered through `AddUtil` has no token to deduplicate by, so it is compared
 structurally (selector data, container query, setter property instance and value) and
 collapsed. Two distinct resources are never merged on a guess, since reference-typed
-values compare equal only when they are the same instance.
+values compare equal only when they are the same instance. The layer is part of that
+identity: a shortcut's copy of a style sorts differently from a plain utility's.
 
 ## Composite side properties: per-side utilities
 
@@ -414,6 +461,8 @@ extraction into **one shared token set**, then resolves that union once, merges 
 set with `StyleOrdering.Sort`, and only then calls `StyleEmitter.Emit`. Resolving per
 file and concatenating used to emit a token used by two files twice, and ordering per
 file let a variant declared in one file sort before its base declared in another.
+Each entry of `AtomicGenerator.Diagnostics` (a shortcut expanding to a token nothing
+matches) is printed as a yellow warning, like a missing source file; the build goes on.
 `--resources-output`/`--resources-class` (optional — omitting `--resources-output` skips
 resource generation entirely) do the same for `ResourceDictionaryEmitter`. See
 `Examples/Enx.Atomic.Avalonia.Example.Config` for a minimal config project — it
@@ -430,7 +479,8 @@ constructor injection: one `Run` per process.
 `--file <path>`, repeatable; the text and files go through the configured
 extractors, so markup like `Classes="..."` works too) explains a token set instead of
 writing files. Per token: each variant peeled off and the class that recognised it,
-the base token, the winning rule with its declaration index and rank, and a hint when
+the base token, the leaf tokens it expanded to when it is a shortcut, the winning rule
+with its declaration index and rank, and a hint when
 nothing matched (a known variant over an unknown base, or an unknown prefix over a
 known utility). Per resolved style: its 1-based position in `StyleOrdering.Sort`'s
 order for the whole probed set together with the `SortKey` parts that produced it,
