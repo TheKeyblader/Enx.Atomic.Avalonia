@@ -39,7 +39,7 @@ Examples/                           # End-to-end build-time codegen example (con
 Sandbox/                            # Manual runtime-resolution test bed
 .opencode/skills/                   # Step-by-step workflows (add a rule/variant/emitter, port from UnoCSS)
 .opencode/commands/                 # /verify, /update-docs
-opencode.jsonc                      # Permissions, CSharpier formatter, Roslyn MCP, upstream references
+opencode.jsonc                      # Permissions, CSharpier formatter, Roslyn + agent-desktop MCP, upstream references
 ```
 
 Every `Sources/*` project targets `net10.0`, `<ImplicitUsings>enable</ImplicitUsings>`,
@@ -175,6 +175,47 @@ them over grep for anything touching public API surface or cross-project usage:
 
 If the server isn't connected (it loads the whole solution, which takes a few seconds), fall back
 to `dotnet build` + grep rather than skipping the check.
+
+## MCP Tools (`agent-desktop` server — desktop computer use)
+
+[agent-desktop](https://github.com/vercel-labs/agent-desktop) (`agent-desktop mcp`), configured in
+`opencode.jsonc`. It's installed globally on the maintainer's machine, **not** pinned in
+`dotnet-tools.json`; if it isn't connected, say so instead of installing it. It reads a running app's
+accessibility tree (AT-SPI on Linux) and acts on element refs. Tools are named after the CLI
+commands (`desktop_snapshot`, `desktop_click`, ...) under `tools["agent-desktop"].*` — discover them
+with `search({ namespace: "agent-desktop" })`.
+
+- **Read the guides first**, once per session: `desktop_skills_get` with `name: "desktop"`, then
+  `name: "platform"` (they ship with the binary and match its version). They use CLI syntax:
+  `agent-desktop snapshot --app X` is `desktop_snapshot({ app: "X" })`.
+- **Use it to check a running app, not instead of tests**: launch `Sandbox/` or
+  `Examples/Enx.Atomic.Avalonia.Example.App` (`dotnet run --project ...`, in the background), snapshot the
+  window, and check that a utility actually applied (a visible element, an enabled state, a
+  pointer-over or focus reaction). An Avalonia regression still needs an `[AvaloniaFact]`/codegen test.
+- **Refs belong to their snapshot** (`@<snapshot>:eN`). After any UI change, take a new snapshot
+  instead of reusing old refs. Retry only when `error.disposition.retry` is `safe`.
+- It's headless/semantic by default. Global flags (`--headed`, `--session`, `--wait-for`, `--trace`)
+  are fixed by the `command` in `opencode.jsonc`, not passed per call. Commands that need physical
+  input (`hover`, `drag`, `mouse-*`, `double-click`) return `POLICY_DENIED` as configured. Don't add
+  `--headed` to the config without the user's go-ahead, since it moves their real cursor.
+- **Linux/KDE Wayland**: the server runs with `WAYLAND_DISPLAY` blanked (see `opencode.jsonc`) so
+  it uses X11 against the Xwayland-hosted Avalonia window. That is what makes
+  `desktop_screenshot({ app: "<process name>", path: "/tmp/..." })` capture just the app window
+  (read the PNG to check colors, spacing, rounded corners: the visual check this library needs).
+  Never take a screenshot without `app`/`window_id`: it captures the user's whole desktop.
+  `desktop_press({ combo, app })` only reaches the app while it owns the active window (true right
+  after launch, lost as soon as the user clicks elsewhere), and KWin refuses `focus-window`/`focus`
+  to take it back. If `press` fails with `display_active_window`, don't fight it: drive the UI through
+  semantic ref actions (`desktop_type`, `desktop_click`, `desktop_check`), and keep Enter/shortcut
+  handlers covered by an `[AvaloniaFact]` anyway.
+- **Deep trees**: list items (`ItemsControl` children) can be cut by the default snapshot depth.
+  Take a second `desktop_snapshot({ app, root: "<list ref>" })` to reach them. `desktop_type`
+  inserts at the caret, it doesn't replace: `desktop_clear` first if the field may hold text.
+  On Linux a ref must be unique in its window: identical controls (one unnamed `CheckBox` per list
+  item) are refused with `AMBIGUOUS_TARGET`. Test with a single item, or give each control an
+  accessible name (`AutomationProperties.Name`) in the app under test.
+- Snapshots and screenshots can show private desktop content. Keep them to the app under test and
+  out of commits and logs.
 
 ## Skills & Commands
 

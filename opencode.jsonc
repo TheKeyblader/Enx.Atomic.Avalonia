@@ -38,6 +38,17 @@
         "command": ["dotnet", "tool", "run", "cwm-roslyn-navigator"],
         "cwd": ".",
       },
+      // Desktop computer use through the OS accessibility tree (AT-SPI on Linux): snapshot a running
+      // Avalonia window (Sandbox/, Examples/...App) and act on its element refs to check that generated
+      // styles actually apply. Installed globally (`npm i -g agent-desktop`), not pinned in this repo.
+      // WAYLAND_DISPLAY is blanked (agent-desktop treats empty as unset) so it drives the X11 backend
+      // against the Xwayland-hosted Avalonia window: on a non-GNOME Wayland session (KDE here) the
+      // Wayland backend can only capture the whole multi-monitor desktop, never a single window.
+      "agent-desktop": {
+        "type": "local",
+        "command": ["agent-desktop", "mcp"],
+        "environment": { "WAYLAND_DISPLAY": "" },
+      },
     },
   },
 
