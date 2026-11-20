@@ -65,7 +65,7 @@ dropped — grep for the token first.
 ## 4. Codegen support
 
 If the value's type is new to the pipeline (not bool/numeric/string/enum/Thickness/CornerRadius/
-brush/Cursor/TextDecorations/ThemeVariant), codegen will throw
+brush/FontFamily/Cursor/TextDecorations/ThemeVariant), codegen will throw
 `No value emitter registered for type ...` — load `add-value-emitter`.
 
 ## 5. Tests

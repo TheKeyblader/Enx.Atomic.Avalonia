@@ -114,6 +114,7 @@ Theme-driven — the value after the prefix is resolved against a scale (see
 | `border-{color}` | `Border.BorderBrushProperty` | [Colors](#colors) |
 | `text-{size}` | `TextElement.FontSizeProperty` | [FontSizes](#fontsizes) |
 | `border` / `border-{width}` | `BorderThicknessSides` (four sides), recomposed into `Border.BorderThicknessProperty` | [LineWidths](#linewidths) |
+| `border-x-{width}` / `border-y-{width}` | `BorderThicknessSides`, left+right / top+bottom | [LineWidths](#linewidths) |
 | `border-t/r/b/l-{width}` | `BorderThicknessSides`, one side | [LineWidths](#linewidths) |
 | `rounded-{radius}` | `CornerRadiusSides` (four corners), recomposed into `Border.CornerRadiusProperty` | [Radii](#radii) |
 | `rounded-t/b/l/r-{radius}` | `CornerRadiusSides`, two adjacent corners | [Radii](#radii) |
@@ -123,6 +124,9 @@ Theme-driven — the value after the prefix is resolved against a scale (see
 | `w-auto` / `h-auto` | `Layoutable.WidthProperty` / `HeightProperty` = `double.NaN` | *(structural)* |
 | `min-w-{size}` / `max-w-{size}` | `Layoutable.MinWidthProperty` / `MaxWidthProperty` | [Sizes](#sizes) |
 | `min-h-{size}` / `max-h-{size}` | `Layoutable.MinHeightProperty` / `MaxHeightProperty` | [Sizes](#sizes) |
+| `size-{size}` | `Layoutable.WidthProperty` **and** `HeightProperty` | [Sizes](#sizes) |
+| `size-min-{size}` / `size-max-{size}` | `MinWidth`+`MinHeight` / `MaxWidth`+`MaxHeight` | [Sizes](#sizes) |
+| `size-full` / `size-auto` | Both lengths = `double.NaN`, plus both alignments = `Stretch` for `full` | *(structural)* |
 | `m-{n}` | `MarginSides` (four sides), recomposed into `Layoutable.MarginProperty` | [Spacing](#spacing) |
 | `mx-{n}` / `my-{n}` | `MarginSides`, left+right / top+bottom | [Spacing](#spacing) |
 | `mt-{n}` / `mr-{n}` / `mb-{n}` / `ml-{n}` | `MarginSides`, one side | [Spacing](#spacing) |
@@ -134,6 +138,16 @@ Theme-driven — the value after the prefix is resolved against a scale (see
 | `gap-{n}` | `Spacing`/`ColumnSpacing`/`RowSpacing` on `StackPanel`, `Grid`, `UniformGrid` | [Spacing](#spacing) |
 | `gap-x-{n}` | `ColumnSpacing` on `Grid` and `UniformGrid` only | [Spacing](#spacing) |
 | `gap-y-{n}` | `RowSpacing` on `Grid` and `UniformGrid` only | [Spacing](#spacing) |
+| `opacity-{n}` / `op-{n}` | `Visual.OpacityProperty` (bare `n` is a percentage: `50` → `0.5`) | *(structural)* |
+| `z-{n}` / `z{n}` | `Visual.ZIndexProperty` (`int`) | *(structural)* |
+| `leading-{n}` / `lh-{n}` / `line-height-{n}` | `TextBlock.LineHeightProperty` (absolute px — see note) | *(structural)* |
+| `tracking-{n}` | `TextElement.LetterSpacingProperty` (absolute px — see note) | *(structural)* |
+| `font-sans` / `font-serif` / `font-mono` | `TextElement.FontFamilyProperty` | [FontFamilies](#fontfamilies) |
+| `inset-{n}` | All four `Canvas.Left`/`Top`/`Right`/`Bottom` attached properties | [Spacing](#spacing) |
+| `inset-x-{n}` / `inset-y-{n}` | `Canvas`, left+right / top+bottom | [Spacing](#spacing) |
+| `inset-t/r/b/l-{n}` | One `Canvas` side each | [Spacing](#spacing) |
+| `top-{n}` / `right-{n}` / `bottom-{n}` / `left-{n}` | The matching `Canvas` side | [Spacing](#spacing) |
+| `-inset-{n}`, `-top-{n}`, ... | Same as above, negated | [Spacing](#spacing) |
 | `grid-cols-{n}` | `Grid.ColumnDefinitions` = `n` equal (`1*`) columns (ghost property, on the `Grid` itself) | *(structural — see note below)* |
 | `grid-rows-{n}` | `Grid.RowDefinitions` = `n` equal (`1*`) rows (ghost property, on the `Grid` itself) | *(structural)* |
 | `col-{n}` / `row-{n}` | `Grid.ColumnProperty` / `RowProperty` (0-based, on a grid **child**) | *(structural)* |
@@ -189,6 +203,31 @@ Notes:
   from Tailwind, where `w-*` shares the spacing scale. A bare number here (e.g. `w-64`) that isn't a
   named `Sizes` key falls back to being read as **rem** (`64rem × 16 = 1024px`), not the spacing
   scale's `64 → 256px`.
+- **`size-*` sets both lengths and is registered before `w-*`/`h-*`** (upstream's order), so an
+  axis-specific token wins only its own property: `size-4 w-8` is 128px wide and 64px tall in either
+  source order. Inside the rule `size-auto` < a concrete size < `size-full`, as for `w-auto`/`w-full`.
+- **`opacity-*`/`op-*` read a bare token as a percentage** (UnoCSS's `h.bracket.percent`), so
+  `opacity-50` is `0.5` and `opacity-0.5` is `0.005`; an arbitrary value is taken as written —
+  `opacity-[0.35]` is a fraction, `opacity-[50%]` spells the percentage out. There is no theme scale.
+- **`z-*` takes an `int`** (Avalonia's `Visual.ZIndexProperty`): `z-10`/`z10`/`z-[5]` resolve, while a
+  fractional value is a miss rather than a rounded one. Upstream's `z-auto` is not ported — `auto`
+  means "as if unset", which an `int` cannot express.
+- **`leading-*`/`tracking-*` are absolute-length only.** Avalonia's `TextBlock.LineHeight` and
+  `TextElement.LetterSpacing` are pixels, so an arbitrary value (`leading-[24px]`) or a bare number
+  read as rem (`leading-4` = 64px) resolves; upstream's named scales are unitless line-height
+  multipliers and `em` letter-spacing values, which a style cannot resolve against the element's own
+  font size, so `leading-tight`/`tracking-wide`/... do not resolve.
+- **`font-sans`/`font-serif`/`font-mono` come from the [FontFamilies](#fontfamilies) scale** and set
+  the inherited `TextElement.FontFamilyProperty`. `font-bold` and the other weights stay static rules
+  (a static rule always wins the shared `font-` prefix), and upstream's `font-[Arial]` form is not
+  ported: a bracket value there would be text, not a pixel length.
+- **`inset-*`/`top-*`/... are `Canvas` placement** (`Canvas.Left`/`Top`/`Right`/`Bottom`), so they are
+  only meaningful on a child of a `Canvas`; a uniform `inset-*` writes all four sides, and the family
+  ranks uniform < axis < side, so `inset-0 top-4` composes. Upstream's `auto`/fraction forms are not
+  ported (a side is a plain `double`, `NaN` meaning unset).
+- **`border-x-*`/`border-y-*` write the composite host's two sides** and rank between the uniform
+  token (0) and a single side (2), so `border-2 border-x-4 border-t-8` composes to 4/8/4/2 whatever the
+  source order.
 - Every numeric scale below also accepts a bare number with no unit as a fallback when the key
   isn't found by name — treated as **rem** (`× RemToPxFactor`, default 16) everywhere *except*
   [LineWidths](#linewidths), which treats it as raw **px** (matching UnoCSS's `lineWidth` scale).
@@ -215,9 +254,11 @@ an escape hatch for a one-off value not worth naming in the theme:
   mean "exactly this," no scale conversion applied.
 - Any other unit (`w-[50%]`, `w-[2em]`) or unparseable content doesn't match — the token falls
   through as if no rule applied, same as an unresolvable named key.
-- No bracket support yet for non-numeric, non-color scale-driven values (there aren't any in this
-  preset today) or for structural tokens (`grid-cols-*`, `col-span-*`, ...), which don't read a
-  theme scale in the first place.
+- `leading-*`/`tracking-*` accept the same `[Npx]` form (they have no named scale — see the notes
+  above). `opacity-*` is the exception: `[0.35]` is a fraction and `[50%]` a percentage.
+- No bracket support for a font family (`font-[Arial]` — that value would be text, not a length) or
+  for structural tokens (`grid-cols-*`, `col-span-*`, ...), which don't read a theme scale in the
+  first place.
 
 ## Theme scales
 
@@ -242,8 +283,8 @@ Used by margin/padding/gap. Values in px.
 
 ### Sizes
 
-Used **only** by `w-*`/`h-*`/`min-w-*`/`max-w-*`/`min-h-*`/`max-h-*` — see the note above about how
-this differs from [Spacing](#spacing).
+Used **only** by `w-*`/`h-*`/`min-w-*`/`max-w-*`/`min-h-*`/`max-h-*` and the `size-*` pair — see the
+note above about how this differs from [Spacing](#spacing).
 
 | Key | px | Key | px | Key | px |
 |---|---|---|---|---|---|
@@ -302,6 +343,22 @@ the colour is `rgb(0 0 0 / α)` with α in ARGB.
 | `xl` | 20 | `8xl` | 96 |
 | `2xl` | 24 | `9xl` | 128 |
 | `3xl` | 30 | | |
+
+### FontFamilies
+
+Used by `font-{family}`. Already parsed into Avalonia `FontFamily` values: a comma-separated fallback
+list, in upstream's order but without the web-only generic keywords (`ui-sans-serif`, `system-ui`,
+`-apple-system`, …) and without quotes (Avalonia's parser splits on commas only).
+
+| Key | Family |
+|---|---|
+| `sans` | `FontFamily.Default` — the platform's own UI font (upstream's `ui-sans-serif`/`system-ui` head) |
+| `serif` | `Georgia, Cambria, Times New Roman, Times, serif` |
+| `mono` | `Menlo, Monaco, Consolas, Liberation Mono, Courier New, monospace` |
+
+`leading-*`/`lh-*`/`line-height-*` and `tracking-*` have no scale: upstream's entries are unitless
+line-height multipliers and `em` letter-spacing values, which have no absolute Avalonia equivalent —
+only their `[Npx]` and bare-rem forms resolve.
 
 ### Breakpoints
 

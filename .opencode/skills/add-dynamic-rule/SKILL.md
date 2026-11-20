@@ -61,6 +61,7 @@ Value resolution — always go through `ThemeScale` (`Dynamic/ThemeScale.cs`), n
 |---|---|---|
 | `TryResolve` | `[arbitrary]` → scale key → bare number | **rem** × `RemToPxFactor` (spacing, sizes, radii, font sizes) |
 | `TryResolvePx` | `[arbitrary]` → scale key → bare number | **px** as-is (line widths: border/ring/outline) |
+| `TryResolveUnscaled` | `[arbitrary]` → bare number | **rem** × `RemToPxFactor`; no scale — for a family whose upstream entries are relative (`leading-*` multipliers, `tracking-*` `em`) |
 
 Arbitrary `[...]` is always px (optional `px` suffix, other units rejected), never rem, and always a
 `StyleValue.Literal`. Colors don't use `ThemeScale`: reuse `ArbitraryColor` in `ColorRules.cs`.

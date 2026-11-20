@@ -514,14 +514,24 @@ whether the corresponding utilities can read it — and its examples are tokens 
 
 ### Next to port
 
-Ranked by (how common in real UIs) × (how clear the Avalonia equivalent is). All are ⏳ rows
-above.
+The first "easy parity" batch — `size-*`, `border-x`/`border-y`, `opacity-*`, `z-*`, `leading-*`,
+`tracking-*`, `font-{family}`, and `inset-*`/`top-*`/`right-*`/`bottom-*`/`left-*` — is ported; the
+rows above record what each maps to. Everything still marked ⏳ is listed in the tables. The ⏳
+families with the clearest Avalonia equivalent are:
 
-1. **`size-*`** — sets `Width` + `Height` (and their `min`/`max` forms) from the existing `Sizes`
-   scale; the only new part is emitting two to four properties per token.
-2. **`w-auto` / `h-auto`** — `double.NaN` is exactly "auto"; trivial, and completes the size family.
-8. **`top/right/bottom/left-*` + `inset-*`** — `Canvas.Left/Top/Right/Bottom`; only meaningful in a
-   `Canvas`, but that is the Avalonia idiom for absolute placement.
+1. **`fill-*` / `stroke-*`** — `Shape.Fill`/`Stroke`/`StrokeThickness`/`StrokeDashArray` already
+   exist; what's missing is value parsing and a brush resource for the colors.
+2. **`transform.ts`** (`translate-*`, `rotate-*`, `scale-*`, `skew-*`, `origin-*`) — each needs an
+   accumulating composite host, like `MarginSides`, so several transform tokens compose instead of
+   clobbering `RenderTransform`.
+3. **`transition-*`** — `Animatable.Transitions` takes whole transition objects, not a setter value;
+   needs a design similar to the composite hosts.
+4. **`ring-*`** — no box-shadow ring primitive; needs an emulation design (`Border`, or
+   `Visual.Effect`).
+5. **`bg-[url(...)]` / gradients** — `ImageBrush` and gradient brushes exist; the CSS syntax is the
+   missing design.
+6. **Structural variants** (`first:`, `last:`, `odd:`, `even:`, `not:`, `*:`, `all:`) — blocked on
+   `SelectorExpression` learning Avalonia's structural selectors/combinators.
 
 Trivial aliases (`text-truncate`, `decoration-none`, `gap-col-*`, `text-size-*`, `b-*`/`rd-*`,
 `text-align-*`, ...) are deliberately *not* in this list: they add surface without new capability.

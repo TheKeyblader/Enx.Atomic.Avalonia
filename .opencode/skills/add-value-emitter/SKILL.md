@@ -17,9 +17,10 @@ object doesn't expose enough (e.g. `Cursor` built from a bitmap), support the su
 throw `NotSupportedException` with a clear message for the rest — see `CursorValueEmitter.cs`.
 
 Existing emitters, in order: `PrimitiveValueEmitter`, `EnumValueEmitter`, `ThicknessValueEmitter`,
-`CornerRadiusValueEmitter`, `BrushValueEmitter`, `CursorValueEmitter`,
-`TextDecorationsValueEmitter`, `ThemeVariantValueEmitter`, `GridDefinitionsValueEmitter`,
-`DynamicResourceValueEmitter`. Extend one if the type is a close relative.
+`CornerRadiusValueEmitter`, `BoxShadowsValueEmitter`, `BrushValueEmitter`, `FontFamilyValueEmitter`,
+`CursorValueEmitter`, `TextDecorationsValueEmitter`, `TextTrimmingValueEmitter`,
+`ThemeVariantValueEmitter`, `GridDefinitionsValueEmitter`, `DynamicResourceValueEmitter`. Extend one if
+the type is a close relative.
 
 ## 2. Write it
 

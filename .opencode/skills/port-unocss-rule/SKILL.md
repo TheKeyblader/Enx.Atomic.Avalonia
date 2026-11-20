@@ -38,6 +38,12 @@ structural pseudo-classes like `:nth-child`) are dropped deliberately.
 | `background-color` | `Border`/`TemplatedControl`/`Panel` `.BackgroundProperty` (3 entries, explicit target types) | `ToResource` for theme colors |
 | `color` | `TextElement.ForegroundProperty` | |
 | `font-size` / `font-weight` / `font-style` | `TextElement.FontSize/FontWeight/FontStyleProperty` | |
+| `font-family` | `TextElement.FontFamilyProperty` | a `FontFamily` value needs `FontFamilyValueEmitter` |
+| `opacity` | `Visual.OpacityProperty` (`double` 0–1; a bare token is a percentage) | |
+| `z-index` | `Visual.ZIndexProperty` (`int`) | |
+| `line-height` | `TextBlock.LineHeightProperty` (absolute px; no multiplier form) | |
+| `letter-spacing` | `TextElement.LetterSpacingProperty` (absolute px; `em` upstream) | |
+| `top`/`right`/`bottom`/`left`/`inset` | `Canvas.{Top,Right,Bottom,Left}Property` (only inside a `Canvas`) | |
 | `text-align` | `TextBlock.TextAlignmentProperty` | |
 | `display: none` | `Visual.IsVisibleProperty = false` | |
 | `overflow: hidden` | `Visual.ClipToBoundsProperty` | |
