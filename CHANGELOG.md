@@ -7,6 +7,8 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.0.7] - 2026-11-20
+
 ### Added
 
 - `ClassesAttributeExtractor`, now in the default `AtomicConfiguration.Extractors` alongside
@@ -292,7 +294,8 @@ Initial release.
   by pushing a `vX.Y.Z` tag.
 - MIT license.
 
-[Unreleased]: https://github.com/TheKeyblader/Enx.Atomic.Avalonia/compare/v0.0.6...HEAD
+[Unreleased]: https://github.com/TheKeyblader/Enx.Atomic.Avalonia/compare/v0.0.7...HEAD
+[0.0.7]: https://github.com/TheKeyblader/Enx.Atomic.Avalonia/compare/v0.0.6...v0.0.7
 [0.0.6]: https://github.com/TheKeyblader/Enx.Atomic.Avalonia/compare/v0.0.5...v0.0.6
 [0.0.5]: https://github.com/TheKeyblader/Enx.Atomic.Avalonia/compare/v0.0.4...v0.0.5
 [0.0.4]: https://github.com/TheKeyblader/Enx.Atomic.Avalonia/compare/v0.0.3...v0.0.4
