@@ -14,10 +14,9 @@ var configuration = new AtomicConfiguration<MiniTheme> { Theme = builder.Theme }
 builder.AddMiniTheme(configuration);
 ```
 
-`AddMiniTheme` registers every rule, variant, and default theme scale documented below, plus the
-ghost-property combiner needed for per-side `m-*`/`p-*`/`rounded-*` tokens to actually resolve.
-Everything is exposed individually too (`AddColorRules`, `AddSpacingRules`, ...) if you only want
-part of it — see `Extensions/ThemeBuilderExtensions.cs`.
+`AddMiniTheme` registers every rule, variant, and default theme scale documented below.
+Everything is exposed individually too (`AddColorRules`, `AddSpacingRules`, ...) if you only
+want part of it — see `Extensions/ThemeBuilderExtensions.cs`.
 
 ```xml
 <Button Classes="flex-row p-4 gap-2 rounded-md bg-blue-500 hover:bg-blue-600 sm:flex-col" />
@@ -110,21 +109,21 @@ Theme-driven — the value after the prefix is resolved against a scale (see
 | `text-{color}` | `TextElement.ForegroundProperty` | [Colors](#colors) |
 | `border-{color}` | `Border.BorderBrushProperty` | [Colors](#colors) |
 | `text-{size}` | `TextElement.FontSizeProperty` | [FontSizes](#fontsizes) |
-| `border` / `border-{width}` | `Border.BorderThicknessProperty` (uniform) | [LineWidths](#linewidths) |
-| `border-t/r/b/l-{width}` | Border width, one side (ghost property) | [LineWidths](#linewidths) |
-| `rounded-{radius}` | `Border.CornerRadiusProperty` (uniform) | [Radii](#radii) |
-| `rounded-t/b/l/r-{radius}` | Two adjacent corners (ghost properties, combined) | [Radii](#radii) |
-| `rounded-tl/tr/br/bl-{radius}` | One corner (ghost property) | [Radii](#radii) |
+| `border` / `border-{width}` | `BorderThicknessSides` (four sides), recomposed into `Border.BorderThicknessProperty` | [LineWidths](#linewidths) |
+| `border-t/r/b/l-{width}` | `BorderThicknessSides`, one side | [LineWidths](#linewidths) |
+| `rounded-{radius}` | `CornerRadiusSides` (four corners), recomposed into `Border.CornerRadiusProperty` | [Radii](#radii) |
+| `rounded-t/b/l/r-{radius}` | `CornerRadiusSides`, two adjacent corners | [Radii](#radii) |
+| `rounded-tl/tr/br/bl-{radius}` | `CornerRadiusSides`, one corner | [Radii](#radii) |
 | `w-{size}` / `h-{size}` | `Layoutable.WidthProperty` / `HeightProperty` | [Sizes](#sizes) |
 | `min-w-{size}` / `max-w-{size}` | `Layoutable.MinWidthProperty` / `MaxWidthProperty` | [Sizes](#sizes) |
 | `min-h-{size}` / `max-h-{size}` | `Layoutable.MinHeightProperty` / `MaxHeightProperty` | [Sizes](#sizes) |
-| `m-{n}` | `Layoutable.MarginProperty` (uniform) | [Spacing](#spacing) |
-| `mx-{n}` / `my-{n}` | Margin left+right / top+bottom (ghost properties, combined) | [Spacing](#spacing) |
-| `mt-{n}` / `mr-{n}` / `mb-{n}` / `ml-{n}` | Margin, one side (ghost property) | [Spacing](#spacing) |
+| `m-{n}` | `MarginSides` (four sides), recomposed into `Layoutable.MarginProperty` | [Spacing](#spacing) |
+| `mx-{n}` / `my-{n}` | `MarginSides`, left+right / top+bottom | [Spacing](#spacing) |
+| `mt-{n}` / `mr-{n}` / `mb-{n}` / `ml-{n}` | `MarginSides`, one side | [Spacing](#spacing) |
 | `-m-{n}`, `-ml-{n}`, ... | Same as above, negated | [Spacing](#spacing) |
-| `p-{n}` | `Decorator.PaddingProperty` (uniform) | [Spacing](#spacing) |
-| `px-{n}` / `py-{n}` | Padding left+right / top+bottom (ghost properties, combined) | [Spacing](#spacing) |
-| `pt-{n}` / `pr-{n}` / `pb-{n}` / `pl-{n}` | Padding, one side (ghost property) | [Spacing](#spacing) |
+| `p-{n}` | `PaddingSides` (four sides), recomposed into `Decorator.PaddingProperty` | [Spacing](#spacing) |
+| `px-{n}` / `py-{n}` | `PaddingSides`, left+right / top+bottom | [Spacing](#spacing) |
+| `pt-{n}` / `pr-{n}` / `pb-{n}` / `pl-{n}` | `PaddingSides`, one side | [Spacing](#spacing) |
 | `gap-{n}` | `Spacing`/`ColumnSpacing`/`RowSpacing` on `StackPanel`, `Grid`, `UniformGrid` | [Spacing](#spacing) |
 | `gap-x-{n}` | `ColumnSpacing` on `Grid` and `UniformGrid` only | [Spacing](#spacing) |
 | `gap-y-{n}` | `RowSpacing` on `Grid` and `UniformGrid` only | [Spacing](#spacing) |
@@ -146,11 +145,20 @@ Notes:
 - **`col-*`/`row-*`/`col-span-*`/`row-span-*` target the grid child, not the `Grid`** — they're
   `AttachedProperty`s meant to be set on whatever control sits inside the grid (e.g.
   `<Border Classes="col-span-2">`), not on the `Grid` element itself.
-- **Per-side margin/padding/radius/border-width** (`ml-*`, `pt-*`, `rounded-tl-*`, `border-t-*`, ...)
-  go through ghost properties: real, hidden `AvaloniaProperty`s combined back into one real
-  struct-valued setter by `GhostPropertyCombiner` when several land on the same element (`ml-1 mr-2` →
-  one `Margin` setter, not two competing ones). Requires `AddGhostPropertyCombiner` (already part of
-  `AddMiniTheme`).
+- **Per-side margin/padding/border-width/radius** (`ml-*`, `pt-*`, `border-t-*`,
+  `rounded-tl-*`, ...) — and their uniform/axis forms — don't write the real struct-valued
+  property: each writes the `double` side attached properties of its host (`MarginSides`,
+  `PaddingSides`, `BorderThicknessSides`, `CornerRadiusSides`) — one for a single side, two
+  for an axis/edge, four for a uniform token — and the host's class handler recomposes the
+  real `Thickness`/`CornerRadius` from them. So `ml-1 mr-2` composes into one `Margin`, a
+  variant stays its own style (pseudo-class and container query included), and overlapping
+  tokens in a family resolve in UnoCSS's direction order (`m-*` < `mx-*` < `ml-*`) whatever
+  the source order. A side no token sets composes as `0` — see `ARCHITECTURE.md`,
+  "Composite side properties".
+- **`p-*`/`border-*` (width)/`rounded-*` reach `TemplatedControl` subclasses** — the tokens
+  target `Control`, and the real properties are `AddOwner`'ed by `TemplatedControl` (and
+  `ContentPresenter`) too, so `<Button Classes="p-4 rounded-md" />` works. The padding
+  handler skips controls that never register `Padding` (e.g. `Canvas`).
 - **`text-` is shared** between `FontSizeRule` and `ForegroundColorRule` — a value that resolves in
   the `FontSizes` scale wins as a size; otherwise it's tried as a color. Likewise **`border-`** is
   shared between `BorderWidthRule` and `BorderColorRule` — a value resolving in `LineWidths` (named

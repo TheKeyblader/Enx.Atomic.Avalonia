@@ -44,9 +44,14 @@ public static class TextWrap
   `TemplatedControl.BackgroundProperty.ToLiteral(v, typeof(TemplatedControl))`. Without it, all
   entries collapse onto the original `OwnerType`. See `StyleValue.TargetType` and
   `Static/FlexDirection.cs` (one entry per oriented control).
-- **Struct properties set per side** (`Thickness`, `CornerRadius`) must go through
-  `SpecialProperties` ghost properties, not the real property — see ARCHITECTURE.md
-  "Ghost properties".
+- **Struct properties set per side** (`Thickness`, `CornerRadius`) must go through the
+  family's composite host, not the real property: write e.g.
+  `MarginSides.MarginLeftProperty.ToLiteral(value, typeof(Control))` (uniform forms write all
+  four sides). The host's class handler recomposes the real value — see ARCHITECTURE.md
+  "Composite side properties".
+- **Two static tokens setting the same property** resolve in `StringifiedUtil.Index` order
+  (their position in `AllStaticRules`), never in source order — see ARCHITECTURE.md
+  "Emission order".
 - The value must be **exactly** the property's type (`double`, not `int`/`float`) — the codegen
   boxes it into `Setter.Value` and only fails at apply time.
 
@@ -80,6 +85,10 @@ public void WhitespaceNowrap_SetsNoWrap()
     Assert.Equal(TextWrapping.NoWrap, setter.Value);
 }
 ```
+
+If the token reaches a composite host (or its effect is only visible once Avalonia applies the
+setters), also assert the *effective* value on a shown control: `generator.Generate(...)` then
+`utils.ShowWithStyles(control)` — `CompositeUtilityTests.cs` is the model.
 
 If the token exercises a new value type or a multi-owner property, also add it to the source
 string in `CodeGenTests.EmittedSource_CompilesAndProducesCorrectlyTypedSetters` (it compiles the

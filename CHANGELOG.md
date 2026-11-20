@@ -26,6 +26,21 @@ All notable changes to this project are documented here. The format follows
   scale entirely — a literal color or a literal pixel value (no rem conversion), never
   a `DynamicResource`. Covers every color rule (`bg-*`/`text-*`/`border-*`) and every
   px-based scale (Spacing, Sizes, Radii, LineWidths, FontSizes).
+- `StyleOrdering` (`Sort`/`Distinct`) — the canonical emission order (specificity →
+  container order → rule index → rule rank → variant sort → selector text) shared by
+  the runtime generator and `AtomicCli`, plus structural deduplication for
+  transformer-registered styles.
+- Composite side properties: `MarginSides`, `PaddingSides`, `BorderThicknessSides` and
+  `CornerRadiusSides` — four `AttachedProperty<double>` each, recomposed into the real
+  `Thickness`/`CornerRadius` by a class handler at `BindingPriority.Style` — described
+  by a public `CompositePropertyDescriptor`/`CompositeKind`, with a generated,
+  self-contained copy of each used host embedded by the code generator.
+- `StringifiedUtil.Rank`/`Sort` and `IOrderRankedDynamicRule<TTheme>` — the two
+  rule-level ordering signals: `Rank` lets a consolidated directional rule rank its own
+  matches (`m-*` < `mx-*` < `ml-*`) the way UnoCSS's separate rule entries used to, and
+  `Sort` is a variant-provided hint (still unused by the Mini preset).
+- `AtomicGenerator.PendingUtils`, exposing the styles a source transformer registered
+  through `AddUtil` during the last `ApplyTransformers` call.
 
 ### Changed
 
@@ -33,6 +48,35 @@ All notable changes to this project are documented here. The format follows
   rule read to produce it (e.g. `t => t.Colors[value]` → `"Colors[red-500]"`), never
   passed in by hand — guarantees two rules reading the same theme entry always agree
   on one key, and two rules reading different entries can never collide.
+- `m-*`/`mx-*`/`my-*`/`mt-*`/... and `p-*`/`border-*` (width)/`rounded-*` now write
+  only their host's side properties, the uniform token included, and target `Control`
+  explicitly — so `p-*`, `border-*` and `rounded-*` also reach `TemplatedControl`
+  subclasses such as `Button`.
+- `AtomicCli` runs transformers and extractors per file but resolves the union of every
+  source's tokens once, deduplicates transformer output structurally, then orders the
+  whole set together.
+- The emitter embeds a generated copy of each composite host a stylesheet targets
+  (from its `CompositePropertyDescriptor`) plus one shared recomposition helper,
+  alongside the existing hand-written `EmbeddableSource` path `GridDefinitions` still
+  uses.
+
+### Removed
+
+- `GhostPropertyCombiner<TTheme>`, `SpecialProperties`, `GhostProperties`/`Map`, and
+  `ThemeBuilderExtensions.AddGhostPropertyCombiner` — replaced by composite side
+  properties. `ISourceTransformer`, `AddUtil` and `ApplyTransformers` stay.
+
+### Fixed
+
+- A variant written before its base (`hover:w-8 w-4`) silently lost its variant state:
+  equal-priority styles resolve last-inserted-wins, and emission followed source order.
+  Styles are now emitted in a specificity-aware order, so source order never matters.
+- Per-side utilities losing their variant pseudo-class, container query, split-line
+  combination or overlapping-utility behaviour — the old build-time combiner rebuilt
+  the selector from class names alone.
+- `p-*`, `border-*` (width) and `rounded-*` not applying to `TemplatedControl`
+  subclasses such as `Button`.
+- A token used in two source files being emitted twice by `AtomicCli`.
 
 ## [0.0.4] - 2026-08-25
 

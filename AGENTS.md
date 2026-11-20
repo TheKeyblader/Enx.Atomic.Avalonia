@@ -21,9 +21,10 @@ for one feature; it needs the connector or nothing.
 architectures (VSA / Clean Architecture / DDD / Modular Monolith) apply. It's closer to a small
 compiler: tokens → matched rules/variants → `StyleValue`s → emitted C# source (build time) or,
 for the subset that supports it, compiled `Selector` expressions (runtime — see above). The
-actual architecture — rules, variants, source transformers, ghost properties, the codegen
-pipeline — is documented in **[ARCHITECTURE.md](ARCHITECTURE.md)**, which is the source of
-truth; don't duplicate it here, read it before making non-trivial changes.
+actual architecture — rules, variants, source transformers, emission order, composite
+side properties, the codegen pipeline — is documented in **[ARCHITECTURE.md](ARCHITECTURE.md)**,
+which is the source of truth; don't duplicate it here, read it before making non-trivial
+changes.
 
 ## Repo Layout
 
@@ -66,9 +67,23 @@ Each of these has already cost a debugging session. Details in `ARCHITECTURE.md`
   prefix (`border-2` width vs `border-red-500` color, `text-lg` size vs `text-red-500` color) rely
   on `AddMiniTheme` registering the more specific one first. A new rule on an existing prefix
   needs a case in `AmbiguousPrefixTests.cs`.
-- **Per-side utilities must target ghost properties**, never the real struct property:
-  `ml-1 mr-2` would otherwise be two `Style`s each setting the whole `Thickness`, the later one
-  winning. See `SpecialProperties`, `GhostProperties.Map`, `GhostPropertyCombiner<TTheme>`.
+- **Per-side utilities write composite host side properties, never the real struct
+  property.** `m-*`/`p-*`/`border-*` (width)/`rounded-*` target the
+  `AttachedProperty<double>` sides of `MarginSides`/`PaddingSides`/`BorderThicknessSides`/
+  `CornerRadiusSides` (`NaN` = unset), and the host's class handler recomposes the real
+  `Thickness`/`CornerRadius` at `BindingPriority.Style`; writing the real property from
+  two styles would let the later one replace the whole struct. Pass `typeof(Control)` as
+  the target type (the property's `OwnerType` is the static host, i.e. a meaningless
+  `<MarginSides>` selector) and convert the value to `double` (the scales are `float`).
+  UnoCSS's direction order (uniform < axis/edge < side/corner) comes from
+  `IOrderRankedDynamicRule.GetOrderRank`, not from registration order.
+- **Emission order is the cascade.** A class selector is an activator, so Avalonia frames
+  every utility at `BindingPriority.StyleTrigger` and resolves equal-priority frames
+  last-inserted-wins: in source order `hover:w-8 w-4` would lose its hover.
+  `StyleOrdering.Sort` owns the order (specificity → container order → rule index → rule
+  rank → variant sort → selector text) on both the runtime and CLI paths. Never rely on
+  source order, and give a new rule that shares a family's prefix a rank rather than
+  assuming where it's registered will sort it.
 - **`AddOwner` hides the declaring type.** `AvaloniaProperty.OwnerType` reports the *original*
   (sometimes non-public) owner, so selectors/emitters that need the public declaring type must be
   given it explicitly (see `StyleValue.TargetType`, `DarkVariant`).

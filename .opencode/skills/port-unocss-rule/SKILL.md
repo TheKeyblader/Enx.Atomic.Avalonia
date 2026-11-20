@@ -30,11 +30,11 @@ structural pseudo-classes like `:nth-child`) are dropped deliberately.
 
 | CSS / UnoCSS | Avalonia | Notes |
 |---|---|---|
-| `margin` / `padding` | `Layoutable.MarginProperty` / `Decorator.PaddingProperty` | per-side → `SpecialProperties` ghost properties |
+| `margin` / `padding` | `MarginSides` / `PaddingSides` side properties, recomposed into `Layoutable.MarginProperty` / `Decorator.PaddingProperty` | every direction writes the host's `double` sides (one/two/four), target `Control` |
 | `gap` / `gap-x` / `gap-y` | `StackPanel.SpacingProperty`, `Grid`/`UniformGrid` `ColumnSpacing`/`RowSpacing` | see `GapRule` |
 | `width`/`height`/`min-*`/`max-*` | `Layoutable.*Property` (`double`) | |
-| `border-width` | `Border.BorderThicknessProperty` (`Thickness`) | `lineWidth` scale = **px**, not rem → `TryResolvePx` |
-| `border-radius` | `Border.CornerRadiusProperty` | per-corner → ghost properties |
+| `border-width` | `BorderThicknessSides` sides, recomposed into `Border.BorderThicknessProperty` (`Thickness`) | `lineWidth` scale = **px**, not rem → `TryResolvePx` |
+| `border-radius` | `CornerRadiusSides` sides, recomposed into `Border.CornerRadiusProperty` | slot order TopLeft/TopRight/BottomRight/BottomLeft (`CompositeKind`) |
 | `background-color` | `Border`/`TemplatedControl`/`Panel` `.BackgroundProperty` (3 entries, explicit target types) | `ToResource` for theme colors |
 | `color` | `TextElement.ForegroundProperty` | |
 | `font-size` / `font-weight` / `font-style` | `TextElement.FontSize/FontWeight/FontStyleProperty` | |
@@ -51,6 +51,19 @@ structural pseudo-classes like `:nth-child`) are dropped deliberately.
 | `hover:`/`focus:`/`disabled:`/... | Avalonia pseudo-classes (`:pointerover`, ...) | `PseudoClassVariant` |
 | `sm:`/`max-sm:` (media queries) | **container queries** (`min-width`/`max-width`) | `BreakpointVariant` |
 | `dark:` (class/media) | `PropertyEquals(ThemeVariantScope.ActualThemeVariantProperty, Dark)` | `DarkVariant` |
+
+Three things UnoCSS gets for free need to be explicit here, because Avalonia has neither:
+
+- **The cascade.** UnoCSS's stylesheet order is its specificity/media order; Avalonia ties every
+  class-activated style at `StyleTrigger` and resolves ties last-inserted-wins. Never assume
+  source order — `StyleOrdering` owns the emission order (see ARCHITECTURE.md, "Emission order").
+- **Per-direction rule entries.** UnoCSS keeps `m-*`, `mx-*`, `ml-*` as separate rules in that
+  increasing order. A consolidated rule here implements `IOrderRankedDynamicRule<TTheme>` and
+  ranks its own matches (uniform < axis/edge < side/corner) — see `add-dynamic-rule` §4.
+- **Struct-valued properties.** CSS's four independent `margin-*`/`padding-*`/`border-*-width`/
+  `border-radius` properties collapse into a composite host's four `double` sides in Avalonia
+  (`MarginSides`/`PaddingSides`/`BorderThicknessSides`/`CornerRadiusSides`), recomposed by a class
+  handler — see `add-dynamic-rule` §3.
 
 ## 3. Theme scales
 

@@ -48,8 +48,8 @@ real gap (see below):
   resulting styles to your `Application.Styles`. See `Sandbox/Program.cs`. Grid
   utilities (`grid-cols-*`, `col-span-*`, ...) and resource-based theming
   (`bg-*`/`text-*`/`border-*`) are **codegen-only today** — at runtime they silently
-  resolve to nothing, since both need machinery (a ghost-property class handler, a
-  built `ResourceDictionary`) that's currently only assembled at build time. Full
+  resolve to nothing, since each needs machinery only the build-time pipeline assembles
+  (the embedded `GridDefinitions` class handler, a built `ResourceDictionary`). Full
   runtime parity would need a connector watching for newly-used classes across
   loaded components and emitting/resolving them live — see the Roadmap's v3.
 
@@ -90,9 +90,13 @@ outstanding right now.
 
 ### Beta — extend the vocabulary, lay down infrastructure
 
-- **A user-extensible ghost-property registry.** `GhostProperties.Map` is hardcoded
-  today; a preset or app author can't register a ghost property for a struct-valued
-  property this library doesn't already know about.
+- **Finish the user-extensible composite registry.** A preset or app author can
+  already declare their own four-sided host (`CompositePropertyDescriptor`/
+  `CompositeKind`, one of `Thickness`/`CornerRadius` today) and have codegen embed it,
+  but recomposing the real property still needs the engine's `internal` class handler,
+  so a third-party host has to reimplement that part. Making the recomposition
+  implementation (or a host's own handler) reachable from outside the engine is what's
+  left.
 - **More presets.** Only `Preset.Mini` exists so far — the engine itself
   (`Sources/Enx.Atomic.Avalonia`) doesn't assume any particular rule set.
 
@@ -141,9 +145,10 @@ outstanding right now.
 
 - **A runtime connector for codegen-only features.** A connector that detects
   newly-used classes across loaded components as they appear and resolves/emits
-  the matching ghost-property handlers and resource dictionary entries live —
-  bringing grid utilities and resource-based theming to the runtime path
-  (`AtomicGenerator<TTheme>.Generate(...)`), not just build-time codegen.
+  what they need live — the embedded class handler grid utilities depend on and the
+  resource dictionary entries `bg-*`/`text-*`/`border-*` resolve against — bringing
+  both to the runtime path (`AtomicGenerator<TTheme>.Generate(...)`), not just
+  build-time codegen.
 
 Have an opinion on any of these, or a different priority? Open an issue.
 

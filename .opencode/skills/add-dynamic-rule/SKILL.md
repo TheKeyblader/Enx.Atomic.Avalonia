@@ -1,12 +1,12 @@
 ---
 name: Add a dynamic rule
-description: Add a regex/theme-driven utility family to Preset.Mini (m-*, bg-*, rounded-tl-*, w-[123px], ...) — an IDynamicRule<TTheme> resolving values from a theme part, arbitrary [..] values or bare numbers. Covers theme parts, registration order for shared prefixes, ghost properties and resources.
+description: Add a regex/theme-driven utility family to Preset.Mini (m-*, bg-*, rounded-tl-*, w-[123px], ...) — an IDynamicRule<TTheme> resolving values from a theme part, arbitrary [..] values or bare numbers. Covers theme parts, registration order for shared prefixes, composite side properties and resources.
 ---
 
 # Add a dynamic rule (Preset.Mini)
 
-Read ARCHITECTURE.md sections "Core engine", "`Enx.Atomic.Avalonia.Preset.Mini`" and
-"Ghost properties" first if you haven't this session.
+Read ARCHITECTURE.md sections "Core engine", "`Enx.Atomic.Avalonia.Preset.Mini`",
+"Emission order" and "Composite side properties" first if you haven't this session.
 
 ## 1. Scope it
 
@@ -81,10 +81,15 @@ Property gotchas:
   (`TemplatedControl.BackgroundProperty.ToLiteral(v, typeof(TemplatedControl))`) — see
   `BackgroundColorRule`.
 - **Attached properties** default their target to `StyledElement`; narrow it explicitly if needed.
-- **Per-side struct values** (`Thickness`, `CornerRadius`): the uniform form may set the real
-  property; every per-side form must target `SpecialProperties.*` ghost properties so
-  `GhostPropertyCombiner` can merge `ml-1 mr-2`. A new struct-valued property needs entries in
-  `SpecialProperties` + `GhostProperties.Map` (still hardcoded — see Roadmap).
+- **Struct-valued properties set per side** (`Thickness`, `CornerRadius`): never write the
+  real property. Every direction — the uniform one included — writes the four
+  `AttachedProperty<double>` of the family's composite host in `Composites/`
+  (`MarginSides`, `PaddingSides`, `BorderThicknessSides`, `CornerRadiusSides`), with the
+  scale value converted to `double` and `typeof(Control)` passed as the target type; the
+  host's class handler recomposes the real `Thickness`/`CornerRadius` at
+  `BindingPriority.Style`. A new four-sided property needs a new host (four fields in the
+  `CompositeKind` slot order, a `CompositePropertyDescriptor`, a class handler,
+  `[EmittableGhostPropertyHost]`) — see `ARCHITECTURE.md`, "Composite side properties".
 
 ## 4. Register — order matters
 
@@ -97,6 +102,12 @@ shares a prefix with an existing rule (`border-`, `text-`, `bg-`, ...), the more
 one — e.g. `AddLineWidthRules`/`AddFontSizeRules` before `AddColorRules`. Document the ordering
 constraint in the `Add*Rules` `<summary>`.
 
+Registration order says nothing about how *one* rule's matches rank against each other. If your
+rule consolidates what UnoCSS keeps as several entries (uniform vs axis vs side, edge vs corner),
+implement `IOrderRankedDynamicRule<TTheme>` and return the ascending rank from `GetOrderRank` —
+`StyleOrdering` consumes it right after the rule index, so `m-4 mx-2` lets the axis win whatever
+the source order. Don't try to encode that with `StringifiedUtil.Sort`, which is a variant hint.
+
 ## 5. Tests
 
 `[AvaloniaFact]` tests using `TestHelpers.CreateMiniGenerator()` + `generator.ParseToken("...")`,
@@ -106,7 +117,11 @@ in the family's file (`SpacingRuleTests.cs`, `BorderRuleTests.cs`, ...) or a new
 - a scale key, a bare number (check the rem conversion), an arbitrary `[..px]` value, a miss;
 - each named group branch (each `side`/`axis`);
 - shared prefix → a case in `AmbiguousPrefixTests.cs` both ways;
-- per-side ghost properties → a combined case in `GhostPropertyCombinerTests.cs`;
+- per-side/composite values → assert the *effective* property on a shown control, not just the
+  setters: `generator.Generate(...)` then `utils.ShowWithStyles(control)` (`CompositeUtilityTests.cs`
+  is the model), including a variant and a lone side token;
+- rank → a case in both source orders (`"m-4 mx-2"` / `"mx-2 m-4"`) asserting the same effective
+  value, as `SpacingRuleTests`/`CompositeUtilityTests` do;
 - resources → `ThemeResourceTests.cs` (key, `ResolvedResources`, Light/Dark split);
 - **codegen**: add a representative token to the source in `CodeGenTests.cs` (compiled with
   Roslyn, setter types checked). New value type → `add-value-emitter`.

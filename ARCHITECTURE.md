@@ -33,7 +33,8 @@ A string like `hover:bg-red-500` goes through four steps:
    the theme).
 4. **Emission** — the resolved selector, container query, and `StyleValue`s become a
    `StringifiedUtil`, which either becomes a real `Avalonia.Styling.Style` at runtime,
-   or gets handed to the code generator to emit as C# (see below).
+   or gets handed to the code generator to emit as C# (see below). Either way the whole
+   set is put in a canonical order first — see "Emission order" below.
 
 ## Core engine (`Sources/Enx.Atomic.Avalonia`)
 
@@ -44,6 +45,10 @@ A string like `hover:bg-red-500` goes through four steps:
   dynamic rules, the first match in `Rules` declaration order wins — this is how two
   rules can share a prefix (`border-2` as width vs `border-red-500` as color) without
   one convoluted regex.
+  `IOrderRankedDynamicRule<TTheme>` is the optional companion for a rule that
+  consolidates several of those entries into one regex (`m-*`/`mx-*`/`ml-*`): its
+  `GetOrderRank` reports the relative order of its own matches, which `StyleOrdering`
+  consumes right after the rule index (see "Emission order" below).
 - **`StyleValue`** — `Literal<TValue>` (value fixed at resolution time) or `Resource`
   (a `DynamicResource` lookup under `Key`, so the value tracks a theme/resource change
   at runtime instead of being baked in). A rule builds one from `ThemeAccess`, the
@@ -78,14 +83,20 @@ A string like `hover:bg-red-500` goes through four steps:
   text* before extraction (unlike `IPreProcessor`, which only sees one already
   isolated token). Its `Transform` returns the text unchanged or rewritten. Grouped by
   `Enforce` (`Pre` → `Default` → `Post`) and run in that order
-  (`AtomicGenerator.ApplyTransformers`), always before extraction.
+  (`AtomicGenerator.ApplyTransformers`), always before extraction. A transformer that
+  needs to emit a style no single token corresponds to registers it through
+  `AtomicGenerator.AddUtil` as a side effect; `PendingUtils` exposes what the most
+  recent `ApplyTransformers` call registered, and `Generate` folds those utilities into
+  its own output.
 - **`AtomicConfiguration<TTheme>`** — assembles `Transformers`, `PreProcessors`,
   `Rules`, `Variants`, `Extractors`, and the `TTheme` instance.
 - **`AtomicGenerator<TTheme>`** — the engine itself. `Generate(...)` runs the full
-  pipeline above and returns `StringifiedUtil[]`, cached by raw token. Also accumulates
-  every distinct `StyleValue.Resource` encountered into `ResolvedResources` (keyed by
-  `Key`), which `ResourceDictionaryEmitter` reads to build the actual resource
-  dictionary those resources' `DynamicResource` lookups resolve against.
+  pipeline above and returns `StringifiedUtil[]`, cached by raw token, in
+  `StyleOrdering`'s canonical emission order (see "Emission order" below). Also
+  accumulates every distinct `StyleValue.Resource` encountered into
+  `ResolvedResources` (keyed by `Key`), which `ResourceDictionaryEmitter` reads to
+  build the actual resource dictionary those resources' `DynamicResource` lookups
+  resolve against.
 
 ## `Enx.Atomic.Avalonia.Preset.Mini`
 
@@ -100,7 +111,11 @@ A string like `hover:bg-red-500` goes through four steps:
 - **`Dynamic/`** — theme-driven rules. Directional families (margin/padding/gap,
   corner-radius) are consolidated into a single class per family via named capture
   groups (`side`, `axis`, `bound`, `neg`) instead of one class per direction — e.g.
-  `MarginRule` handles `m-*`, `mx-*`, `mt-*`, ... in a single `Match`.
+  `MarginRule` handles `m-*`, `mx-*`, `mt-*`, ... in a single `Match`. Because one
+  consolidated rule has a single declaration index, these rules implement
+  `IOrderRankedDynamicRule<TTheme>` and rank their matches (`uniform < axis/edge <
+  side/corner`) instead of relying on UnoCSS's separate rule entries to encode that
+  order; `StringifiedUtil.Rank` carries it to `StyleOrdering`.
   - **`ThemeScale`** — resolves a theme key, falling back, in order, to an
     `ArbitraryValue` then a bare number. `TryResolve` treats the bare-number fallback
     as **rem** (converted to px via `RemToPxFactor`) — the behavior of most UnoCSS
@@ -129,46 +144,137 @@ A string like `hover:bg-red-500` goes through four steps:
   specific prefix (`BorderWidthRule`, `FontSizeRule`) are registered before rules
   sharing their generic prefix (`BorderColorRule`, `ForegroundColorRule`).
 
-## Ghost properties: combining per-side utilities
+## Emission order: the cascade Avalonia doesn't have
 
-Avalonia's `Margin`, `Padding`, `BorderThickness`, and `CornerRadius` are each a
-single struct-valued property, not four independent ones. Two utilities on the same
-element (`ml-1 mr-2`) would normally resolve to two separate `Style`s each setting
-the *whole* struct — and Avalonia lets the later one win outright rather than merging
-them.
+Avalonia has no CSS specificity. The value that survives is decided by priority first,
+frame order second: a style whose selector carries an *activator* is framed at
+`BindingPriority.StyleTrigger` (`StyleInstance.GetPriority`), and a plain class selector
+**is** an activator. So `.w-4` and `.hover:w-8:pointerover` — or `.w-4` and a
+`min-width:640` container query holding `.sm:w-8` — always tie, and `ValueStore`'s frame
+insertion plus `ReevaluateEffectiveValues` resolve the tie in favour of the **last
+inserted** frame. Emitted in source-token order, `hover:w-8 w-4` would therefore
+silently lose its hover state: the base utility, resolved later, wins at equal
+priority.
 
-To fix this:
+`StyleOrdering.Sort` (`StyleOrdering.cs`) is the single place that decides that order,
+applied by `AtomicGenerator.Generate(...)` for the runtime path and by `AtomicCli` over
+the combined set of every source file for the build-time path, so both produce the
+same cascade. Its key, ascending:
 
-- **Ghost properties (`SpecialProperties.cs`)** — a per-side rule (`ml-1`) targets a
-  *ghost* `AvaloniaProperty`, owned by a type (`SpecialProperties`) that's never
-  referenced by the consuming project. `GhostProperties.Map` records, for each real
-  composite property, which ghost property backs which of its four slots.
-- **`GhostPropertyCombiner<TTheme>`** — a `Post`-stage `ISourceTransformer<TTheme>`,
-  auto-registered by `AddMiniTheme`. For each source line, it resolves every token on
-  that line, groups the ones targeting the same real property, and calls
-  `AtomicGenerator<TTheme>.AddUtil` with a combined style: a **compound selector**
-  requiring every contributing class (`.Class("ml-1").Class("mr-2")`) and one
-  `Setter` carrying the assembled `Thickness`/`CornerRadius`. It never rewrites the
-  source text — the selector it builds only ever references classes that are
-  genuinely present in the real source. A style whose owner type is
-  `SpecialProperties` never matches a real element on its own; it's dropped at
-  `AtomicGenerator.Generate`'s final emission boundary, so only the combined style
-  reaches output.
+1. **Specificity** — class-like nodes (`Class`, including Avalonia pseudo-classes whose
+   name starts with `:`, and `PropertyEquals`, e.g. `dark:`) as CSS's
+   class/attribute/pseudo-class column, then type nodes (`Is`/`OfType`) as its lower
+   type column. `.hover\:bg-red-500:pointerover` (2) therefore beats
+   `.sm\:bg-red-500` (1) regardless of where its container query falls, exactly as CSS
+   compares specificity before the at-rule's position.
+2. **Container order** — unconditional utilities first, then `max-*` upper bounds
+   (narrowest last, since the narrowest is the most specific), then the
+   `sm:`/`md:`/... lower bounds ascending by breakpoint, mirroring ascending `@media`
+   blocks where the later, wider block wins. An unrecognized query node sorts after
+   unconditional utilities, so a future variant can't silently stop overriding its
+   base.
+3. **Rule index** (`StringifiedUtil.Index`) — the originating rule's declaration order.
+4. **Rule rank** (`StringifiedUtil.Rank`) — an `IOrderRankedDynamicRule<TTheme>`'s
+   ordering of its own matches.
+5. **Variant sort hint** (`StringifiedUtil.Sort`) — UnoCSS's per-rule `sort`; no variant
+   in the Mini preset sets it today.
+6. **Selector text** — a culture-independent description, so otherwise identical styles
+   still come out deterministic.
 
-Because the combined selector only depends on classes already in the source, this
-works identically whether resolved at runtime or by the build-time emitter below.
+The practical consequences: source order never matters, so a variant may be written
+before its base; a wider breakpoint wins over a narrower one when both match; and a more
+specific selector outranks any container query.
+
+`StyleOrdering.Distinct` is the companion used on the build-time path only: transformer
+output registered through `AddUtil` has no token to deduplicate by, so it is compared
+structurally (selector data, container query, setter property instance and value) and
+collapsed. Two distinct resources are never merged on a guess, since reference-typed
+values compare equal only when they are the same instance.
+
+## Composite side properties: per-side utilities
+
+Avalonia's `Margin`, `Padding`, `BorderThickness`, and `CornerRadius` are each a single
+struct-valued property, not four independent ones. Two utilities on the same element
+(`ml-1 mr-2`) would normally resolve to two separate `Style`s each setting the *whole*
+struct — and, both framed at `StyleTrigger`, the later one would win outright rather
+than merging them.
+
+The engine decomposes each of those properties into four independent `double` sides:
+
+- **The hosts (`Composites/`)** — `MarginSides`, `PaddingSides`,
+  `BorderThicknessSides` and `CornerRadiusSides` each declare four
+  `AttachedProperty<double>` fields on `Control` (`NaN` meaning "this side is unset"), a
+  `CompositePropertyDescriptor` describing them, and a static constructor that
+  registers the class handler. Targeting `Control` is deliberate: it is the widest
+  honest target, since `Padding`/`BorderThickness`/`CornerRadius` are `AddOwner`'ed by
+  `TemplatedControl` (and `ContentPresenter`; `TextBlock` too for `Padding`), so a
+  `Button` receives them — while a control such as `Canvas` never registers `Padding` at
+  all. The explicit static constructor is load-bearing: it makes the type not
+  `beforefieldinit`, so the handlers are always registered before the first side
+  property can be read.
+- **`CompositePropertyHandler<TValue>`** (internal) — the shared runtime implementation
+  behind every host. When any side changes it recomposes the real
+  `Thickness`/`CornerRadius` and writes it at `BindingPriority.Style`. `Style`, not
+  `StyleTrigger`, because the composed value is a *derived* value: at `StyleTrigger` it
+  would outrank the class-selected styles that feed it, whereas at `Style` it loses to a
+  local value and to a user style whose selector carries an activator (the expected
+  outcome) while still beating the theme/template default. The write is set-then-dispose:
+  `SetValue` with a non-local priority returns the inserted frame's `IDisposable`, and
+  the previous frame is disposed *after* the new one is inserted, so the composed value
+  never transiently falls back to the theme. When all four sides are unset the
+  contribution is withdrawn entirely, so the real property returns to its theme/default
+  value. A control that doesn't register the real property
+  (`AvaloniaPropertyRegistry.IsRegistered`) is skipped.
+- **Rules** — `MarginRule`, `PaddingRule`, `BorderWidthRule` and `RoundedRule` write
+  only side properties, the uniform token included (`m-4` writes all four sides), and
+  pass `typeof(Control)` explicitly. Because the sides are ordinary attached properties,
+  variants (each stays its own `Style`), container queries, class lists split across
+  lines, and overlapping utilities all resolve through Avalonia's own cascade instead of
+  a build-time merge. UnoCSS's direction order (uniform < axis/edge < side/corner) is
+  preserved by `IOrderRankedDynamicRule<TTheme>` + `StyleOrdering` rather than by
+  separate rule entries.
+- **Codegen** — the consuming project may not reference the preset assembly at all, so
+  `StyleEmitter` embeds a `file`-local copy of each host a stylesheet actually targets.
+  `CompositeHostSourceEmitter` generates that copy from the host's
+  `CompositePropertyDescriptor` (four fields plus the class handler), and one shared
+  `CompositeSideRecomposition` helper is emitted once per file. Because the runtime
+  hosts and the embedded copies are maintained separately, a shared scenario suite
+  (`CompositeScenarioTests`) runs every scenario against both, including the
+  Roslyn-compiled copy.
+
+Known limitation: **an unset side composes as `0`**, not "leave it unchanged". A lone
+`px-4` on a control whose theme gives `Padding` a non-zero vertical value therefore
+zeroes the vertical sides, because the composed struct is built from the four sides
+alone. Falling back per slot to the current effective value would mean reading the
+property being written, re-entering its own change notification.
+
+`CompositePropertyDescriptor` and `CompositeKind` are public for the same reason as the
+hosts: a preset or app can declare its own four-sided host — a public static class with
+four `AttachedProperty<double>` fields in the kind's slot order (`Thickness` or
+`CornerRadius` today), a `Descriptor`, a class handler recomposing the real property, and
+`[EmittableGhostPropertyHost]` — and have CodeGen embed it. What is still missing is
+public access to the recomposition implementation: `CompositePropertyHandler` is
+internal, so a third-party host has to reimplement it. That gap is what the root README's
+Roadmap bullet for a user-extensible registry still tracks.
 
 ## Runtime resolution
 
 `AtomicGenerator<TTheme>.Generate(...)` can run at application startup: it
-transforms the source text, extracts tokens, resolves them, compiles the
-`Expression<Func<Selector, Selector>>`, and produces `StringifiedUtil`s ready to
-become `Avalonia.Styling.Style`s. `Sandbox/Program.cs` demonstrates this.
+transforms the source text, extracts tokens, resolves them, orders them
+(`StyleOrdering`), compiles the `Expression<Func<Selector, Selector>>`, and produces
+`StringifiedUtil`s ready to become `Avalonia.Styling.Style`s. `Sandbox/Program.cs`
+demonstrates this. The composite side utilities (`m-*`, `p-*`, `border-*` width,
+`rounded-*`) work on this path too, because their hosts are ordinary compiled code in
+this assembly: the side properties are real `AvaloniaProperty`s and the class handler
+is registered by the host's static constructor.
 
 Grid utilities and resource-based theming only work through
 `Enx.Atomic.Avalonia.CodeGen` (see below and each feature's own section); reached
-through this path instead, they resolve to nothing. See the root README's Roadmap,
-v3, for the runtime connector that would cover them.
+through this path instead, they resolve to nothing. Each needs something only the
+build-time pipeline assembles: grid definitions need the embedded `GridDefinitions`
+class handler compiled into the app, and a resource needs the `ResourceDictionary`
+`ResourceDictionaryEmitter` builds. See the root README's Roadmap, v3, for the runtime
+connector that would cover them.
 
 ## Build-time C# code generation (`Sources/Enx.Atomic.Avalonia.CodeGen`)
 
@@ -199,6 +305,15 @@ each `Style` and its `Setter`s directly. It works entirely off data:
   resolves to — that's `ResourceDictionaryEmitter`'s job, described below.
 - **`AvaloniaPropertyNaming`** — resolves an `AvaloniaProperty` back to its declaring
   static field's name (`"Button.IsPressedProperty"`) by reflection.
+- **Embedded host classes** — a `Setter` targeting a "ghost" property (one that cannot
+  be resolved to a pre-existing Avalonia property) needs that property's declaring class
+  to exist in the consuming project, which may not reference the preset assembly at all.
+  A class marked `[EmittableGhostPropertyHost]` is copied into the generated file once
+  per used host: a composite host is generated by `CompositeHostSourceEmitter` from its
+  `Descriptor` (plus one shared `CompositeSideRecomposition` helper per file), while any
+  other host supplies a hand-maintained `EmbeddableSource` const — today only
+  `GridDefinitions`. `AvaloniaPropertyNaming` then rewrites the property reference to
+  the embedded type's own field name.
 
 Verified by `Tests/.../CodeGenTests.cs`, which actually **compiles** the emitted text
 with Roslyn (`Microsoft.CodeAnalysis.CSharp`) and asserts no errors.
@@ -234,10 +349,16 @@ that references `Enx.Atomic.Avalonia`(`.Preset.Mini`)`.CodeGen`, builds its
 `AtomicConfiguration<TTheme>`, and calls `AtomicCli.Run(args, configuration)` from
 `Main`. `AtomicCli` is a [Spectre.Console.Cli](https://spectreconsole.net/cli/)
 command with `--output`/`--namespace`/`--class`/`--container` options plus a list of
-source files: it runs each file through `AtomicGenerator<TTheme>.Generate(...)`, then
-`StyleEmitter.Emit`, and writes the result. `--resources-output`/`--resources-class`
-(optional — omitting `--resources-output` skips resource generation entirely) do the
-same for `ResourceDictionaryEmitter`. See
+source files. It runs transformers and extractors per file (with the file path as the
+transformers' `id`, so an `IdFilter` can scope one to a single source) but accumulates
+extraction into **one shared token set**, then resolves that union once, merges in the
+`PendingUtils` transformers registered through `AddUtil` — deduplicated with
+`StyleOrdering.Distinct`, since they have no token to deduplicate by — orders the whole
+set with `StyleOrdering.Sort`, and only then calls `StyleEmitter.Emit`. Resolving per
+file and concatenating used to emit a token used by two files twice, and ordering per
+file let a variant declared in one file sort before its base declared in another.
+`--resources-output`/`--resources-class` (optional — omitting `--resources-output` skips
+resource generation entirely) do the same for `ResourceDictionaryEmitter`. See
 `Examples/Enx.Atomic.Avalonia.Example.Config` for a minimal config project — it
 bootstraps Avalonia's headless platform before touching `AddMiniTheme`, because some
 static rules (e.g. `Cursors`) construct real Avalonia types at static-init time and
