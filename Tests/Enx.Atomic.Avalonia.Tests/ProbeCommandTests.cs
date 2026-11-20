@@ -131,6 +131,50 @@ public class ProbeCommandTests
         Assert.Contains("MarginSides.MarginLeftProperty = 16", output);
     }
 
+    [AvaloniaFact]
+    public void ShortcutToken_ReportsItsExpansionAndTheShortcutLayer()
+    {
+        var (configuration, _) = TestHelpers.CreateMiniGenerator();
+        configuration.Shortcuts.Add(Shortcut.Static("btn", "opacity-50"));
+        var (console, writer) = CreateConsole();
+
+        var exitCode = AtomicCli.Run(["probe", "btn opacity-100", "--json"], configuration, console);
+
+        Assert.Equal(0, exitCode);
+        using var document = JsonDocument.Parse(writer.ToString());
+        var tokens = document.RootElement.GetProperty("tokens").EnumerateArray().ToArray();
+
+        var shortcut = tokens.Single(token => token.GetProperty("raw").GetString() == "btn");
+        var utility = tokens.Single(token => token.GetProperty("raw").GetString() == "opacity-100");
+
+        Assert.Equal(
+            new[] { "opacity-50" },
+            shortcut.GetProperty("shortcut").EnumerateArray().Select(value => value.GetString())
+        );
+        Assert.False(utility.TryGetProperty("shortcut", out _));
+
+        var shortcutStyle = shortcut.GetProperty("styles")[0];
+        var utilityStyle = utility.GetProperty("styles")[0];
+        Assert.Equal(StyleLayer.Shortcuts, shortcutStyle.GetProperty("sortKey").GetProperty("layer").GetInt32());
+        Assert.Equal(StyleLayer.Default, utilityStyle.GetProperty("sortKey").GetProperty("layer").GetInt32());
+        Assert.True(shortcutStyle.GetProperty("position").GetInt32() < utilityStyle.GetProperty("position").GetInt32());
+    }
+
+    [AvaloniaFact]
+    public void ShortcutToken_HumanOutputShowsTheExpansionAndTheLayer()
+    {
+        var (configuration, _) = TestHelpers.CreateMiniGenerator();
+        configuration.Shortcuts.Add(Shortcut.Static("btn", "opacity-50 hover:opacity-100"));
+        var (console, writer) = CreateConsole();
+
+        var exitCode = AtomicCli.Run(["probe", "btn"], configuration, console);
+
+        Assert.Equal(0, exitCode);
+        var output = writer.ToString();
+        Assert.Contains("shortcut: opacity-50 hover:opacity-100", output);
+        Assert.Contains($"layer {StyleLayer.Shortcuts}", output);
+    }
+
     private static (IAnsiConsole Console, StringWriter Writer) CreateConsole()
     {
         var writer = new StringWriter();

@@ -82,8 +82,9 @@ Each of these has already cost a debugging session. Details in `ARCHITECTURE.md`
 - **Emission order is the cascade.** A class selector is an activator, so Avalonia frames
   every utility at `BindingPriority.StyleTrigger` and resolves equal-priority frames
   last-inserted-wins: in source order `hover:w-8 w-4` would lose its hover.
-  `StyleOrdering.Sort` owns the order (specificity → container order → rule index → rule
-  rank → variant sort → selector text) on both the runtime and CLI paths. Never rely on
+  `StyleOrdering.Sort` owns the order (specificity → layer → container order → rule index →
+  rule rank → variant sort → selector text) on both the runtime and CLI paths; the layer puts
+  shortcut-expanded styles before plain utilities. Never rely on
   source order, and give a new rule that shares a family's prefix a rank rather than
   assuming where it's registered will sort it.
 - **`AddOwner` hides the declaring type.** `AvaloniaProperty.OwnerType` reports the *original*

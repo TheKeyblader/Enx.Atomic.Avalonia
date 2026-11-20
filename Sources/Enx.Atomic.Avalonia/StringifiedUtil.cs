@@ -1,4 +1,4 @@
-﻿using System.Linq.Expressions;
+using System.Linq.Expressions;
 using Avalonia.Styling;
 using Enx.Atomic.Avalonia.Compact;
 
@@ -30,6 +30,17 @@ public record StringifiedUtil
     /// <c>sort</c> context. No variant in the Mini preset sets it today; it stays <c>0</c> for every rule.
     /// </summary>
     public int Sort { get; init; }
+
+    /// <summary>
+    /// The cascade layer this style belongs to, compared by <see cref="StyleOrdering"/> after selector specificity
+    /// and before any container query — see <see cref="StyleLayer"/>. A style expanded from a shortcut is
+    /// <see cref="StyleLayer.Shortcuts"/> (<c>0</c>), a plain utility is <see cref="StyleLayer.Default"/> (<c>1</c>,
+    /// the default so a util built outside token resolution sorts like a utility). Like UnoCSS emitting its
+    /// <c>shortcuts</c> layer before <c>default</c>, this makes <c>class="btn bg-red-500"</c> red even when
+    /// <c>btn</c> contains a <c>sm:</c>/<c>dark:</c> variant, while a more specific selector such as
+    /// <c>hover:btn</c> still outranks a plain utility because specificity is compared first.
+    /// </summary>
+    public int Layer { get; init; } = StyleLayer.Default;
 
     /// <summary>Expression building the Avalonia <see cref="Selector"/> this style applies to.</summary>
     public required Expression<Func<Selector, Selector>> Selector { get; set; }

@@ -116,6 +116,7 @@ internal static class ProbeRunner<TTheme>
             Raw = token,
             Variants = variants,
             BaseToken = match.Current,
+            Shortcut = generator.GetShortcutExpansion(token),
             Matched = utils.Length > 0,
             Rule = first is null ? null : ProbeValues.TypeName(configuration.Rules[first.Index].GetType()),
             RuleIndex = first?.Index,
@@ -140,6 +141,7 @@ internal static class ProbeRunner<TTheme>
             {
                 ClassCount = key.ClassCount,
                 TypeCount = key.TypeCount,
+                Layer = key.Layer,
                 ContainerGroup = key.ContainerGroup,
                 ContainerOrder = key.ContainerOrder,
                 RuleIndex = key.RuleIndex,

@@ -5,6 +5,7 @@ using Avalonia.Styling;
 using Enx.Atomic.Avalonia.CodeGen;
 using Enx.Atomic.Avalonia.Compact;
 using Enx.Atomic.Avalonia.Preset.Mini;
+using Spectre.Console;
 
 namespace Enx.Atomic.Avalonia.Tests;
 
@@ -47,6 +48,48 @@ public class AtomicCliTests
             Assert.Equal(1, CountOccurrences(emitted, ".Class(\"from-transformer\")"));
             Assert.Equal(1, CountOccurrences(emitted, ".Class(\"w-4\")"));
             Assert.Equal(1, CountOccurrences(emitted, ".Class(\"w-8\")"));
+        }
+        finally
+        {
+            Directory.Delete(directory, recursive: true);
+        }
+    }
+
+    /// <summary>
+    /// A shortcut expanding to a token nothing matches is a warning, not a failure: <c>generate</c> prints the
+    /// diagnostic, exits 0, and still emits the rest of the shortcut.
+    /// </summary>
+    [AvaloniaFact]
+    public void ShortcutWithUnmatchedToken_PrintsAWarningAndStillGenerates()
+    {
+        var (configuration, _) = TestHelpers.CreateMiniGenerator();
+        configuration.Shortcuts.Add(Shortcut.Static("card", "bg-rde-500 opacity-50"));
+
+        var writer = new StringWriter();
+        var console = AnsiConsole.Create(
+            new AnsiConsoleSettings
+            {
+                Ansi = AnsiSupport.No,
+                ColorSystem = ColorSystemSupport.NoColors,
+                Interactive = InteractionSupport.No,
+                Out = new AnsiConsoleOutput(writer),
+            }
+        );
+
+        var directory = Path.Combine(Path.GetTempPath(), $"enx-atomic-cli-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(directory);
+
+        try
+        {
+            var source = Path.Combine(directory, "View.axaml");
+            var output = Path.Combine(directory, "AtomicStyles.g.cs");
+            File.WriteAllText(source, "<Border Classes=\"card\" />");
+
+            var exitCode = AtomicCli.Run(["--output", output, source], configuration, console);
+
+            Assert.Equal(0, exitCode);
+            Assert.Contains("unmatched utility \"bg-rde-500\" in shortcut \"card\"", writer.ToString());
+            Assert.Equal(1, CountOccurrences(File.ReadAllText(output), ".Class(\"card\")"));
         }
         finally
         {

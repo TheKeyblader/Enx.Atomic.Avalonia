@@ -20,6 +20,7 @@ namespace Enx.Atomic.Avalonia.CodeGen;
 /// <list type="bullet">
 /// <item><c>tokens</c> — one entry per distinct extracted token, in extraction order: <c>raw</c>,
 /// <c>variants</c> (outermost first, each with <c>text</c>/<c>variant</c>/<c>handler</c>), <c>baseToken</c>,
+/// <c>shortcut</c> (the leaf tokens a shortcut base expanded to, null when it isn't one),
 /// <c>matched</c>, <c>rule</c>/<c>ruleIndex</c>/<c>rank</c> (null when nothing matched), <c>hints</c>, and
 /// <c>styles</c>.</item>
 /// <item><c>resources</c> — every resource key a resolved setter references, with <c>themed</c> (whether the
@@ -33,9 +34,9 @@ namespace Enx.Atomic.Avalonia.CodeGen;
 /// Each entry in <c>styles</c> carries <c>position</c>/<c>positionCount</c> (1-based, in
 /// <see cref="StyleOrdering.Sort"/>'s order for the whole probed set), the <c>selector</c> and
 /// <c>containerQuery</c> rendered from the data trees, the <c>sortKey</c> parts (<c>classCount</c>,
-/// <c>typeCount</c>, <c>containerGroup</c>, <c>containerOrder</c>, <c>ruleIndex</c>, <c>rank</c>, <c>sort</c>,
-/// <c>selectorText</c>), and its <c>setters</c> (<c>property</c>, <c>value</c>, <c>valueType</c>,
-/// <c>resourceKey</c>).
+/// <c>typeCount</c>, <c>layer</c>, <c>containerGroup</c>, <c>containerOrder</c>, <c>ruleIndex</c>,
+/// <c>rank</c>, <c>sort</c>, <c>selectorText</c>), and its <c>setters</c> (<c>property</c>, <c>value</c>,
+/// <c>valueType</c>, <c>resourceKey</c>).
 /// </para>
 /// </summary>
 public sealed class ProbeSettings : CommandSettings

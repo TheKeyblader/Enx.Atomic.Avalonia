@@ -91,6 +91,8 @@ internal static class ProbeRenderer
                 );
         console.WriteLine($"  variants: {variants}");
         console.WriteLine($"  base:     {token.BaseToken}");
+        if (token.Shortcut is { } shortcut)
+            console.WriteLine($"  shortcut: {string.Join(' ', shortcut)}");
 
         if (!token.Matched)
         {
@@ -108,6 +110,7 @@ internal static class ProbeRenderer
             console.WriteLine($"  style {style.Position}/{style.PositionCount}  {style.Selector}");
             console.WriteLine(
                 $"    key:       specificity {style.SortKey.ClassCount} class(es)/{style.SortKey.TypeCount} type(s), "
+                    + $"layer {style.SortKey.Layer}, "
                     + $"container {style.SortKey.ContainerGroup}/{ProbeValues.Invariant(style.SortKey.ContainerOrder)}, "
                     + $"rule {style.SortKey.RuleIndex}, rank {style.SortKey.Rank}, sort {style.SortKey.Sort}"
             );

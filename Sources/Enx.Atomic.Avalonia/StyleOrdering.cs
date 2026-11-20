@@ -26,6 +26,10 @@ namespace Enx.Atomic.Avalonia;
 /// <c>PropertyEquals</c>, e.g. <c>dark:</c>) as CSS's class/attribute/pseudo-class column, then type nodes
 /// (<c>Is</c>/<c>OfType</c>) as its lower type column. <c>.hover:bg-red-500:pointerover</c> (2) beats
 /// <c>.sm\:bg-red-500</c> (1) regardless of where its container query falls, exactly as in CSS.</item>
+/// <item><b>Layer</b> — a shortcut's styles (<see cref="StyleLayer.Shortcuts"/>) before plain utilities
+/// (<see cref="StyleLayer.Default"/>), the equivalent of UnoCSS emitting its <c>shortcuts</c> layer before
+/// <c>default</c>. A class count of 2 still wins because specificity is compared first, so <c>hover:btn</c>
+/// beats a plain utility while <c>btn</c>'s own <c>sm:</c> variant loses to one.</item>
 /// <item><b>Container order</b> — unconditional utilities first, then <c>max-*</c> upper bounds (narrowest last),
 /// then the <c>sm:</c>/<c>md:</c>/... lower bounds ascending by breakpoint size, mirroring UnoCSS's
 /// <c>parentOrder</c> for breakpoints (wider breakpoints are emitted later, as with ascending media blocks).</item>
@@ -48,6 +52,7 @@ public static class StyleOrdering
                 .Select(util => (Util: util, Key: GetKey(util)))
                 .OrderBy(x => x.Key.ClassCount)
                 .ThenBy(x => x.Key.TypeCount)
+                .ThenBy(x => x.Key.Layer)
                 .ThenBy(x => x.Key.ContainerGroup)
                 .ThenBy(x => x.Key.ContainerOrder)
                 .ThenBy(x => x.Key.RuleIndex)
@@ -105,6 +110,9 @@ public static class StyleOrdering
         /// <summary>Type selector nodes (<c>Is</c>/<c>OfType</c>, CSS's lower type column).</summary>
         public int TypeCount { get; init; }
 
+        /// <summary>The cascade layer — <see cref="StyleLayer.Shortcuts"/> (0) before <see cref="StyleLayer.Default"/> (1).</summary>
+        public int Layer { get; init; }
+
         /// <summary>Unconditional = 0, upper-bound <c>max-*</c> queries = 1, lower-bound queries = 2, unrecognized = 3.</summary>
         public int ContainerGroup { get; init; }
 
@@ -135,6 +143,7 @@ public static class StyleOrdering
         {
             ClassCount = classCount,
             TypeCount = typeCount,
+            Layer = util.Layer,
             ContainerGroup = containerGroup,
             ContainerOrder = containerOrder,
             RuleIndex = util.Index,
@@ -244,10 +253,13 @@ public static class StyleOrdering
     /// <summary>
     /// Whether two utilities describe exactly the same style. Selector/query data are expression records, so
     /// their generated structural equality walks the whole chain; setter values use <see cref="object.Equals(object)"/>
-    /// for the same reason — a boxed <c>double</c> compares by value, a brush or binding by identity.
+    /// for the same reason — a boxed <c>double</c> compares by value, a brush or binding by identity. The layer is
+    /// part of the identity too: a shortcut's copy of a style is not interchangeable with a plain utility's,
+    /// since they sort differently.
     /// </summary>
     private static bool AreIdentical(StringifiedUtil left, StringifiedUtil right) =>
-        Equals(left.SelectorData, right.SelectorData)
+        left.Layer == right.Layer
+        && Equals(left.SelectorData, right.SelectorData)
         && Equals(left.ContainerQueryData, right.ContainerQueryData)
         && left.Body.Length == right.Body.Length
         && left.Body.Zip(right.Body)

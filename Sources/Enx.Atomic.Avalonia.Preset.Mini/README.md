@@ -30,7 +30,12 @@ A token also works as a conditional class toggled by a binding —
 `<TextBlock Classes.line-through="{Binding IsDone}" Classes.opacity-45="{Binding IsDone}" />` —
 as long as it's a plain token: the part after `Classes.` is an XML attribute name, so no
 variant (`hover:`, `dark:`, ...), no arbitrary `[...]` value, no `/` and no `.`. Toggle those
-from code-behind instead (`Classes.Set("dark:line-through", isDone)`).
+from code-behind instead (`Classes.Set("dark:line-through", isDone)`), or group them under a
+shortcut, whose name is a plain token:
+`configuration.Shortcuts.Add(Shortcut.Static("done", "line-through dark:text-gray-400"))`, then
+`Classes.done="{Binding IsDone}"`. Shortcuts belong to the engine rather than to this preset (see
+the root [README.md](../../README.md) and [ARCHITECTURE.md](../../ARCHITECTURE.md)), and any token
+documented here can appear in one.
 
 ## Variants
 

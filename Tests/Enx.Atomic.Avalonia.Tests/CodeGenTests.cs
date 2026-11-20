@@ -1,4 +1,6 @@
 using System.Reflection;
+using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Media;
 using Avalonia.Styling;
@@ -89,6 +91,52 @@ public class CodeGenTests
         }
 
         Assert.True(checkedAnySetter, "No Setter was found to check — the test source stopped exercising the emitter.");
+    }
+
+    /// <summary>
+    /// A shortcut reaching codegen through the conditional-class form
+    /// (<c>Classes.done="{Binding IsDone}"</c>): the extracted token is the shortcut name, and the emitted
+    /// stylesheet must carry that outer class with the shortcut's own variant (<c>:pointerover</c>) attached.
+    /// Compiles the output with Roslyn and applies the resulting <see cref="Styles"/> to a shown control, so a
+    /// selector that lost the written class (a base class of <c>opacity-50</c> instead of <c>done</c>) or a
+    /// variant the emitter dropped fails here rather than only in a source-text check.
+    /// </summary>
+    [AvaloniaFact]
+    public void ShortcutStylesheet_CompilesAndAppliesOnAShownControl()
+    {
+        var (configuration, _) = TestHelpers.CreateMiniGenerator();
+        configuration.Shortcuts.Add(Shortcut.Static("done", "line-through hover:opacity-50"));
+        var generator = new AtomicGenerator<MiniTheme>(configuration);
+
+        var utils = generator.Generate(
+            "Classes.done=\"{Binding IsDone}\"",
+            new AtomicGenerator<MiniTheme>.Options { Id = "test.axaml" }
+        );
+        Assert.NotEmpty(utils);
+
+        var emitted = StyleEmitter.Emit(utils, "GeneratedStyles", "AtomicStyles");
+        Assert.Contains(".Class(\"done\")", emitted);
+
+        var (assembly, errors) = Compile(emitted);
+        Assert.True(errors.Length == 0, string.Join('\n', errors.Select(error => error.ToString())) + "\n\n" + emitted);
+
+        var styles = (Styles)Activator.CreateInstance(assembly!.GetType("GeneratedStyles.AtomicStyles")!)!;
+        var text = new TextBlock { Text = "done", Classes = { "done" } };
+        var window = new Window { Content = text };
+        window.Styles.Add(styles);
+        window.Show();
+        try
+        {
+            Assert.Equal(TextDecorations.Strikethrough, text.TextDecorations);
+            Assert.Equal(1, text.Opacity);
+
+            text.SetPseudoClass(":pointerover", true);
+            Assert.Equal(0.5, text.Opacity);
+        }
+        finally
+        {
+            window.Close();
+        }
     }
 
     /// <summary>

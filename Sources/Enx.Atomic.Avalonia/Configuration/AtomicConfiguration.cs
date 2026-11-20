@@ -2,7 +2,7 @@ namespace Enx.Atomic.Avalonia;
 
 /// <summary>
 /// The full set of building blocks an <see cref="AtomicGenerator{TTheme}"/> resolves utility tokens against:
-/// pre-processors, rules, extractors, variants, the theme instance, and value emitters.
+/// pre-processors, rules, extractors, variants, shortcuts, the theme instance, and value emitters.
 /// </summary>
 public class AtomicConfiguration<TTheme>
     where TTheme : class
@@ -15,6 +15,13 @@ public class AtomicConfiguration<TTheme>
 
     /// <summary>Static and dynamic rules that turn a variant-stripped token into style values.</summary>
     public List<IRule> Rules { get; set; } = [];
+
+    /// <summary>
+    /// Shortcuts checked in list order before any rule: the first static name match, or the first dynamic regex
+    /// match yielding a non-empty expansion, wins and is expanded into further utility tokens — see
+    /// <see cref="IShortcut{TTheme}"/>. A shortcut sharing a name with a rule therefore takes precedence.
+    /// </summary>
+    public List<IShortcut<TTheme>> Shortcuts { get; set; } = [];
 
     /// <summary>
     /// Extractors that pull candidate utility tokens out of source text. Defaults to a <see cref="SplitExtractor"/>
