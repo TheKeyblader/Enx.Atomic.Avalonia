@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 using Avalonia.Data;
 using Avalonia.Styling;
 using Enx.Atomic.Avalonia.CodeGen;

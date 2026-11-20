@@ -1,4 +1,4 @@
-﻿using System.Collections.Immutable;
+using System.Collections.Immutable;
 using System.Text.RegularExpressions;
 using Avalonia.Layout;
 
@@ -24,7 +24,8 @@ namespace Enx.Atomic.Avalonia.Preset.Mini.Dynamic;
 /// The keyword forms share the rule with the scale values, so <see cref="GetOrderRank"/> fixes their relative order
 /// instead of leaving it to source order: <c>auto</c> ranks below a concrete size and <c>full</c> above it, matching
 /// the order Tailwind emits its width utilities in (<c>w-auto</c>, then the spacing scale, then <c>w-full</c>). So
-/// <c>w-4 w-full</c> and <c>w-full w-4</c> both end up filling, and <c>w-auto w-4</c> ends up 16px wide.
+/// <c>w-4 w-full</c> and <c>w-full w-4</c> both end up filling, and <c>w-auto w-4</c> keeps <c>w-4</c>'s width
+/// whatever the source order.
 /// </para>
 /// </summary>
 public partial class SizeRule<TTheme> : IOrderRankedDynamicRule<TTheme>

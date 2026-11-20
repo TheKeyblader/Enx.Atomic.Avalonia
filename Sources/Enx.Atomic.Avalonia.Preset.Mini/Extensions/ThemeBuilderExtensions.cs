@@ -1,4 +1,4 @@
-﻿using Avalonia.Media;
+using Avalonia.Media;
 using Enx.Atomic.Avalonia.Preset.Mini.Dynamic;
 using Enx.Atomic.Avalonia.Preset.Mini.Variants;
 

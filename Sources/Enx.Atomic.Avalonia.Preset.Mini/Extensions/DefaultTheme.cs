@@ -1,4 +1,4 @@
-﻿using Avalonia.Media;
+using Avalonia.Media;
 
 namespace Enx.Atomic.Avalonia.Preset.Mini;
 

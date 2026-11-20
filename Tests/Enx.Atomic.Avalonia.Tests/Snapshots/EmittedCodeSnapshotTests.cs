@@ -1,4 +1,4 @@
-﻿using Avalonia.Media;
+using Avalonia.Media;
 using Enx.Atomic.Avalonia.CodeGen;
 using Enx.Atomic.Avalonia.Preset.Mini;
 
