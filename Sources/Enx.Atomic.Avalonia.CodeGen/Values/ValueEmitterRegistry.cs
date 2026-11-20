@@ -1,4 +1,4 @@
-namespace Enx.Atomic.Avalonia.CodeGen.Values;
+﻿namespace Enx.Atomic.Avalonia.CodeGen.Values;
 
 /// <summary>Dispatches a value to the first registered <see cref="IValueEmitter"/> that can handle its type.</summary>
 public sealed class ValueEmitterRegistry(IEnumerable<IValueEmitter>? emitters = null)
@@ -9,6 +9,7 @@ public sealed class ValueEmitterRegistry(IEnumerable<IValueEmitter>? emitters = 
         new EnumValueEmitter(),
         new ThicknessValueEmitter(),
         new CornerRadiusValueEmitter(),
+        new BoxShadowsValueEmitter(),
         new BrushValueEmitter(),
         new CursorValueEmitter(),
         new TextDecorationsValueEmitter(),

@@ -1,4 +1,6 @@
-﻿namespace Enx.Atomic.Avalonia.Preset.Mini;
+﻿using Avalonia.Media;
+
+namespace Enx.Atomic.Avalonia.Preset.Mini;
 
 /// <summary>
 /// Default scale values for each theme part, ported from UnoCSS's <c>preset-mini</c> default theme
@@ -79,6 +81,24 @@ internal static class DefaultTheme
 
     /// <summary>UnoCSS's <c>lineWidth</c> scale (border/ring/outline thickness).</summary>
     public static readonly Dictionary<string, double> LineWidths = new() { ["DEFAULT"] = 1, ["none"] = 0 };
+
+    /// <summary>
+    /// UnoCSS's <c>boxShadow</c> scale, ported with the <c>var(--un-shadow-inset)</c> placeholder dropped (it only
+    /// exists so the <c>shadow-inset</c> variant can inject <c>inset</c>); only the <c>inner</c> entry keeps
+    /// <see cref="BoxShadow.IsInset"/>. Lengths are already px (no rem conversion), colors are the source
+    /// <c>rgb(0 0 0 / α)</c> values with α rounded to a byte.
+    /// </summary>
+    public static readonly Dictionary<string, BoxShadows> BoxShadows = new()
+    {
+        ["DEFAULT"] = Shadow(Layer(0, 1, 3, 0, 0x1A), Layer(0, 1, 2, -1, 0x1A)),
+        ["none"] = default,
+        ["sm"] = Shadow(Layer(0, 1, 2, 0, 0x0D)),
+        ["md"] = Shadow(Layer(0, 4, 6, -1, 0x1A), Layer(0, 2, 4, -2, 0x1A)),
+        ["lg"] = Shadow(Layer(0, 10, 15, -3, 0x1A), Layer(0, 4, 6, -4, 0x1A)),
+        ["xl"] = Shadow(Layer(0, 20, 25, -5, 0x1A), Layer(0, 8, 10, -6, 0x1A)),
+        ["2xl"] = Shadow(Layer(0, 25, 50, -12, 0x40)),
+        ["inner"] = Shadow(Layer(0, 2, 4, 0, 0x0D, inset: true)),
+    };
 
     /// <summary>UnoCSS's <c>fontSize</c> scale (size only, its paired line-height isn't ported).</summary>
     public static readonly Dictionary<string, double> FontSizes = new()
@@ -379,4 +399,32 @@ internal static class DefaultTheme
         ["dark-900"] = "#0f0f0f",
         ["dark-950"] = "#080808",
     };
+
+    /// <summary>Builds a <see cref="BoxShadows"/> from its layers, keeping <c>none</c> as the empty (no-shadow) value.</summary>
+    private static BoxShadows Shadow(params BoxShadow[] layers) =>
+        layers.Length switch
+        {
+            0 => default,
+            1 => new BoxShadows(layers[0]),
+            _ => new BoxShadows(layers[0], layers[1..]),
+        };
+
+    /// <summary>One shadow layer — a named helper keeps the scale table above readable.</summary>
+    private static BoxShadow Layer(
+        double offsetX,
+        double offsetY,
+        double blur,
+        double spread,
+        byte alpha,
+        bool inset = false
+    ) =>
+        new()
+        {
+            OffsetX = offsetX,
+            OffsetY = offsetY,
+            Blur = blur,
+            Spread = spread,
+            Color = Color.FromArgb(alpha, 0, 0, 0),
+            IsInset = inset,
+        };
 }

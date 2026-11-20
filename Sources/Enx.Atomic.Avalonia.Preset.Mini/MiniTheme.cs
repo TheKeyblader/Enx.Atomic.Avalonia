@@ -10,6 +10,7 @@ public class MiniTheme
         IColorPart,
         IFontSizePart,
         ILineWidthPart,
+        IBoxShadowPart,
         IBreakpointPart,
         IRemToPxPart
 {
@@ -19,6 +20,7 @@ public class MiniTheme
     public Dictionary<string, Themed<IBrush>> Colors { get; set; } = [];
     public Dictionary<string, double> FontSizes { get; set; } = [];
     public Dictionary<string, double> LineWidths { get; set; } = [];
+    public Dictionary<string, BoxShadows> BoxShadows { get; set; } = [];
     public Dictionary<string, double> Breakpoints { get; set; } = [];
     public double RemToPxFactor { get; set; }
 }

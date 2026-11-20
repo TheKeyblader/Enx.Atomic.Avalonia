@@ -202,7 +202,7 @@ upstream's order.
 
 | Upstream | Status | Here | Examples | Notes |
 |---|---|---|---|---|
-| `shadow-*`, `shadow-inset`, `shadow-opacity-*` | ⏳ todo | — | | `DropShadowEffect` exists but is single-layer and has no inset form; needs design. |
+| `shadow-*` (size) | 🟡 partial | `Dynamic/ShadowRules.cs` (`ShadowRule<TTheme>`) | `shadow-md`, `shadow-inner` | `Border.BoxShadowProperty` + `ContentPresenter.BoxShadowProperty` (`BoxShadows`, multi-layer, inset). Sizes only: shadow colors (`shadow-red-500`), the `shadow-inset` modifier, `shadow-opacity-*` and arbitrary values are not ported — the color is part of each theme entry. A Fluent `Button` template does not forward `BoxShadow`, so the effect shows on a `Border`/`ContentPresenter`. |
 
 ### `size.ts`
 
@@ -473,7 +473,7 @@ whether the corresponding utilities can read it — and its examples are tokens 
 | `spacing` | 🟡 partial | `Extensions/DefaultTheme.cs` (`Spacing`) | `m-4`, `gap-4`, `p-4` | This port ships the numeric Tailwind scale (`0`–`96` at 4 px/step, plus `px`) instead of upstream's named scale (`DEFAULT`/`none`/`xs`/.../`9xl`); `m-4` resolves to 16 px either way (upstream via rem, here by key), but `m-xs`/`m-DEFAULT` don't resolve here. |
 | `duration` | ⏳ todo | — | | Avalonia transitions can use durations; no scale or utility yet. |
 | `borderRadius` | ✅ ported | `Extensions/DefaultTheme.cs` (`Radii`) | `rounded-md`, `rounded-full` | rem converted to px at 16/rem. |
-| `boxShadow` | ⏳ todo | — | | Needs the `shadow-*` design; `DropShadowEffect` is single-layer. |
+| `boxShadow` | 🟡 partial | `Extensions/DefaultTheme.cs` (`BoxShadows`) + `Dynamic/ShadowRules.cs` | `shadow-md`, `shadow-inner` | Ported as `BoxShadows` values (DEFAULT, none, sm, md, lg, xl, 2xl, inner) with the `var(--un-shadow-inset)` placeholder dropped; shadow colors and opacity are not ported. |
 | `ringWidth` | ⏳ todo | — | | Needs the `ring-*` design. |
 | `zIndex` | ⏳ todo | — | | Only `auto` upstream; `Visual.ZIndex` takes an `int`, so no scale is needed — just the `z-*` rule. |
 | `media` | ❌ dropped | — | | No media queries. |
@@ -504,10 +504,10 @@ whether the corresponding utilities can read it — and its examples are tokens 
 
 | Section | ✅ ported | 🟡 partial | ❌ dropped | ⏳ todo | Total |
 |---|---|---|---|---|---|
-| Rules | 34 | 11 | 71 | 46 | 162 |
+| Rules | 34 | 12 | 71 | 45 | 162 |
 | Variants | 3 | 1 | 19 | 7 | 30 |
-| Theme scales | 3 | 6 | 6 | 14 | 29 |
-| **Total** | **40** | **18** | **96** | **67** | **221** |
+| Theme scales | 3 | 7 | 6 | 13 | 29 |
+| **Total** | **40** | **20** | **96** | **65** | **221** |
 
 > Counts are asserted by `ParityMatrixTests.Counts_MatchSummary` — update this table when rows change.
 
@@ -531,9 +531,6 @@ above.
    mono are already spelled out upstream).
 9. **`top/right/bottom/left-*` + `inset-*`** — `Canvas.Left/Top/Right/Bottom`; only meaningful in a
    `Canvas`, but that is the Avalonia idiom for absolute placement.
-10. **`shadow-*`** — highest-value ⏳ that needs design rather than a mapping: `DropShadowEffect`
-    covers single-layer shadows, but the scale has multi-layer and `inset` entries with no
-    equivalent, so it needs a deliberate "closest honest subset" decision.
 
 Trivial aliases (`text-truncate`, `decoration-none`, `gap-col-*`, `text-size-*`, `b-*`/`rd-*`,
 `text-align-*`, ...) are deliberately *not* in this list: they add surface without new capability.

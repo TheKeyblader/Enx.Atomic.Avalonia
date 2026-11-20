@@ -99,6 +99,20 @@ public static class ThemeBuilderExtensions
         return builder;
     }
 
+    /// <summary>Seeds <see cref="IBoxShadowPart.BoxShadows"/> and registers <see cref="ShadowRule{TTheme}"/>. No prefix is shared with another family.</summary>
+    public static ThemeBuilder<TTheme> AddBoxShadowRules<TTheme>(
+        this ThemeBuilder<TTheme> builder,
+        AtomicConfiguration<TTheme> configuration
+    )
+        where TTheme : class, IBoxShadowPart, new()
+    {
+        foreach (var (key, value) in DefaultTheme.BoxShadows)
+            builder.Theme.BoxShadows[key] = value;
+
+        configuration.AddRuleOnce(new ShadowRule<TTheme>());
+        return builder;
+    }
+
     /// <summary>Also registers <see cref="FontSizeRule{TTheme}"/> — add before <see cref="AddColorRules{TTheme}"/> so it wins the shared <c>text-</c> prefix over <see cref="ForegroundColorRule{TTheme}"/>.</summary>
     public static ThemeBuilder<TTheme> AddFontSizeRules<TTheme>(
         this ThemeBuilder<TTheme> builder,
@@ -231,6 +245,7 @@ public static class ThemeBuilderExtensions
             .AddSizeRules(configuration)
             .AddRadiusRules(configuration)
             .AddLineWidthRules(configuration)
+            .AddBoxShadowRules(configuration)
             .AddFontSizeRules(configuration)
             .AddBreakpointRules(configuration)
             .AddColorRules(configuration)

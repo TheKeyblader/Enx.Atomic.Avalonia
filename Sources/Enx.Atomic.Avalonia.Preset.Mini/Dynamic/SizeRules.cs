@@ -78,11 +78,11 @@ public partial class SizeRule<TTheme> : IOrderRankedDynamicRule<TTheme>
     }
 
     /// <summary>
-    /// A bound (<c>min-*</c>/<c>max-*</c>) targets its own property, so its rank is irrelevant; among the unbounded
-    /// forms <c>auto</c> sits below a concrete size and <c>full</c> above it — see the type's remarks.
+    /// A bound (<c>min-*</c>/<c>max-*</c>) targets its own property, so it keeps the neutral size rank; among the
+    /// unbounded forms <c>auto</c> sits below a concrete size and <c>full</c> above it — see the type's remarks.
     /// </summary>
     public int GetOrderRank(Match match) =>
-        match.Groups["bound"].Value.Length > 0 ? AutoRank
+        match.Groups["bound"].Value.Length > 0 ? SizeRank
         : match.Groups["value"].Value == "full" ? FullRank
         : match.Groups["value"].Value == "auto" ? AutoRank
         : SizeRank;
