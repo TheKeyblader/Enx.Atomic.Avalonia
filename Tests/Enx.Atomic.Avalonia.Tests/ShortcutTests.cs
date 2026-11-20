@@ -168,6 +168,42 @@ public class ShortcutTests
         Assert.Contains(utils, util => ClassNames(util).Contains(":pointerover"));
     }
 
+    /// <summary>A fork inside a shortcut keeps both variants, even when both rewrite to the same base token.</summary>
+    [AvaloniaFact]
+    public void InnerVariantBranches_SurviveRepeatedExpansionOnTheShortcutClass()
+    {
+        var (_, generator) = CreateGenerator(configuration =>
+        {
+            configuration.Rules.Add(new Rule.Static("left", [Visual.OpacityProperty.ToLiteral(0.5)]));
+            configuration.Variants.Add(new ForkingVariant("v:"));
+            configuration.Shortcuts.Add(Shortcut.Static("inner", "v:left"));
+            configuration.Shortcuts.Add(Shortcut.Static("alias", "v:left v:left inner"));
+        });
+
+        Assert.Equal(2, generator.ParseToken("v:left").Length);
+        var utils = Generate(generator, "alias");
+        Assert.Equal(2, utils.Length);
+        Assert.Equal(new[] { "v:left" }, generator.GetShortcutExpansion("alias"));
+        Assert.All(utils, util => Assert.Contains("alias", ClassNames(util)));
+
+        var text = new TextBlock { Classes = { "alias" } };
+        var window = utils.ShowWithStyles(text);
+        try
+        {
+            Assert.Equal(1, text.Opacity);
+            text.SetPseudoClass(":fork-a", true);
+            Assert.Equal(0.5, text.Opacity);
+            text.SetPseudoClass(":fork-a", false);
+            Assert.Equal(1, text.Opacity);
+            text.SetPseudoClass(":fork-b", true);
+            Assert.Equal(0.5, text.Opacity);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
     /// <summary>
     /// A regex shortcut computes its expansion from the match; a token it doesn't match falls through to the
     /// rules untouched (here a rule named exactly <c>btn</c>), proving shortcut matching is tried first but
@@ -470,7 +506,15 @@ public class ShortcutTests
                 : [];
     }
 
-    /// <summary>Strips <see cref="Prefix"/> two different ways, forking the match into two branches.</summary>
+    private sealed record PseudoClassHandler(string Name) : VariantHandlerBase
+    {
+        public override VariantHandlerContext Handle(
+            VariantHandlerContext input,
+            Func<VariantHandlerContext, VariantHandlerContext> next
+        ) => next(input with { Selector = input.Selector.Class(Name) });
+    }
+
+    /// <summary>Strips <see cref="Prefix"/> and forks the same base token into two pseudo-class selectors.</summary>
     private sealed record ForkingVariant(string Prefix) : VariantBase<MiniTheme>
     {
         public override VariantHandlerBase[] Match(string matcher, VariantContext<MiniTheme> context)
@@ -481,8 +525,8 @@ public class ShortcutTests
             var rest = matcher[Prefix.Length..];
             return
             [
-                new PassThroughHandler { Matcher = rest, Order = 0 },
-                new PassThroughHandler { Matcher = rest, Order = 1 },
+                new PseudoClassHandler(":fork-a") { Matcher = rest },
+                new PseudoClassHandler(":fork-b") { Matcher = rest },
             ];
         }
     }
