@@ -7,6 +7,8 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.0.5] - 2026-11-20
+
 ### Added
 
 - Resource-based theming: `bg-*`/`text-*`/`border-*` now emit a `DynamicResource`
@@ -195,7 +197,8 @@ Initial release.
   by pushing a `vX.Y.Z` tag.
 - MIT license.
 
-[Unreleased]: https://github.com/TheKeyblader/Enx.Atomic.Avalonia/compare/v0.0.4...HEAD
+[Unreleased]: https://github.com/TheKeyblader/Enx.Atomic.Avalonia/compare/v0.0.5...HEAD
+[0.0.5]: https://github.com/TheKeyblader/Enx.Atomic.Avalonia/compare/v0.0.4...v0.0.5
 [0.0.4]: https://github.com/TheKeyblader/Enx.Atomic.Avalonia/compare/v0.0.3...v0.0.4
 [0.0.3]: https://github.com/TheKeyblader/Enx.Atomic.Avalonia/compare/v0.0.2...v0.0.3
 [0.0.2]: https://github.com/TheKeyblader/Enx.Atomic.Avalonia/compare/v0.0.1...v0.0.2
