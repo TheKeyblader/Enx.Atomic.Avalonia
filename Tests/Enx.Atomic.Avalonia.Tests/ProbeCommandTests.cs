@@ -117,6 +117,25 @@ public class ProbeCommandTests
     }
 
     [AvaloniaFact]
+    public void ConfiguredSafelist_DoesNotAffectProbeResults()
+    {
+        var (configuration, _) = TestHelpers.CreateMiniGenerator();
+        configuration.Safelist = ["w-4 bg-red-500"];
+        var (console, writer) = CreateConsole();
+
+        var exitCode = AtomicCli.Run(["probe", "hover:w-8", "--json"], configuration, console);
+
+        Assert.Equal(0, exitCode);
+        using var document = JsonDocument.Parse(writer.ToString());
+        var token = Assert.Single(document.RootElement.GetProperty("tokens").EnumerateArray());
+        Assert.Equal("hover:w-8", token.GetProperty("raw").GetString());
+        var style = Assert.Single(token.GetProperty("styles").EnumerateArray());
+        Assert.Equal(1, style.GetProperty("position").GetInt32());
+        Assert.Equal(1, style.GetProperty("positionCount").GetInt32());
+        Assert.Empty(document.RootElement.GetProperty("resources").EnumerateArray());
+    }
+
+    [AvaloniaFact]
     public void HumanOutput_NamesTheRuleAndSetter()
     {
         var (configuration, _) = TestHelpers.CreateMiniGenerator();

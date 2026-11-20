@@ -97,6 +97,50 @@ public class AtomicCliTests
         }
     }
 
+    [AvaloniaFact]
+    public void RepeatableSafelistOption_MergesWithConfigurationAndGeneratesWithoutSources()
+    {
+        var (configuration, _) = TestHelpers.CreateMiniGenerator();
+        configuration.Safelist = ["w-4 w-12"];
+
+        using var writer = new StringWriter();
+        var console = AnsiConsole.Create(
+            new AnsiConsoleSettings
+            {
+                Ansi = AnsiSupport.No,
+                ColorSystem = ColorSystemSupport.NoColors,
+                Interactive = InteractionSupport.No,
+                Out = new AnsiConsoleOutput(writer),
+            }
+        );
+        var directory = Path.Combine(Path.GetTempPath(), $"enx-atomic-cli-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(directory);
+
+        try
+        {
+            var output = Path.Combine(directory, "AtomicStyles.g.cs");
+            var exitCode = AtomicCli.Run(
+                ["--output", output, "--safelist", " w-4 h-8 ", "--safelist", "opacity-50 typo"],
+                configuration,
+                console
+            );
+
+            Assert.Equal(0, exitCode);
+            var emitted = File.ReadAllText(output);
+            Assert.Equal(4, CountOccurrences(emitted, "new Style("));
+            Assert.Equal(1, CountOccurrences(emitted, ".Class(\"w-4\")"));
+            Assert.Contains(".Class(\"w-12\")", emitted);
+            Assert.Contains(".Class(\"h-8\")", emitted);
+            Assert.Contains(".Class(\"opacity-50\")", emitted);
+            Assert.Contains("Safelisted token 'typo' matched no rule", writer.ToString());
+            Assert.Equal("w-4 w-12", Assert.Single(configuration.Safelist));
+        }
+        finally
+        {
+            Directory.Delete(directory, recursive: true);
+        }
+    }
+
     private static int CountOccurrences(string haystack, string needle)
     {
         var count = 0;

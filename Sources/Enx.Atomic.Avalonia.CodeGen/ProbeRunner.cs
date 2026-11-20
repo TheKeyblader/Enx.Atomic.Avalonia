@@ -22,6 +22,8 @@ internal static class ProbeRunner<TTheme>
 
         // Resolve every token once (mirroring generate's single shared token set), then order the union. The
         // position of each style is its index in that final order — the cascade, not the extraction order.
+        // Only the requested tokens, never the configuration's safelist (ParseToken, unlike Generate, doesn't add
+        // it), so unrelated styles can't change the report or its cascade positions.
         var utilsByToken = new Dictionary<string, StringifiedUtil[]>(StringComparer.Ordinal);
         var all = new List<StringifiedUtil>();
         foreach (var token in tokens)

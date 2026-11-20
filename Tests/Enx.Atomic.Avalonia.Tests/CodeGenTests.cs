@@ -139,6 +139,33 @@ public class CodeGenTests
         }
     }
 
+    [AvaloniaFact]
+    public void SafelistedHoverStyle_CompilesAndOverridesExtractedBaseStyle()
+    {
+        var (configuration, generator) = TestHelpers.CreateMiniGenerator();
+        configuration.Safelist = ["hover:w-8"];
+        var utils = generator.Generate("w-4", new());
+        var emitted = StyleEmitter.Emit(utils, "GeneratedStyles", "AtomicStyles");
+        var (assembly, errors) = Compile(emitted);
+        Assert.True(errors.Length == 0, string.Join('\n', errors.Select(error => error.ToString())) + "\n\n" + emitted);
+
+        var styles = (Styles)Activator.CreateInstance(assembly!.GetType("GeneratedStyles.AtomicStyles")!)!;
+        var border = new Border { Classes = { "w-4", "hover:w-8" } };
+        var window = new Window { Content = border };
+        window.Styles.Add(styles);
+        window.Show();
+        try
+        {
+            Assert.Equal(16, border.Width);
+            border.SetPseudoClass(":pointerover", true);
+            Assert.Equal(32, border.Width);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
     /// <summary>
     /// <see cref="FontFamily"/> is a class with no round-trippable textual form other than its name list: the emitter
     /// must reproduce a fallback list exactly, special-case the platform default, and refuse a family loaded from a
