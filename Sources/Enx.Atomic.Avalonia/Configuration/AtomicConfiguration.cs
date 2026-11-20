@@ -16,8 +16,12 @@ public class AtomicConfiguration<TTheme>
     /// <summary>Static and dynamic rules that turn a variant-stripped token into style values.</summary>
     public List<IRule> Rules { get; set; } = [];
 
-    /// <summary>Extractors that pull candidate utility tokens out of source text. Defaults to a single <see cref="SplitExtractor"/>.</summary>
-    public List<Extractor> Extractors { get; set; } = [new SplitExtractor()];
+    /// <summary>
+    /// Extractors that pull candidate utility tokens out of source text. Defaults to a <see cref="SplitExtractor"/>
+    /// (<c>Classes="..."</c>, quoted strings) plus a <see cref="ClassesAttributeExtractor"/> (conditional
+    /// <c>Classes.name="{Binding ...}"</c>) — a configuration replacing this list should keep both unless it means not to.
+    /// </summary>
+    public List<Extractor> Extractors { get; set; } = [new SplitExtractor(), new ClassesAttributeExtractor()];
 
     /// <summary>Variants (e.g. <c>hover:</c>, <c>dark:</c>) that can be stripped from the front of a token before rule matching.</summary>
     public List<VariantBase<TTheme>> Variants { get; set; } = [];
