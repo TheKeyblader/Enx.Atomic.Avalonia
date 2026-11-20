@@ -49,7 +49,7 @@ public class AtomicGenerator<TTheme>
     /// </summary>
     public IReadOnlyList<string> Diagnostics => _diagnostics;
 
-    /// <summary>Creates a generator for the given configuration, assigning each rule its declaration-order index.</summary>
+    /// <summary>Creates a generator for the given configuration, which defines the declaration order of its rules.</summary>
     /// <exception cref="InvalidOperationException">
     /// A configured rule is neither <see cref="IStaticRule"/> nor <see cref="IDynamicRule{TTheme}"/>, or a
     /// configured shortcut is neither <see cref="IStaticShortcut"/> nor <see cref="IDynamicShortcut{TTheme}"/>.
@@ -62,12 +62,6 @@ public class AtomicGenerator<TTheme>
 
     private void ValidateConfiguration()
     {
-        var index = 0;
-        foreach (var rule in Configuration.Rules)
-        {
-            rule.Metadata.Index = index++;
-        }
-
         if (!Configuration.Rules.All(r => r is IStaticRule or IDynamicRule<TTheme>))
         {
             var offending = Configuration.Rules.First(r => r is not (IStaticRule or IDynamicRule<TTheme>));
@@ -283,14 +277,31 @@ public class AtomicGenerator<TTheme>
     )
     {
         List<(string Token, VariantMatchedResult<TTheme> Matched, RuleContext<TTheme> Context)> leaves = [];
-        CollectShortcutLeaves(expansion, matched.Handlers, raw, prefix: "", depth: 0, [raw], leaves);
+        CollectShortcutLeaves(
+            expansion,
+            matched.Handlers,
+            raw,
+            prefix: "",
+            depth: 0,
+            [raw],
+            new(StringComparer.Ordinal),
+            leaves
+        );
 
-        var uniqueLeaves = leaves.DistinctBy(leaf => leaf.Token, StringComparer.Ordinal).ToArray();
-        _shortcutExpansions[raw] = [.. uniqueLeaves.Select(leaf => leaf.Token)];
+        _shortcutExpansions[raw] = [.. leaves.Select(leaf => leaf.Token).Distinct(StringComparer.Ordinal)];
 
+        // The written token is useful for diagnostics, but a variant can produce multiple matches for it.
+        Dictionary<(string Token, string Current), List<VariantHandlerBase[]>> seenLeaves = [];
         List<StringifiedUtil> result = [];
-        foreach (var leaf in uniqueLeaves)
+        foreach (var leaf in leaves)
         {
+            var key = (leaf.Token, leaf.Matched.Current);
+            if (!seenLeaves.TryGetValue(key, out var pipelines))
+                seenLeaves.Add(key, pipelines = []);
+            if (pipelines.Any(handlers => handlers.SequenceEqual(leaf.Matched.Handlers)))
+                continue;
+            pipelines.Add(leaf.Matched.Handlers);
+
             var parsed = ParseUtil(leaf.Matched, leaf.Context);
             if (parsed.Length == 0)
             {
@@ -317,6 +328,7 @@ public class AtomicGenerator<TTheme>
     /// <param name="prefix">The variant text the enclosing levels contributed (<c>hover:</c> for <c>hover:inner</c>), prepended to each leaf's written form.</param>
     /// <param name="depth">How many nested shortcuts were entered so far.</param>
     /// <param name="chain">The shortcut tokens entered so far, for the cycle error message.</param>
+    /// <param name="variantMatches">Matches shared by repeated occurrences of the same token within this expansion.</param>
     /// <param name="leaves">The leaf tokens (as written, variants included) to resolve through rules, with their merged match/context.</param>
     private void CollectShortcutLeaves(
         IReadOnlyList<string> expansion,
@@ -325,13 +337,18 @@ public class AtomicGenerator<TTheme>
         string prefix,
         int depth,
         List<string> chain,
+        Dictionary<string, VariantMatchedResult<TTheme>[]> variantMatches,
         List<(string Token, VariantMatchedResult<TTheme> Matched, RuleContext<TTheme> Context)> leaves
     )
     {
         foreach (var token in expansion)
         {
+            // Reuse the same handlers for repeated tokens, even if the matcher creates a fresh handler each time.
+            if (!variantMatches.TryGetValue(token, out var matches))
+                variantMatches.Add(token, matches = MatchVariants(token));
+
             // A shortcut token may itself carry variants (hover:inner, sm:...), which must wrap the outer ones.
-            foreach (var innerMatched in MatchVariants(token))
+            foreach (var innerMatched in matches)
             {
                 var handlers = new VariantHandlerBase[innerMatched.Handlers.Length + outerHandlers.Length];
                 innerMatched.Handlers.CopyTo(handlers, 0);
@@ -340,9 +357,8 @@ public class AtomicGenerator<TTheme>
                 var merged = innerMatched with { Raw = raw, Handlers = handlers };
                 var context = MakeContext(raw, merged);
 
-                // The leaf's identity is the token as written with its variants (hover:opacity-50), not the bare
-                // base token, so two leaves differing only by variant both survive deduplication — UnoCSS's
-                // uniq over the rewritten strings. The variant prefix is whatever precedes the base token.
+                // Keep the written form (hover:opacity-50) for diagnostics, including variants from enclosing
+                // shortcuts. The variant prefix is whatever precedes the base token.
                 var matcherIndex = token.LastIndexOf(merged.Current, StringComparison.Ordinal);
                 var variantPrefix = matcherIndex < 0 ? "" : token[..matcherIndex];
                 var written = prefix + (matcherIndex < 0 ? token : variantPrefix + merged.Current);
@@ -361,7 +377,16 @@ public class AtomicGenerator<TTheme>
                     );
 
                 chain.Add(merged.Current);
-                CollectShortcutLeaves(nested, handlers, raw, prefix + variantPrefix, depth + 1, chain, leaves);
+                CollectShortcutLeaves(
+                    nested,
+                    handlers,
+                    raw,
+                    prefix + variantPrefix,
+                    depth + 1,
+                    chain,
+                    variantMatches,
+                    leaves
+                );
                 chain.RemoveAt(chain.Count - 1);
             }
         }
@@ -480,12 +505,21 @@ public class AtomicGenerator<TTheme>
 
         var scopeContext = context with { Handlers = [.. variantHandlers] };
 
-        var staticRule = this.Configuration.Rules.OfType<IStaticRule>().FirstOrDefault(s => s.Name == processed);
-        if (staticRule?.Styles.Any() == true)
-            return ResolveStylingResult(raw, staticRule.Styles, staticRule, scopeContext, rank: 0);
-
-        foreach (var rule in this.Configuration.Rules.OfType<IDynamicRule<TTheme>>())
+        // Index the registration in this configuration, not the rule instance (which other generators may share).
+        var rules = Configuration.Rules;
+        var staticIndex = rules.FindIndex(rule => rule is IStaticRule s && s.Name == processed);
+        if (staticIndex >= 0)
         {
+            var staticRule = (IStaticRule)rules[staticIndex];
+            if (staticRule.Styles.Any())
+                return ResolveStylingResult(raw, staticRule.Styles, staticRule, scopeContext, staticIndex, rank: 0);
+        }
+
+        for (var index = 0; index < rules.Count; index++)
+        {
+            if (rules[index] is not IDynamicRule<TTheme> rule)
+                continue;
+
             var match = rule.Regex.Match(context.CurrentSelector);
             if (!match.Success)
                 continue;
@@ -495,7 +529,7 @@ public class AtomicGenerator<TTheme>
                 continue;
 
             var rank = rule is IOrderRankedDynamicRule<TTheme> rankedRule ? rankedRule.GetOrderRank(match) : 0;
-            return ResolveStylingResult(raw, result, rule, scopeContext, rank);
+            return ResolveStylingResult(raw, result, rule, scopeContext, index, rank);
         }
 
         return [];
@@ -507,6 +541,7 @@ public class AtomicGenerator<TTheme>
         IEnumerable<StyleValue> styleValues,
         IRule rule,
         RuleContext<TTheme> context,
+        int index,
         int rank
     )
     {
@@ -523,7 +558,7 @@ public class AtomicGenerator<TTheme>
         {
             return new ParsedUtil
             {
-                Index = rule.Metadata.Index,
+                Index = index,
                 Rank = rank,
                 Raw = raw,
                 StyleEntries = [.. g],

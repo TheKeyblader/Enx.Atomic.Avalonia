@@ -6,7 +6,7 @@ namespace Enx.Atomic.Avalonia;
 /// <summary>Base contract shared by all rules: something that resolves a utility token into style values and carries generation metadata.</summary>
 public interface IRule
 {
-    /// <summary>Bookkeeping metadata (declaration index, cache hash) assigned by <see cref="AtomicGenerator{TTheme}"/>.</summary>
+    /// <summary>Bookkeeping metadata shared across registrations of this rule.</summary>
     RuleMetadata Metadata { get; }
 }
 
@@ -39,7 +39,7 @@ public interface IDynamicRule<TTheme> : IRule
 /// <para>
 /// In UnoCSS those directions are distinct entries with increasing indices, so <c>m-4 mx-2</c> lets the axis win
 /// and <c>mx-2 ml-1</c> lets the side win regardless of source order. A consolidated rule has a single
-/// <see cref="IRule.Metadata"/> index, so the relative order of its matches has to be reported here instead;
+/// declaration index in a configuration, so the relative order of its matches has to be reported here instead;
 /// <see cref="StyleOrdering"/> then sorts them by it immediately after the rule index, before any other
 /// tie-breaker. This is deliberately a separate channel from <see cref="StringifiedUtil.Sort"/> (a variant hint)
 /// so the two can never overwrite each other. Rules that don't implement this interface rank every match

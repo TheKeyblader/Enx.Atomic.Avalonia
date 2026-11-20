@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using Avalonia.Controls;
 using Avalonia.Threading;
 using Enx.Atomic.Avalonia.CodeGen;
@@ -16,6 +17,58 @@ namespace Enx.Atomic.Avalonia.Tests;
 /// </summary>
 public class EmissionOrderTests
 {
+    /// <summary>Reusing a rule in another configuration must not change its position in the original cascade.</summary>
+    [AvaloniaFact]
+    public void SharedRules_KeepTheirOwnGeneratorsDeclarationOrder()
+    {
+        var left = new Rule.Static("left", [Border.WidthProperty.ToLiteral(16d)]);
+        var right = new Rule.Static("right", [Border.WidthProperty.ToLiteral(32d)]);
+        var theme = new object();
+        var first = new AtomicGenerator<object>(
+            new AtomicConfiguration<object> { Theme = theme, Rules = [left, right] }
+        );
+        var second = new AtomicGenerator<object>(
+            new AtomicConfiguration<object> { Theme = theme, Rules = [right, left] }
+        );
+
+        Assert.Equal(0, StyleOrdering.GetSortKey(Assert.Single(first.ParseToken("left"))).RuleIndex);
+        Assert.Equal(1, StyleOrdering.GetSortKey(Assert.Single(first.ParseToken("right"))).RuleIndex);
+        Assert.Equal(1, StyleOrdering.GetSortKey(Assert.Single(second.ParseToken("left"))).RuleIndex);
+        Assert.Equal(0, StyleOrdering.GetSortKey(Assert.Single(second.ParseToken("right"))).RuleIndex);
+
+        var border = new Border { Classes = { "right", "left" } };
+        var window = first.Generate("right left", new()).ShowWithStyles(border);
+        try
+        {
+            Assert.Equal(32, border.Width);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    /// <summary>An empty static match does not shadow a dynamic match or change its declaration index.</summary>
+    [AvaloniaFact]
+    public void EmptyStaticRule_FallsThroughToTheDynamicRuleAtItsRegisteredIndex()
+    {
+        var generator = new AtomicGenerator<object>(
+            new AtomicConfiguration<object>
+            {
+                Theme = new(),
+                Rules =
+                [
+                    new Rule.Static("size", []),
+                    new Rule.Dynamic<object>(new Regex("^size$"), (_, _) => [Border.WidthProperty.ToLiteral(32d)]),
+                ],
+            }
+        );
+
+        var util = Assert.Single(generator.ParseToken("size"));
+        Assert.Equal(1, StyleOrdering.GetSortKey(util).RuleIndex);
+        Assert.Equal(32d, Assert.Single(util.Body).Value);
+    }
+
     /// <summary>
     /// The failure case: the variant is written <em>before</em> its base. Emission order must not depend on source
     /// order, so <c>hover:w-8 w-4</c> must behave exactly like <c>w-4 hover:w-8</c>: 16 at rest, 32 while hovered.
