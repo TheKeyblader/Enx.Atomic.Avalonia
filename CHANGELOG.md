@@ -18,7 +18,9 @@ All notable changes to this project are documented here. The format follows
   them all. Every resulting style selects on the class as written, so `Classes.done="{Binding
   IsDone}"` gets variants, which a binding-toggled class name can't carry on its own. Each inner
   utility stays its own `Style` (no setter merging), keeping its rule's order, and a shortcut
-  wins over a rule with the same name.
+  wins over a rule with the same name. Repeated inner tokens are deduplicated, but the branches
+  a variant forks for the same token (two handlers for one `v:left`) are all kept, as when the
+  token is written directly.
 - `StringifiedUtil.Layer` and `StyleLayer` (`Shortcuts` = 0, `Default` = 1): a new
   `StyleOrdering` key, compared after specificity and before container order, so a plain
   utility overrides an equally specific shortcut (`btn bg-red-500` is red even if `btn` contains
@@ -29,6 +31,15 @@ All notable changes to this project are documented here. The format follows
   warning. `AtomicGenerator.GetShortcutExpansion(raw)` returns a shortcut's leaf tokens.
 - `probe` shows a shortcut's expansion (`shortcut` in `--json`) and each style's layer in its
   sort key (`sortKey.layer`).
+
+### Fixed
+
+- Building a second `AtomicGenerator` from the same rule instances (as two configurations
+  calling `AddMiniTheme` do) no longer changes the first generator's cascade. The rule's
+  declaration index was stored on the shared rule and overwritten by the last generator built,
+  so with `[left, right]` in one configuration and `[right, left]` in another, the first one
+  emitted `left` after `right` and the wrong utility won. The index now comes from each
+  generator's own `Configuration.Rules`.
 
 ## [0.0.7] - 2026-11-20
 

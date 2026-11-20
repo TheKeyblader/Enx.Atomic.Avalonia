@@ -124,8 +124,11 @@ A string like `hover:bg-red-500` goes through four steps:
     `Is(TargetType).Class("hover:btn")`, never the inner `bg-blue-500`, with the inner
     and outer variant handlers both applied. The inner tokens are neither cached nor
     emitted under their own names. Leaves are deduplicated on their rewritten form
-    (`hover:opacity-50`), not on the bare base token, so two leaves differing only by
-    variant both survive.
+    (`hover:opacity-50`), their matched base token and their handler pipeline, not on the
+    bare base token: two leaves differing only by variant both survive, and so do the
+    branches a variant forks for the same token (two handlers for one `v:left`). Variant
+    matches are cached per token for the expansion, so a token really repeated
+    (`v:left v:left`, or reached again through a nested shortcut) still collapses.
   - **No setter merging**, unlike UnoCSS, which folds a shortcut into one CSS rule: each
     inner utility stays its own `StringifiedUtil` with its rule's index and rank. That
     keeps the per-rule order (`p-2 px-4` inside a shortcut still composes uniform before
@@ -240,7 +243,10 @@ same cascade. Its key, ascending:
    blocks where the later, wider block wins. An unrecognized query node sorts after
    unconditional utilities, so a future variant can't silently stop overriding its
    base.
-4. **Rule index** (`StringifiedUtil.Index`) — the originating rule's declaration order.
+4. **Rule index** (`StringifiedUtil.Index`) — the originating rule's position in this
+   generator's `Configuration.Rules`. It is looked up per generator, never stored on the
+   rule: Preset.Mini shares rule instances across configurations, so an index written on
+   the instance would be overwritten by the next generator built from it.
 5. **Rule rank** (`StringifiedUtil.Rank`) — an `IOrderRankedDynamicRule<TTheme>`'s
    ordering of its own matches.
 6. **Variant sort hint** (`StringifiedUtil.Sort`) — UnoCSS's per-rule `sort`; no variant
