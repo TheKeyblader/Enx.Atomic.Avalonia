@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Text;
 
 namespace Enx.Atomic.Avalonia.Tests;
 
@@ -277,23 +278,60 @@ public sealed class MSBuildIntegrationTests : IDisposable
             }
             """;
 
+    private static readonly TimeSpan BuildTimeout = TimeSpan.FromMinutes(5);
+
     private static (int ExitCode, string Output) DotnetBuild(string projectDir)
     {
-        var startInfo = new ProcessStartInfo("dotnet", "build --nologo")
+        // --disable-build-servers: a nested build must not leave MSBuild worker nodes, the MSBuild server or
+        // VBCSCompiler running. Those outlive `dotnet build`, inherit its redirected stdout/stderr pipes, and
+        // keep them open — so reading the output to EOF would block forever (and on CI, where no server is
+        // already running to be reused, they would be spawned by this very build).
+        var startInfo = new ProcessStartInfo("dotnet", "build --nologo --disable-build-servers")
         {
             WorkingDirectory = projectDir,
             RedirectStandardOutput = true,
             RedirectStandardError = true,
             UseShellExecute = false,
         };
+        startInfo.Environment["MSBUILDDISABLENODEREUSE"] = "1";
+        startInfo.Environment["DOTNET_CLI_USE_MSBUILD_SERVER"] = "0";
+        startInfo.Environment["UseSharedCompilation"] = "false";
 
-        using var process =
-            Process.Start(startInfo) ?? throw new InvalidOperationException("Failed to start 'dotnet build'.");
-        var stdout = process.StandardOutput.ReadToEnd();
-        var stderr = process.StandardError.ReadToEnd();
+        var output = new StringBuilder();
+        using var process = new Process { StartInfo = startInfo };
+        // Both streams are drained concurrently: reading one to EOF before the other deadlocks as soon as
+        // the unread one fills its pipe buffer.
+        process.OutputDataReceived += (_, e) => Append(e.Data);
+        process.ErrorDataReceived += (_, e) => Append(e.Data);
+
+        if (!process.Start())
+            throw new InvalidOperationException("Failed to start 'dotnet build'.");
+        process.BeginOutputReadLine();
+        process.BeginErrorReadLine();
+
+        if (!process.WaitForExit(BuildTimeout))
+        {
+            process.Kill(entireProcessTree: true);
+            Assert.Fail($"'dotnet build' in {projectDir} did not finish within {BuildTimeout}:\n{Snapshot()}");
+        }
+
+        // Flushes the asynchronous readers (the timed overload above doesn't wait for them).
         process.WaitForExit();
+        return (process.ExitCode, Snapshot());
 
-        return (process.ExitCode, stdout + stderr);
+        void Append(string? line)
+        {
+            if (line is null)
+                return;
+            lock (output)
+                output.AppendLine(line);
+        }
+
+        string Snapshot()
+        {
+            lock (output)
+                return output.ToString();
+        }
     }
 
     private static string RepoRoot()
