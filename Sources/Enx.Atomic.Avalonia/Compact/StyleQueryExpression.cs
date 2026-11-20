@@ -37,7 +37,10 @@ public abstract record StyleQueryExpression
                     nameof(StyleQueries.Width),
                     BindingFlags.Static | BindingFlags.Public,
                     [typeof(StyleQuery), typeof(StyleQueryComparisonOperator), typeof(double)]
-                ) ?? throw new InvalidOperationException();
+                )
+                ?? throw new InvalidOperationException(
+                    "Could not find StyleQueries.Width(StyleQuery, StyleQueryComparisonOperator, double); Avalonia's public API no longer matches what StyleQueryExpression.Width expects."
+                );
         }
 
         /// <summary>The comparison to apply.</summary>
@@ -73,7 +76,10 @@ public abstract record StyleQueryExpression
                     nameof(StyleQueries.Height),
                     BindingFlags.Static | BindingFlags.Public,
                     [typeof(StyleQuery), typeof(StyleQueryComparisonOperator), typeof(double)]
-                ) ?? throw new InvalidOperationException();
+                )
+                ?? throw new InvalidOperationException(
+                    "Could not find StyleQueries.Height(StyleQuery, StyleQueryComparisonOperator, double); Avalonia's public API no longer matches what StyleQueryExpression.Height expects."
+                );
         }
 
         /// <summary>The comparison to apply.</summary>
@@ -109,7 +115,10 @@ public abstract record StyleQueryExpression
                     nameof(StyleQueries.Or),
                     BindingFlags.Static | BindingFlags.Public,
                     [typeof(StyleQuery[])]
-                ) ?? throw new InvalidOperationException();
+                )
+                ?? throw new InvalidOperationException(
+                    "Could not find StyleQueries.Or(StyleQuery[]); Avalonia's public API no longer matches what StyleQueryExpression.Or expects."
+                );
         }
 
         /// <summary>The queries to OR together.</summary>
@@ -144,7 +153,10 @@ public abstract record StyleQueryExpression
                     nameof(StyleQueries.And),
                     BindingFlags.Static | BindingFlags.Public,
                     [typeof(StyleQuery[])]
-                ) ?? throw new InvalidOperationException();
+                )
+                ?? throw new InvalidOperationException(
+                    "Could not find StyleQueries.And(StyleQuery[]); Avalonia's public API no longer matches what StyleQueryExpression.And expects."
+                );
         }
 
         /// <summary>The queries to AND together.</summary>

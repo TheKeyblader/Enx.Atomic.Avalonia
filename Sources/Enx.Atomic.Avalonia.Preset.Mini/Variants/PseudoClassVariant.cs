@@ -6,7 +6,10 @@ namespace Enx.Atomic.Avalonia.Preset.Mini.Variants;
 /// Matches a Tailwind/UnoCSS-style pseudo-class prefix (<c>hover:</c>, <c>disabled:</c>, ...) and rewrites it to
 /// the corresponding Avalonia pseudo-class (<c>:pointerover</c>, <c>:disabled</c>, ...), appended to the resolved
 /// style's selector. Pruned to the state pseudo-classes Avalonia controls actually raise — unlike CSS, Avalonia
-/// has no structural (<c>:nth-child</c>) or content (<c>:empty</c>) pseudo-classes to mirror.
+/// has no structural (<c>:nth-child</c>) pseudo-classes, and <c>:empty</c> is not a general content selector:
+/// it is raised only by specific controls (e.g. <see cref="Avalonia.Controls.ContentControl"/> when its content
+/// is null, <see cref="Avalonia.Controls.ItemsControl"/> when it has no items, <see cref="Avalonia.Controls.TextBox"/>
+/// when its text is empty), so the <c>empty:</c> prefix only matches on those.
 /// </summary>
 public record PseudoClassVariant<TTheme> : VariantBase<TTheme>
     where TTheme : class

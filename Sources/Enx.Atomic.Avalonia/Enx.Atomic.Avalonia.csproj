@@ -16,11 +16,10 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Avalonia" Version="12.1.3" />
-        <PackageReference Include="Roslynator.Analyzers" Version="5.0.0">
+        <PackageReference Include="Avalonia" />
+        <PackageReference Include="Roslynator.Analyzers">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Update="MinVer" Version="8.0.0" />
     </ItemGroup>
 </Project>

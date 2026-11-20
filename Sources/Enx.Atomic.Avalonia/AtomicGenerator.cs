@@ -48,7 +48,12 @@ public class AtomicGenerator<TTheme>
         }
 
         if (!Configuration.Rules.All(r => r is IStaticRule or IDynamicRule<TTheme>))
-            throw new InvalidOperationException();
+        {
+            var offending = Configuration.Rules.First(r => r is not (IStaticRule or IDynamicRule<TTheme>));
+            throw new InvalidOperationException(
+                $"Configured rule '{offending.GetType().FullName}' is neither an IStaticRule nor an IDynamicRule<{typeof(TTheme).Name}>; every rule passed to AtomicConfiguration<{typeof(TTheme).Name}>.Rules must implement one of them."
+            );
+        }
     }
 
     /// <summary>
@@ -201,8 +206,10 @@ public class AtomicGenerator<TTheme>
     /// </summary>
     /// <param name="result">The current match state to continue from.</param>
     /// <param name="context">Shared context (theme, generator) available to variant matchers.</param>
-    /// <exception cref="InvalidOperationException">A <c>MultiPass</c> variant produced more than one match.</exception>
-    /// <exception cref="Exception">More than 500 variant handlers were accumulated, indicating a runaway/cyclic match.</exception>
+    /// <exception cref="InvalidOperationException">
+    /// A <c>MultiPass</c> variant produced more than one match, or more than 500 variant handlers were
+    /// accumulated (indicating a runaway/cyclic match).
+    /// </exception>
     public VariantMatchedResult<TTheme>[] MatchVariants(
         VariantMatchedResult<TTheme> result,
         VariantContext<TTheme> context
@@ -237,7 +244,9 @@ public class AtomicGenerator<TTheme>
                 }
 
                 if (variant.MultiPass)
-                    throw new InvalidOperationException();
+                    throw new InvalidOperationException(
+                        $"MultiPass variant '{variant.GetType().FullName}' matched token '{processed}' ambiguously ({handler.Length} handlers). A MultiPass variant may match more than once, but each match must be unambiguous; make its Match return a single handler per pass, or drop MultiPass."
+                    );
 
                 var subMatchings = handler.Select(h =>
                 {
@@ -259,17 +268,12 @@ public class AtomicGenerator<TTheme>
                 break;
 
             if (handlers.Length > 500)
-                throw new Exception();
+                throw new InvalidOperationException(
+                    $"More than 500 variant handlers were accumulated while resolving token '{result.Raw}' (current: '{result.Current}'). This usually means a variant keeps re-matching its own output, i.e. a cyclic variant; check MultiPass variants that rewrite the token into a form they still accept."
+                );
         }
 
         return [result];
-    }
-
-    /// <summary>Matches variants on <paramref name="input"/> and resolves each resulting branch against the configured rules.</summary>
-    private ParsedUtil[] ParseUtil(string input, RuleContext<TTheme> context)
-    {
-        var variantResults = MatchVariants(input);
-        return [.. variantResults.Select(v => ParseUtil(v, context)).SelectMany(x => x)];
     }
 
     /// <summary>

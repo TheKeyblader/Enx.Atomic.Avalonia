@@ -13,10 +13,9 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Avalonia.Desktop" Version="12.1.3" />
-        <PackageReference Include="Avalonia.Themes.Fluent" Version="12.1.3" />
-        <PackageReference Include="AvaloniaUI.DiagnosticsSupport" Version="2.2.3" />
-        <PackageReference Update="MinVer" Version="8.0.0" />
+        <PackageReference Include="Avalonia.Desktop" />
+        <PackageReference Include="Avalonia.Themes.Fluent" />
+        <PackageReference Include="AvaloniaUI.DiagnosticsSupport" />
     </ItemGroup>
 
     <Import Project="..\..\Sources\Enx.Atomic.Avalonia.CodeGen\build\Enx.Atomic.Avalonia.CodeGen.targets" />

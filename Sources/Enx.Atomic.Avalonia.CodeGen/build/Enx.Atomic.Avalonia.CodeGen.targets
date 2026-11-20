@@ -4,9 +4,12 @@
       this project's build: builds the config project, runs it against this project's source files, and adds
       the C# it emits to this project's compilation. See ARCHITECTURE.md's "Build-time C# code generation".
 
-      A consuming project opts in by setting EnxAtomicConfigProject (the config project's .csproj path) and,
-      today, importing this file explicitly (it isn't auto-imported yet — this isn't packaged/shipped via
-      NuGet, so there's no `build/{PackageId}.targets` convention to rely on).
+      A consuming project opts in by setting EnxAtomicConfigProject (the config project's .csproj path) and
+      importing this file. NuGet consumers that reference Enx.Atomic.Avalonia.CodeGen as a PackageReference
+      get it auto-imported: it is packed into build/ under the package id (see the CodeGen .csproj), which is
+      the `build/{PackageId}.targets` convention NuGet applies automatically. In-repo consumers (Examples/)
+      reference the CodeGen project instead, and a ProjectReference does not bring in the referenced project's
+      packed build/ folder, so Enx.Atomic.Avalonia.Example.App imports this file explicitly.
 
       EnxAtomicStylesOutputPath defaults to a GeneratedStyles/ folder next to the project file (not obj/) so
       the emitted code is easy for a user to find and read, not just compiled invisibly. Unlike

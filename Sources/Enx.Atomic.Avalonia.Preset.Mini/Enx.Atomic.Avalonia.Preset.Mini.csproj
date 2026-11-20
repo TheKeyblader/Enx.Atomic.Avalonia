@@ -23,8 +23,4 @@
         <Folder Include="Static\" />
         <Folder Include="Variants\" />
     </ItemGroup>
-
-    <ItemGroup>
-        <PackageReference Update="MinVer" Version="8.0.0" />
-    </ItemGroup>
 </Project>
