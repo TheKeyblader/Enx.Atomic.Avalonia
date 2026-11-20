@@ -118,6 +118,22 @@ internal static class DefaultTheme
         ["9xl"] = 128,
     };
 
+    /// <summary>
+    /// UnoCSS's <c>fontFamily</c> scale, already parsed into <see cref="FontFamily"/>s. Upstream's stacks are
+    /// web-oriented: its generic keywords (<c>ui-sans-serif</c>, <c>system-ui</c>, <c>-apple-system</c>,
+    /// <c>BlinkMacSystemFont</c>, <c>ui-serif</c>, <c>ui-monospace</c>, <c>SFMono-Regular</c>) are not font names on a
+    /// desktop, and quoted names (<c>"Times New Roman"</c>) are not supported by Avalonia's comma-separated parser, so
+    /// the concrete names are kept in upstream's order, unquoted, with the CSS generic keyword last where fontconfig
+    /// can resolve it. <c>sans</c> maps to <see cref="FontFamily.Default"/> — the platform's own UI font — which is
+    /// what upstream's web-generic head stands in for; emoji families are left to Avalonia's font fallback.
+    /// </summary>
+    public static readonly Dictionary<string, FontFamily> FontFamilies = new()
+    {
+        ["sans"] = FontFamily.Default,
+        ["serif"] = new("Georgia, Cambria, Times New Roman, Times, serif"),
+        ["mono"] = new("Menlo, Monaco, Consolas, Liberation Mono, Courier New, monospace"),
+    };
+
     /// <summary>UnoCSS's <c>breakpoints</c> scale.</summary>
     public static readonly Dictionary<string, double> Breakpoints = new()
     {

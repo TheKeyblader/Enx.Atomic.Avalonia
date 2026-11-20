@@ -9,6 +9,7 @@ public class MiniTheme
         IRadiusPart,
         IColorPart,
         IFontSizePart,
+        IFontFamilyPart,
         ILineWidthPart,
         IBoxShadowPart,
         IBreakpointPart,
@@ -19,6 +20,7 @@ public class MiniTheme
     public Dictionary<string, double> Radii { get; set; } = [];
     public Dictionary<string, Themed<IBrush>> Colors { get; set; } = [];
     public Dictionary<string, double> FontSizes { get; set; } = [];
+    public Dictionary<string, FontFamily> FontFamilies { get; set; } = [];
     public Dictionary<string, double> LineWidths { get; set; } = [];
     public Dictionary<string, BoxShadows> BoxShadows { get; set; } = [];
     public Dictionary<string, double> Breakpoints { get; set; } = [];

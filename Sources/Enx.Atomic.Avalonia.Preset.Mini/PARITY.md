@@ -308,7 +308,7 @@ key on both axes, and this port has no `DEFAULT` spacing key (see [Theme scales]
 | `tracking-*` (`letter-spacing`) | 🟡 partial | `Dynamic/LetterSpacingRules.cs` (`LetterSpacingRule<TTheme>`) | `tracking-2`, `tracking-[2px]` | `TextElement.LetterSpacingProperty` (px) from an arbitrary px value or a bare rem number. Upstream's scale is in `em` (relative to the element's font size), which has no Avalonia equivalent, so `tracking-tight`/`tracking-wide`/... don't resolve. |
 | `word-spacing-*` | ❌ dropped | — | | Avalonia has no `word-spacing` property. |
 | `font-stretch-*` | ⏳ todo | — | | `TextElement.FontStretchProperty` (`FontStretch`). |
-| `font-{family}` | ⏳ todo | — | | `TextElement.FontFamilyProperty`; needs a `fontFamily` scale (not ported). |
+| `font-{family}` | ✅ ported | `Dynamic/FontFamilyRules.cs` (`FontFamilyRule<TTheme>`) | `font-sans`, `font-serif`, `font-mono` | `TextElement.FontFamilyProperty` (inherited attached, so one style reaches any text host) from the `fontFamily` scale. Shares the `font-` prefix with the static weight rules, which still win. Arbitrary `font-[Arial]` is not ported: a bracket value here would be text, not px. |
 | `tab-*` | ❌ dropped | — | | No tab-size. |
 | `indent-*` (`text-indent`) | ❌ dropped | — | | No text-indent. |
 | `text-stroke-*` | ❌ dropped | — | | Shape stroke only; no glyph-outline stroke on text. |
@@ -454,7 +454,7 @@ whether the corresponding utilities can read it — and its examples are tokens 
 
 | Upstream | Status | Here | Examples | Notes |
 |---|---|---|---|---|
-| `fontFamily` | ⏳ todo | — | | `TextElement.FontFamilyProperty` exists; no `font-{family}` rule yet. |
+| `fontFamily` | ✅ ported | `Extensions/DefaultTheme.cs` (`FontFamilies`) + `Dynamic/FontFamilyRules.cs` | `font-sans`, `font-mono` | `sans`/`serif`/`mono`. Upstream's web-only generic keywords are dropped and quoted names unquoted (Avalonia parses a plain comma-separated list); `sans` is `FontFamily.Default`, the platform's own UI font. |
 | `fontSize` | 🟡 partial | `Extensions/DefaultTheme.cs` (`FontSizes`) | `text-sm`, `text-4xl` | Size only, in px; upstream's paired line-height/letter-spacing is dropped. |
 | `fontWeight` | 🟡 partial | `Static/FontWeights.cs` (`FontWeights`) | `font-bold` | Ported as 9 static rules rather than a scale; numeric weights missing. |
 | `textIndent` | ❌ dropped | — | | No text-indent. |
@@ -505,10 +505,10 @@ whether the corresponding utilities can read it — and its examples are tokens 
 
 | Section | ✅ ported | 🟡 partial | ❌ dropped | ⏳ todo | Total |
 |---|---|---|---|---|---|
-| Rules | 38 | 14 | 71 | 39 | 162 |
+| Rules | 39 | 14 | 71 | 38 | 162 |
 | Variants | 3 | 1 | 19 | 7 | 30 |
-| Theme scales | 3 | 7 | 9 | 10 | 29 |
-| **Total** | **44** | **22** | **99** | **56** | **221** |
+| Theme scales | 4 | 7 | 9 | 9 | 29 |
+| **Total** | **46** | **22** | **99** | **54** | **221** |
 
 > Counts are asserted by `ParityMatrixTests.Counts_MatchSummary` — update this table when rows change.
 
@@ -520,8 +520,6 @@ above.
 1. **`size-*`** — sets `Width` + `Height` (and their `min`/`max` forms) from the existing `Sizes`
    scale; the only new part is emitting two to four properties per token.
 2. **`w-auto` / `h-auto`** — `double.NaN` is exactly "auto"; trivial, and completes the size family.
-7. **`font-{family}`** — `TextElement.FontFamilyProperty` plus the `fontFamily` scale (sans/serif/
-   mono are already spelled out upstream).
 8. **`top/right/bottom/left-*` + `inset-*`** — `Canvas.Left/Top/Right/Bottom`; only meaningful in a
    `Canvas`, but that is the Avalonia idiom for absolute placement.
 

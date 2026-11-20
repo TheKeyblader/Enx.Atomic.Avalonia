@@ -220,6 +220,20 @@ public static class ThemeBuilderExtensions
         return builder;
     }
 
+    /// <summary>Seeds <see cref="IFontFamilyPart.FontFamilies"/> and registers <see cref="FontFamilyRule{TTheme}"/>. Shares the <c>font-</c> prefix with the static weight rules only (which always win), so its position relative to them doesn't matter.</summary>
+    public static ThemeBuilder<TTheme> AddFontFamilyRules<TTheme>(
+        this ThemeBuilder<TTheme> builder,
+        AtomicConfiguration<TTheme> configuration
+    )
+        where TTheme : class, IFontFamilyPart, new()
+    {
+        foreach (var (key, value) in DefaultTheme.FontFamilies)
+            builder.Theme.FontFamilies[key] = value;
+
+        configuration.AddRuleOnce(new FontFamilyRule<TTheme>());
+        return builder;
+    }
+
     /// <summary>Registers <see cref="DarkVariant{TTheme}"/> onto <see cref="AtomicConfiguration{TTheme}.Variants"/>. Not tied to any theme part.</summary>
     public static ThemeBuilder<TTheme> AddDarkVariant<TTheme>(
         this ThemeBuilder<TTheme> builder,
@@ -287,6 +301,7 @@ public static class ThemeBuilderExtensions
             .AddLineWidthRules(configuration)
             .AddBoxShadowRules(configuration)
             .AddFontSizeRules(configuration)
+            .AddFontFamilyRules(configuration)
             .AddBreakpointRules(configuration)
             .AddColorRules(configuration)
             .AddPseudoClassVariants(configuration)
