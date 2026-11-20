@@ -1,0 +1,121 @@
+<Window
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:vm="using:Enx.Atomic.Avalonia.Example.TodoApp.ViewModels"
+    x:Class="Enx.Atomic.Avalonia.Example.TodoApp.MainWindow"
+    x:DataType="vm:TodoListViewModel"
+    x:CompileBindings="True"
+    Width="560"
+    Height="720"
+    MinHeight="480"
+    MinWidth="420"
+    Title="Atomic Todo — Enx.Atomic.Avalonia"
+    Classes="bg-slate-100 dark:bg-slate-950"
+>
+    <!-- Every token in Classes="..." is resolved at build time by Enx.Atomic.Avalonia.CodeGen (see
+         GeneratedStyles/GenStyles.g.cs), and so is a conditional class toggled by a binding
+         (Classes.line-through="{Binding IsDone}" on a todo item below). -->
+    <Border Classes="p-6">
+        <Border Classes="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-lg rounded-2xl p-6">
+            <Grid RowDefinitions="Auto,Auto,*,Auto" Classes="gap-y-4">
+                <!-- Header -->
+                <StackPanel Classes="flex-col gap-1">
+                    <TextBlock Classes="text-3xl font-bold text-slate-900 dark:text-slate-100" Text="Atomic Todo" />
+                    <TextBlock
+                        Classes="text-sm text-slate-500 dark:text-slate-400"
+                        Text="A tiny todo app styled with Enx.Atomic.Avalonia utility classes."
+                    />
+                </StackPanel>
+
+                <!-- New todo: enter in the box or press Add -->
+                <Grid Grid.Row="1" ColumnDefinitions="*,Auto" Classes="gap-2">
+                    <TextBox
+                        x:Name="NewTodoBox"
+                        Classes="bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-200 dark:border-slate-700 focus:border-blue-500 rounded-lg p-3 text-sm"
+                        KeyDown="NewTodoBox_KeyDown"
+                        PlaceholderText="What needs to be done?"
+                        Text="{Binding NewTodoText, Mode=TwoWay}"
+                    />
+                    <Button
+                        Grid.Column="1"
+                        Classes="bg-blue-500 hover:bg-blue-400 text-white font-semibold rounded-lg px-5 py-3 text-sm cursor-pointer disabled:opacity-40"
+                        Click="AddTodo_Click"
+                        Content="Add"
+                        IsEnabled="{Binding CanAdd}"
+                    />
+                </Grid>
+
+                <!-- List -->
+                <ScrollViewer Grid.Row="2">
+                    <ItemsControl ItemsSource="{Binding VisibleTodos}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:TodoItem">
+                                <Border Classes="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg p-3 mb-2">
+                                    <Grid ColumnDefinitions="Auto,*,Auto" Classes="gap-3">
+                                        <CheckBox Classes="self-center" IsChecked="{Binding IsDone, Mode=TwoWay}" />
+                                        <TextBlock
+                                            Grid.Column="1"
+                                            Classes="self-center text-slate-800 dark:text-slate-100 truncate"
+                                            Classes.line-through="{Binding IsDone}"
+                                            Classes.opacity-45="{Binding IsDone}"
+                                            Text="{Binding Title}"
+                                        />
+                                        <Button
+                                            Grid.Column="2"
+                                            Classes="self-center text-slate-400 hover:text-white hover:bg-red-500 rounded-md px-2 py-1 text-sm cursor-pointer"
+                                            Click="DeleteTodo_Click"
+                                            Content="✕"
+                                            ToolTip.Tip="Delete"
+                                        />
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+
+                <TextBlock
+                    Grid.Row="2"
+                    Classes="self-center text-center text-sm text-slate-500 dark:text-slate-400"
+                    IsVisible="{Binding IsEmpty}"
+                    Text="Nothing here yet — add a todo above."
+                />
+
+                <!-- Footer: remaining count, filter, clear completed -->
+                <Grid Grid.Row="3" ColumnDefinitions="Auto,*,Auto" Classes="gap-3">
+                    <TextBlock
+                        Classes="self-center text-sm text-slate-500 dark:text-slate-400"
+                        Text="{Binding ItemsLeftText}"
+                    />
+                    <StackPanel Grid.Column="1" Classes="flex-row justify-self-center self-center gap-3">
+                        <RadioButton
+                            Classes="text-sm text-slate-500 dark:text-slate-400 checked:text-blue-500 checked:font-semibold cursor-pointer"
+                            Content="All"
+                            GroupName="filter"
+                            IsChecked="{Binding IsAllFilter, Mode=TwoWay}"
+                        />
+                        <RadioButton
+                            Classes="text-sm text-slate-500 dark:text-slate-400 checked:text-blue-500 checked:font-semibold cursor-pointer"
+                            Content="Active"
+                            GroupName="filter"
+                            IsChecked="{Binding IsActiveFilter, Mode=TwoWay}"
+                        />
+                        <RadioButton
+                            Classes="text-sm text-slate-500 dark:text-slate-400 checked:text-blue-500 checked:font-semibold cursor-pointer"
+                            Content="Done"
+                            GroupName="filter"
+                            IsChecked="{Binding IsDoneFilter, Mode=TwoWay}"
+                        />
+                    </StackPanel>
+                    <Button
+                        Grid.Column="2"
+                        Classes="self-center text-sm text-slate-500 dark:text-slate-400 hover:text-white hover:bg-red-500 border border-slate-200 dark:border-slate-700 hover:border-red-500 rounded-md px-3 py-1 cursor-pointer disabled:opacity-40"
+                        Click="ClearCompleted_Click"
+                        Content="Clear completed"
+                        IsEnabled="{Binding HasCompletedTodos}"
+                    />
+                </Grid>
+            </Grid>
+        </Border>
+    </Border>
+</Window>

@@ -1,0 +1,13 @@
+<Application
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    x:Class="Enx.Atomic.Avalonia.Example.TodoApp.App"
+>
+    <!-- FluentTheme supplies the control templates (Button, TextBox, CheckBox, ...); the utility classes used
+         in MainWindow.axaml restyle those controls from above it. GenStyles.g.cs (AtomicStyles) and
+         GenResources.g.cs (AtomicResources) are produced at build time and don't exist yet when this file is
+         parsed by the XAML compiler, so they're added in App.axaml.cs's Initialize() instead. -->
+    <Application.Styles>
+        <FluentTheme />
+    </Application.Styles>
+</Application>

@@ -13,5 +13,6 @@
     <Folder Name="/Examples/">
         <Project Path="Examples/Enx.Atomic.Avalonia.Example.App/Enx.Atomic.Avalonia.Example.App.csproj" />
         <Project Path="Examples/Enx.Atomic.Avalonia.Example.Config/Enx.Atomic.Avalonia.Example.Config.csproj" />
+        <Project Path="Examples/Enx.Atomic.Avalonia.Example.TodoApp/Enx.Atomic.Avalonia.Example.TodoApp.csproj" />
     </Folder>
 </Solution>
