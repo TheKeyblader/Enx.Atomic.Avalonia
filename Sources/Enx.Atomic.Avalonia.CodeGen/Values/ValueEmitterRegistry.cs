@@ -11,6 +11,7 @@ public sealed class ValueEmitterRegistry(IEnumerable<IValueEmitter>? emitters = 
         new CornerRadiusValueEmitter(),
         new BoxShadowsValueEmitter(),
         new BrushValueEmitter(),
+        new FontFamilyValueEmitter(),
         new CursorValueEmitter(),
         new TextDecorationsValueEmitter(),
         new TextTrimmingValueEmitter(),

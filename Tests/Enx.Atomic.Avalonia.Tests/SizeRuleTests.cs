@@ -114,7 +114,7 @@ public class SizeRuleTests
         var window = utils.ShowWithStyles(border);
         try
         {
-            Assert.Equal(64, border.Width);
+            Assert.Equal(16, border.Width);
         }
         finally
         {
@@ -136,6 +136,133 @@ public class SizeRuleTests
         try
         {
             Assert.True(double.IsNaN(border.Width));
+            Assert.Equal(HorizontalAlignment.Stretch, border.HorizontalAlignment);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    /// <summary>A <c>size-*</c> token writes both lengths; it resolves exactly like <c>w-*</c>/<c>h-*</c>.</summary>
+    [AvaloniaFact]
+    public void Size_TargetsWidthAndHeight()
+    {
+        var (_, generator) = TestHelpers.CreateMiniGenerator();
+
+        var util = Assert.Single(generator.ParseToken("size-xs"));
+
+        Assert.Equal(
+            [Layoutable.WidthProperty, Layoutable.HeightProperty],
+            util.Body.Select(setter => setter.Property)
+        );
+        Assert.All(util.Body, setter => Assert.Equal(320d, Assert.IsType<double>(setter.Value)));
+    }
+
+    [AvaloniaTheory]
+    [InlineData("size-4", 16)]
+    [InlineData("size-[123px]", 123)]
+    public void Size_BareAndArbitraryValuesResolveToPixels(string token, double expected)
+    {
+        var (_, generator) = TestHelpers.CreateMiniGenerator();
+
+        var util = Assert.Single(generator.ParseToken(token));
+
+        Assert.All(util.Body, setter => Assert.Equal(expected, Assert.IsType<double>(setter.Value)));
+    }
+
+    [AvaloniaFact]
+    public void SizeMinAndMax_TargetTheMatchingBoundProperties()
+    {
+        var (_, generator) = TestHelpers.CreateMiniGenerator();
+
+        var min = Assert.Single(generator.ParseToken("size-min-4"));
+        Assert.Equal(
+            [Layoutable.MinWidthProperty, Layoutable.MinHeightProperty],
+            min.Body.Select(setter => setter.Property)
+        );
+
+        var max = Assert.Single(generator.ParseToken("size-max-md"));
+        Assert.Equal(
+            [Layoutable.MaxWidthProperty, Layoutable.MaxHeightProperty],
+            max.Body.Select(setter => setter.Property)
+        );
+        Assert.All(max.Body, setter => Assert.Equal(448d, Assert.IsType<double>(setter.Value)));
+    }
+
+    [AvaloniaFact]
+    public void SizeAuto_ClearsBothLengthsOnly()
+    {
+        var (_, generator) = TestHelpers.CreateMiniGenerator();
+
+        var util = Assert.Single(generator.ParseToken("size-auto"));
+
+        Assert.Equal(2, util.Body.Length);
+        Assert.All(util.Body, setter => Assert.True(double.IsNaN(Assert.IsType<double>(setter.Value))));
+    }
+
+    [AvaloniaFact]
+    public void SizeFull_ClearsBothLengthsAndStretchesBothAxes()
+    {
+        var (_, generator) = TestHelpers.CreateMiniGenerator();
+        var utils = generator.Generate("size-full", new AtomicGenerator<MiniTheme>.Options());
+        var border = new Border { Classes = { "size-full" } };
+
+        var window = utils.ShowWithStyles(border);
+        try
+        {
+            Assert.True(double.IsNaN(border.Width));
+            Assert.True(double.IsNaN(border.Height));
+            Assert.Equal(HorizontalAlignment.Stretch, border.HorizontalAlignment);
+            Assert.Equal(VerticalAlignment.Stretch, border.VerticalAlignment);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    /// <summary>
+    /// <c>size-*</c> is registered before <c>w-*</c>/<c>h-*</c> (as upstream declares them), so an axis-specific
+    /// token wins only its own property, in either source order: the width is <c>w-8</c>'s 32px, the height stays
+    /// <c>size-4</c>'s 16px.
+    /// </summary>
+    [AvaloniaTheory]
+    [InlineData("size-4 w-8")]
+    [InlineData("w-8 size-4")]
+    public void Size_LosesItsWidthToAnAxisTokenButKeepsItsHeight(string source)
+    {
+        var (_, generator) = TestHelpers.CreateMiniGenerator();
+        var utils = generator.Generate(source, new AtomicGenerator<MiniTheme>.Options());
+        var border = new Border { Classes = { "size-4", "w-8" } };
+
+        var window = utils.ShowWithStyles(border);
+        try
+        {
+            Assert.Equal(32, border.Width);
+            Assert.Equal(16, border.Height);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    /// <summary>Within the rule, <c>full</c> outranks a concrete size on both axes, whatever the source order.</summary>
+    [AvaloniaTheory]
+    [InlineData("size-4 size-full")]
+    [InlineData("size-full size-4")]
+    public void SizeFull_OutranksAConcreteSize(string source)
+    {
+        var (_, generator) = TestHelpers.CreateMiniGenerator();
+        var utils = generator.Generate(source, new AtomicGenerator<MiniTheme>.Options());
+        var border = new Border { Classes = { "size-4", "size-full" } };
+
+        var window = utils.ShowWithStyles(border);
+        try
+        {
+            Assert.True(double.IsNaN(border.Width));
+            Assert.True(double.IsNaN(border.Height));
             Assert.Equal(HorizontalAlignment.Stretch, border.HorizontalAlignment);
         }
         finally

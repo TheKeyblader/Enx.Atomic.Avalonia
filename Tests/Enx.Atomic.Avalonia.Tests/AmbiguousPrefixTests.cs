@@ -1,6 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Controls.Documents;
 using Avalonia.Markup.Xaml.MarkupExtensions;
+using Avalonia.Media;
 using Enx.Atomic.Avalonia.Composites;
 
 namespace Enx.Atomic.Avalonia.Tests;
@@ -77,5 +78,33 @@ public class AmbiguousPrefixTests
         var setter = Assert.Single(util.Body);
         Assert.Equal(TextElement.ForegroundProperty, setter.Property);
         Assert.Equal("Colors[red-500]", Assert.IsType<DynamicResourceExtension>(setter.Value).ResourceKey);
+    }
+
+    /// <summary>
+    /// <c>font-</c> is shared between the static weight tokens and the dynamic <c>font-{family}</c> rule; a static
+    /// rule always wins, so <c>font-bold</c> stays a weight.
+    /// </summary>
+    [AvaloniaFact]
+    public void FontWeightName_ResolvesToWeight_NotFamily()
+    {
+        var (_, generator) = TestHelpers.CreateMiniGenerator();
+
+        var util = Assert.Single(generator.ParseToken("font-bold"));
+
+        var setter = Assert.Single(util.Body);
+        Assert.Equal(TextElement.FontWeightProperty, setter.Property);
+        Assert.Equal(FontWeight.Bold, setter.Value);
+    }
+
+    [AvaloniaFact]
+    public void FontFamilyName_ResolvesToFamily_NotWeight()
+    {
+        var (_, generator) = TestHelpers.CreateMiniGenerator();
+
+        var util = Assert.Single(generator.ParseToken("font-mono"));
+
+        var setter = Assert.Single(util.Body);
+        Assert.Equal(TextElement.FontFamilyProperty, setter.Property);
+        Assert.IsType<FontFamily>(setter.Value);
     }
 }

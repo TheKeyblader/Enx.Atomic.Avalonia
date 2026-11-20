@@ -35,6 +35,7 @@ public class AddMiniThemeTests
         Assert.NotEmpty(configuration.Theme.Radii);
         Assert.NotEmpty(configuration.Theme.Colors);
         Assert.NotEmpty(configuration.Theme.FontSizes);
+        Assert.NotEmpty(configuration.Theme.FontFamilies);
         Assert.NotEmpty(configuration.Theme.LineWidths);
         Assert.NotEmpty(configuration.Theme.Breakpoints);
         Assert.True(configuration.Theme.RemToPxFactor > 0);

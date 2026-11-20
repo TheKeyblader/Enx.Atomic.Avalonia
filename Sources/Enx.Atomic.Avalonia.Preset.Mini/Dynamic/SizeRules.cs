@@ -34,7 +34,7 @@ public partial class SizeRule<TTheme> : IOrderRankedDynamicRule<TTheme>
     /// <summary>Rank of a self-sizing keyword below a concrete size (<c>w-auto</c>).</summary>
     private const int AutoRank = 0;
 
-    /// <summary>Rank of a concrete size resolved from the scale, a bare rem number or an arbitrary value.</summary>
+    /// <summary>Rank of a concrete size resolved from the scale, a bare number or an arbitrary value.</summary>
     private const int SizeRank = 1;
 
     /// <summary>Rank of a self-sizing keyword above a concrete size (<c>w-full</c>).</summary>
@@ -89,5 +89,83 @@ public partial class SizeRule<TTheme> : IOrderRankedDynamicRule<TTheme>
         : SizeRank;
 
     [GeneratedRegex("^(?<bound>min-|max-)?(?<axis>w|h)-(?<value>.+)$")]
+    private static partial Regex CompiledRegex();
+}
+
+/// <summary>
+/// Dynamic rule setting both <see cref="Layoutable.WidthProperty"/> and <see cref="Layoutable.HeightProperty"/> from
+/// <see cref="ISizePart.Sizes"/> (<c>size-*</c>, <c>size-min-*</c>, <c>size-max-*</c>) — the two-axis form of
+/// <see cref="SizeRule{TTheme}"/>, resolving through the same scale, bare-number (quarter-rem) fallback and arbitrary px escape hatch.
+/// The self-sizing keywords expand to both axes: <c>size-full</c> is <c>w-full h-full</c> (clear both lengths and
+/// stretch both axes) and <c>size-auto</c> is <c>w-auto h-auto</c> (clear both lengths, leave the alignment alone).
+///
+/// <para>
+/// UnoCSS declares its <c>size-*</c> entry before its <c>(w|h)-*</c> entry, so an axis-specific utility declared
+/// later wins only the property it sets — <c>size-4 w-8</c> is 128px wide and 64px tall, whatever the source order.
+/// This rule is therefore registered before <see cref="SizeRule{TTheme}"/> in <c>AddSizeRules</c>; the
+/// <c>auto</c> &lt; concrete size &lt; <c>full</c> rank is this rule's own ordering of its matches, matching
+/// <see cref="SizeRule{TTheme}"/>'s — <c>size-4 size-full</c> fills in either order.
+/// </para>
+/// </summary>
+public partial class SizeBothRule<TTheme> : IOrderRankedDynamicRule<TTheme>
+    where TTheme : class, ISizePart, IRemToPxPart
+{
+    /// <summary>Rank of a self-sizing keyword below a concrete size (<c>size-auto</c>).</summary>
+    private const int AutoRank = 0;
+
+    /// <summary>Rank of a concrete size resolved from the scale, a bare number or an arbitrary value.</summary>
+    private const int SizeRank = 1;
+
+    /// <summary>Rank of a self-sizing keyword above a concrete size (<c>size-full</c>).</summary>
+    private const int FullRank = 2;
+
+    public RuleMetadata Metadata { get; init; } = new();
+    public Regex Regex { get; } = CompiledRegex();
+
+    public ImmutableArray<StyleValue> Match(Match match, RuleContext<TTheme> context)
+    {
+        var bound = match.Groups["bound"].Value;
+        var key = match.Groups["value"].Value;
+
+        if (bound.Length == 0 && key is "full" or "auto")
+        {
+            if (key == "auto")
+                return
+                [
+                    Layoutable.WidthProperty.ToLiteral(double.NaN),
+                    Layoutable.HeightProperty.ToLiteral(double.NaN),
+                ];
+
+            return
+            [
+                Layoutable.WidthProperty.ToLiteral(double.NaN),
+                Layoutable.HeightProperty.ToLiteral(double.NaN),
+                Layoutable.HorizontalAlignmentProperty.ToLiteral(HorizontalAlignment.Stretch),
+                Layoutable.VerticalAlignmentProperty.ToLiteral(VerticalAlignment.Stretch),
+            ];
+        }
+
+        if (!context.Theme.Sizes.TryResolve(key, context.Theme.RemToPxFactor, out var value))
+            return [];
+
+        return bound switch
+        {
+            "min-" => [Layoutable.MinWidthProperty.ToLiteral(value), Layoutable.MinHeightProperty.ToLiteral(value)],
+            "max-" => [Layoutable.MaxWidthProperty.ToLiteral(value), Layoutable.MaxHeightProperty.ToLiteral(value)],
+            _ => [Layoutable.WidthProperty.ToLiteral(value), Layoutable.HeightProperty.ToLiteral(value)],
+        };
+    }
+
+    /// <summary>
+    /// A bound (<c>size-min-*</c>/<c>size-max-*</c>) targets its own properties, so it keeps the neutral size rank;
+    /// among the unbounded forms <c>auto</c> sits below a concrete size and <c>full</c> above it — see the type's remarks.
+    /// </summary>
+    public int GetOrderRank(Match match) =>
+        match.Groups["bound"].Value.Length > 0 ? SizeRank
+        : match.Groups["value"].Value == "full" ? FullRank
+        : match.Groups["value"].Value == "auto" ? AutoRank
+        : SizeRank;
+
+    [GeneratedRegex("^size-(?<bound>min-|max-)?(?<value>.+)$")]
     private static partial Regex CompiledRegex();
 }

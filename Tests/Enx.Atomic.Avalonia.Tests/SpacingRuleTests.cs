@@ -46,15 +46,15 @@ public class SpacingRuleTests
     }
 
     [AvaloniaFact]
-    public void Margin_UnknownScaleKey_FallsBackToRemTimesFactor()
+    public void Margin_UnknownScaleKey_FallsBackToQuarterRemTimesFactor()
     {
-        // "13" isn't in the default spacing scale, so it's treated as a bare rem number: 13 * 16px.
+        // "13" isn't in the default spacing scale, so it's treated as a bare number in quarter-rems, as UnoCSS does: 13 / 4 * 16px.
         var (_, generator) = TestHelpers.CreateMiniGenerator();
 
         var util = Assert.Single(generator.ParseToken("m-13"));
 
         Assert.Equal(4, util.Body.Length);
-        Assert.All(util.Body, setter => Assert.Equal(208d, Assert.IsType<double>(setter.Value)));
+        Assert.All(util.Body, setter => Assert.Equal(52d, Assert.IsType<double>(setter.Value)));
     }
 
     [AvaloniaFact]

@@ -1,7 +1,9 @@
 using System.Reflection;
 using Avalonia.Data;
+using Avalonia.Media;
 using Avalonia.Styling;
 using Enx.Atomic.Avalonia.CodeGen;
+using Enx.Atomic.Avalonia.CodeGen.Values;
 using Enx.Atomic.Avalonia.Preset.Mini;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -26,8 +28,11 @@ namespace Enx.Atomic.Avalonia.Tests;
 /// <c>ThemeVariantScope</c>/<c>AddOwner</c> pitfall documented on <see cref="Enx.Atomic.Avalonia.StyleValue.TargetType"/>),
 /// and the <c>ColumnDefinitions</c>/<c>RowDefinitions</c> ghost properties (<c>grid-cols-3</c>), and an
 /// arbitrary bracket value of each kind it resolves to — a literal brush (<c>bg-[#123456]</c>) and a literal
-/// pixel double (<c>w-[123px]</c>), and the <see cref="Avalonia.Media.TextTrimming"/> strategies
-/// (<c>truncate</c>/<c>text-ellipsis</c> — a class of static singletons, not an enum).
+/// pixel double (<c>w-[123px]</c>), the <see cref="Avalonia.Media.TextTrimming"/> strategies
+/// (<c>truncate</c>/<c>text-ellipsis</c> — a class of static singletons, not an enum), a
+/// <see cref="Avalonia.Media.FontFamily"/> value (<c>font-serif</c> — a class reconstructed from its name list),
+/// the newer scalar families (<c>size-*</c>, <c>border-x-*</c>, <c>opacity-*</c>, <c>z-*</c>, <c>leading-*</c>,
+/// <c>tracking-*</c>), and a <see cref="Avalonia.Controls.Canvas"/> attached property (<c>top-4</c>).
 /// </summary>
 public class CodeGenTests
 {
@@ -37,7 +42,7 @@ public class CodeGenTests
         var (_, generator) = TestHelpers.CreateMiniGenerator();
 
         var source =
-            "Classes=\"ml-1 mr-2 p-2 border-2 border-t-4 rounded-md rounded-tl-lg hidden flex-row cursor-pointer no-underline truncate text-ellipsis hover:bg-red-500 sm:hidden max-w-md dark:bg-red-500 grid-cols-3 col-span-2 bg-[#123456] w-[123px] w-full w-auto shadow-md shadow-inner\"";
+            "Classes=\"ml-1 mr-2 p-2 border-2 border-t-4 rounded-md rounded-tl-lg hidden flex-row cursor-pointer no-underline truncate text-ellipsis hover:bg-red-500 sm:hidden max-w-md dark:bg-red-500 grid-cols-3 col-span-2 bg-[#123456] w-[123px] w-full w-auto shadow-md shadow-inner font-serif size-4 border-x-2 opacity-50 z-10 leading-[20px] tracking-[1px] top-4\"";
 
         var utils = generator.Generate(source, new AtomicGenerator<MiniTheme>.Options { Id = "test.axaml" });
         Assert.NotEmpty(utils);
@@ -84,6 +89,30 @@ public class CodeGenTests
         }
 
         Assert.True(checkedAnySetter, "No Setter was found to check — the test source stopped exercising the emitter.");
+    }
+
+    /// <summary>
+    /// <see cref="FontFamily"/> is a class with no round-trippable textual form other than its name list: the emitter
+    /// must reproduce a fallback list exactly, special-case the platform default, and refuse a family loaded from a
+    /// font asset (whose source can't be rebuilt from its names).
+    /// </summary>
+    [AvaloniaFact]
+    public void FontFamilyEmitter_RoundTripsNamesAndRejectsAssetFamilies()
+    {
+        var values = new ValueEmitterRegistry();
+        var namespaces = new HashSet<string>();
+
+        Assert.Equal(
+            "new FontFamily(\"Georgia, Cambria\")",
+            values.Emit(new FontFamily("Georgia, Cambria"), namespaces)
+        );
+        Assert.Contains("Avalonia.Media", namespaces);
+
+        Assert.Equal("FontFamily.Default", values.Emit(FontFamily.Default, new HashSet<string>()));
+
+        Assert.Throws<NotSupportedException>(() =>
+            values.Emit(new FontFamily("avares://Tests/Fonts#MyFont"), new HashSet<string>())
+        );
     }
 
     private static int CountOccurrences(string haystack, string needle)

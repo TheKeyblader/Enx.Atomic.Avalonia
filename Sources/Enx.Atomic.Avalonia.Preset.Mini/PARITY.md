@@ -69,8 +69,8 @@ upstream's order.
 |---|---|---|---|---|
 | `border`, `border-{width}` (uniform) | ✅ ported | `Dynamic/BorderRules.cs` (`BorderWidthRule<TTheme>`) | `border`, `border-2`, `border-none` | Writes the four `BorderThicknessSides` doubles, recomposed into `Border.BorderThicknessProperty`; unmatched bare numbers are px (`lineWidth`). |
 | `border-{width\|size}-{n}` | ⏳ todo | — | | Explicit alias form of the family above; not registered. |
-| `border-x-{width}`, `border-y-{width}` | ⏳ todo | — | | `BorderThicknessSides` left+right / top+bottom, exactly like the ported uniform and single-side forms. |
-| `border-t/r/b/l-{width}` | ✅ ported | `Dynamic/BorderRules.cs` (`BorderWidthRule<TTheme>`) | `border-t-2`, `border-b`, `border-l-2` | One side each; rank 1 keeps a side above the uniform rank-0 entry. |
+| `border-x-{width}`, `border-y-{width}` | ✅ ported | `Dynamic/BorderRules.cs` (`BorderWidthRule<TTheme>`) | `border-x-2`, `border-y-4` | `BorderThicknessSides` left+right / top+bottom, exactly like the ported uniform and single-side forms; rank 1, between the uniform token (0) and a single side (2). |
+| `border-t/r/b/l-{width}` | ✅ ported | `Dynamic/BorderRules.cs` (`BorderWidthRule<TTheme>`) | `border-t-2`, `border-b`, `border-l-2` | One side each; rank 2 keeps a side above the axis (1) and uniform (0) entries. |
 | `border-s/e-{width}` | ❌ dropped | — | | Logical sides can't map: `BorderThickness` is physical, and a style cannot branch on `FlowDirection`. |
 | `border-block-*` / `border-inline-*` | ❌ dropped | — | | Same physical-only limitation. |
 | `border-bs/be/is/ie-*` | ❌ dropped | — | | Same physical-only limitation. |
@@ -93,7 +93,7 @@ upstream's order.
 | `bg-[url(...)]`, `bg-[...gradient(...)]`, `bg-[image:...]` | ⏳ todo | — | | `ImageBrush` and gradient brushes exist; parsing CSS `url()`/gradient syntax is a separate design. |
 | `bg-[length:...]`, `bg-[position:...]` | ⏳ todo | — | | `ImageBrush.SourceRect`/`DestinationRect`/`Stretch`/`TileMode` are the closest model; mapping CSS `background-size`/`position` needs design. |
 | `bg-opacity-*` | ❌ dropped | — | | No separate per-color opacity variable; bake alpha into the brush (`bg-[#80ff0000]`). |
-| `opacity-*` / `op-*` | ⏳ todo | — | | `Visual.OpacityProperty` is the direct equivalent (`50` = 50% → `0.5`). |
+| `opacity-*` / `op-*` | ✅ ported | `Dynamic/OpacityRules.cs` (`OpacityRule<TTheme>`) | `opacity-50`, `op-25`, `opacity-[0.35]` | `Visual.OpacityProperty`; a bare token is a percentage (0–1, so `opacity-0.5` is 0.005), an arbitrary value is taken as written (`[0.35]` fraction, `[50%]` percentage). |
 | `color-scheme-*` | ❌ dropped | — | | A web form-control hint; Avalonia uses `ThemeVariant` (see `dark:`). |
 
 ### `container.ts`
@@ -180,10 +180,10 @@ upstream's order.
 | `place-items-*` | ⏳ todo | — | | Could set both `HorizontalContentAlignment` and `VerticalContentAlignment`; needs design. |
 | `place-self-*` | ⏳ todo | — | | Could set both `HorizontalAlignment` and `VerticalAlignment`; needs design. |
 | `flex-*` / `grid-*` prefixed aliases of justify/items/place | ❌ dropped | — | | Attributify-mode aliases; there is no attributify equivalent here. |
-| `inset-*`, `inset-x/y-*`, `top/right/bottom/left-*`, `start/end-*` | ⏳ todo | — | | `Canvas.Left/Top/Right/Bottom` are the direct equivalent (only meaningful inside a `Canvas`); spacing resolution is already in place. |
+| `inset-*`, `inset-x/y-*`, `top/right/bottom/left-*`, `start/end-*` | 🟡 partial | `Dynamic/InsetRules.cs` (`InsetRule<TTheme>`) | `inset-4`, `inset-x-2`, `top-4`, `-left-2` | `Canvas.Left/Top/Right/Bottom` from the spacing scale, with a leading `-` negating; uniform < axis < side rank, so `inset-0 top-4` composes. Only meaningful on a child of a `Canvas`. `start/end-*` and upstream's `auto`/fraction forms are dropped (Canvas sides are physical `double`s, `NaN` = unset). |
 | `float-*` | ❌ dropped | — | | No float layout. |
 | `clear-*` | ❌ dropped | — | | No float layout. |
-| `z-*` | ⏳ todo | — | | `Visual.ZIndexProperty` (`int`). |
+| `z-*` | ✅ ported | `Dynamic/ZIndexRules.cs` (`ZIndexRule<TTheme>`) | `z-10`, `z10`, `z-[5]` | `Visual.ZIndexProperty` (`int`); non-integral and `z-auto` values don't resolve (`auto` cannot be expressed as an `int`). |
 | `box-border` / `box-content` | ❌ dropped | — | | Avalonia has no box-sizing switch. |
 
 ### `question-mark.ts`
@@ -209,9 +209,9 @@ upstream's order.
 
 | Upstream | Status | Here | Examples | Notes |
 |---|---|---|---|---|
-| `w-{n}` / `h-{n}` | ✅ ported | `Dynamic/SizeRules.cs` (`SizeRule<TTheme>`) | `w-4`, `h-4`, `w-[123px]` | `Layoutable.WidthProperty`/`HeightProperty`; reads the `Sizes` scale, then bare rem. |
+| `w-{n}` / `h-{n}` | ✅ ported | `Dynamic/SizeRules.cs` (`SizeRule<TTheme>`) | `w-4`, `h-4`, `w-[123px]` | `Layoutable.WidthProperty`/`HeightProperty`; reads the `Sizes` scale, then a bare number in quarter-rems (`w-4` = 16px), as upstream. |
 | `min-w-*` / `max-w-*` / `min-h-*` / `max-h-*` | ✅ ported | `Dynamic/SizeRules.cs` (`SizeRule<TTheme>`) | `min-w-4`, `max-h-4` | Respective `Layoutable` properties. |
-| `size-{n}`, `size-min-*`, `size-max-*` | ⏳ todo | — | | Sets width *and* height (two to four properties); not registered. |
+| `size-{n}`, `size-min-*`, `size-max-*` | ✅ ported | `Dynamic/SizeRules.cs` (`SizeBothRule<TTheme>`) | `size-xs`, `size-4`, `size-full`, `size-auto` | `Width` + `Height` (or `Min*`/`Max*`) through the same `Sizes` scale, bare-number and arbitrary-px resolution as `w-*`/`h-*`. Registered before `SizeRule` (as upstream declares it), so `size-4 w-8` keeps `w-8`'s width and `size-4`'s height; within the rule `auto` < a concrete size < `full`, as for the single-axis keywords. |
 | `w-full` / `h-full` | 🟡 partial | `Dynamic/SizeRules.cs` (`SizeRule<TTheme>`) | `w-full`, `h-full` | No percentage lengths in Avalonia: clears `Width`/`Height` (`double.NaN`) and sets `HorizontalAlignment`/`VerticalAlignment` to `Stretch`. Fills the space the parent offers (a Grid cell, a DockPanel, a StackPanel's cross axis) but cannot express "100%" on a StackPanel's main axis. Ranks above a concrete size, so it wins over `w-4` in either source order. |
 | `w-screen` / `h-screen`, `w-{a/b}` fractions | ❌ dropped | — | | Viewport units and percentages aren't representable: `Layoutable.Width` is an absolute `double`. |
 | `w-min` / `w-max` / `w-fit` | ❌ dropped | — | | No content-based (`min-content`/`fit-content`) sizing. |
@@ -303,12 +303,12 @@ key on both axes, and this port has no `DEFAULT` spacing key (see [Theme scales]
 | `color-*` / `c-*` | ⏳ todo | — | | Alias of the `text-{color}` family; low value but trivial. |
 | `text-opacity-*` | ❌ dropped | — | | Alpha lives in the brush; no separate channel. |
 | `font-{weight}` | 🟡 partial | `Static/FontWeights.cs` (`FontWeights`) | `font-bold`, `font-thin` | 9 named weights only; numeric `font-{100..900}` and the `fw-*` alias are missing. |
-| `leading-*` / `lh-*` / `line-height-*` | ⏳ todo | — | | `TextBlock.LineHeightProperty` (`double`), plus the `lineHeight` scale (none/tight/.../loose). |
+| `leading-*` / `lh-*` / `line-height-*` | 🟡 partial | `Dynamic/LineHeightRules.cs` (`LineHeightRule<TTheme>`) | `leading-4`, `leading-[24px]` | `TextBlock.LineHeightProperty` (absolute px) from an arbitrary px value or a bare number (quarter-rems). Upstream's named scale (`none`=1, `tight`=1.25, ...) is unitless and Avalonia has no relative line height, so those tokens don't resolve. |
 | `font-synthesis-*` | ❌ dropped | — | | No font-synthesis. |
-| `tracking-*` (`letter-spacing`) | ⏳ todo | — | | `TextElement.LetterSpacingProperty`. |
+| `tracking-*` (`letter-spacing`) | 🟡 partial | `Dynamic/LetterSpacingRules.cs` (`LetterSpacingRule<TTheme>`) | `tracking-2`, `tracking-[2px]` | `TextElement.LetterSpacingProperty` (px) from an arbitrary px value or a bare number (quarter-rems). Upstream's scale is in `em` (relative to the element's font size), which has no Avalonia equivalent, so `tracking-tight`/`tracking-wide`/... don't resolve. |
 | `word-spacing-*` | ❌ dropped | — | | Avalonia has no `word-spacing` property. |
 | `font-stretch-*` | ⏳ todo | — | | `TextElement.FontStretchProperty` (`FontStretch`). |
-| `font-{family}` | ⏳ todo | — | | `TextElement.FontFamilyProperty`; needs a `fontFamily` scale (not ported). |
+| `font-{family}` | ✅ ported | `Dynamic/FontFamilyRules.cs` (`FontFamilyRule<TTheme>`) | `font-sans`, `font-serif`, `font-mono` | `TextElement.FontFamilyProperty` (inherited attached, so one style reaches any text host) from the `fontFamily` scale. Shares the `font-` prefix with the static weight rules, which still win. Arbitrary `font-[Arial]` is not ported: a bracket value here would be text, not px. |
 | `tab-*` | ❌ dropped | — | | No tab-size. |
 | `indent-*` (`text-indent`) | ❌ dropped | — | | No text-indent. |
 | `text-stroke-*` | ❌ dropped | — | | Shape stroke only; no glyph-outline stroke on text. |
@@ -454,13 +454,13 @@ whether the corresponding utilities can read it — and its examples are tokens 
 
 | Upstream | Status | Here | Examples | Notes |
 |---|---|---|---|---|
-| `fontFamily` | ⏳ todo | — | | `TextElement.FontFamilyProperty` exists; no `font-{family}` rule yet. |
+| `fontFamily` | ✅ ported | `Extensions/DefaultTheme.cs` (`FontFamilies`) + `Dynamic/FontFamilyRules.cs` | `font-sans`, `font-mono` | `sans`/`serif`/`mono`. Upstream's web-only generic keywords are dropped and quoted names unquoted (Avalonia parses a plain comma-separated list); `sans` is `FontFamily.Default`, the platform's own UI font. |
 | `fontSize` | 🟡 partial | `Extensions/DefaultTheme.cs` (`FontSizes`) | `text-sm`, `text-4xl` | Size only, in px; upstream's paired line-height/letter-spacing is dropped. |
 | `fontWeight` | 🟡 partial | `Static/FontWeights.cs` (`FontWeights`) | `font-bold` | Ported as 9 static rules rather than a scale; numeric weights missing. |
 | `textIndent` | ❌ dropped | — | | No text-indent. |
 | `textStrokeWidth` | ❌ dropped | — | | No text stroke. |
-| `lineHeight` | ⏳ todo | — | | `TextBlock.LineHeightProperty`; no `leading-*` rule yet. |
-| `letterSpacing` | ⏳ todo | — | | `TextElement.LetterSpacingProperty`; values are in `em` upstream and would need px conversion. |
+| `lineHeight` | ❌ dropped | — | | Upstream's entries are unitless multipliers and Avalonia's `LineHeight` is an absolute pixel height — no relative form exists. The `leading-*` rule still resolves px/rem forms — see its rules row. |
+| `letterSpacing` | ❌ dropped | — | | Upstream's entries are in `em` (relative to the element's resolved font size); Avalonia's `LetterSpacing` is absolute px. The `tracking-*` rule still resolves px/rem forms — see its rules row. |
 | `textShadow` | ⏳ todo | — | | `Visual.Effect` can approximate one shadow; no text-shadow utility. |
 | `wordSpacing` | ❌ dropped | — | | Avalonia has no `word-spacing` property. |
 
@@ -476,7 +476,7 @@ whether the corresponding utilities can read it — and its examples are tokens 
 | `borderRadius` | ✅ ported | `Extensions/DefaultTheme.cs` (`Radii`) | `rounded-md`, `rounded-full` | rem converted to px at 16/rem. |
 | `boxShadow` | 🟡 partial | `Extensions/DefaultTheme.cs` (`BoxShadows`) + `Dynamic/ShadowRules.cs` | `shadow-md`, `shadow-inner` | Ported as `BoxShadows` values (DEFAULT, none, sm, md, lg, xl, 2xl, inner) with the `var(--un-shadow-inset)` placeholder dropped; shadow colors and opacity are not ported. |
 | `ringWidth` | ⏳ todo | — | | Needs the `ring-*` design. |
-| `zIndex` | ⏳ todo | — | | Only `auto` upstream; `Visual.ZIndex` takes an `int`, so no scale is needed — just the `z-*` rule. |
+| `zIndex` | ❌ dropped | — | | Upstream's only entry is `auto`, and `Visual.ZIndex` is an `int` — there is no "as if unset" value. The `z-*` rule takes the number directly, so no scale is needed. |
 | `media` | ❌ dropped | — | | No media queries. |
 
 ### `_theme/preflight.ts`
@@ -505,33 +505,33 @@ whether the corresponding utilities can read it — and its examples are tokens 
 
 | Section | ✅ ported | 🟡 partial | ❌ dropped | ⏳ todo | Total |
 |---|---|---|---|---|---|
-| Rules | 34 | 12 | 71 | 45 | 162 |
+| Rules | 39 | 15 | 71 | 37 | 162 |
 | Variants | 3 | 1 | 19 | 7 | 30 |
-| Theme scales | 3 | 7 | 6 | 13 | 29 |
-| **Total** | **40** | **20** | **96** | **65** | **221** |
+| Theme scales | 4 | 7 | 9 | 9 | 29 |
+| **Total** | **46** | **23** | **99** | **53** | **221** |
 
 > Counts are asserted by `ParityMatrixTests.Counts_MatchSummary` — update this table when rows change.
 
 ### Next to port
 
-Ranked by (how common in real UIs) × (how clear the Avalonia equivalent is). All are ⏳ rows
-above.
+The first "easy parity" batch — `size-*`, `border-x`/`border-y`, `opacity-*`, `z-*`, `leading-*`,
+`tracking-*`, `font-{family}`, and `inset-*`/`top-*`/`right-*`/`bottom-*`/`left-*` — is ported; the
+rows above record what each maps to. Everything still marked ⏳ is listed in the tables. The ⏳
+families with the clearest Avalonia equivalent are:
 
-1. **`size-*`** — sets `Width` + `Height` (and their `min`/`max` forms) from the existing `Sizes`
-   scale; the only new part is emitting two to four properties per token.
-2. **`w-auto` / `h-auto`** — `double.NaN` is exactly "auto"; trivial, and completes the size family.
-3. **`border-x-*` / `border-y-*`** — the same `BorderThicknessSides` mechanism already used for
-   `border-*` and `border-t-*`; just two sides instead of one or four.
-4. **`opacity-*`** — `Visual.OpacityProperty` is a direct 1:1 (`50` → `0.5`); no theme scale needed.
-5. **`z-*`** — `Visual.ZIndexProperty`; accepts an integer directly (plus upstream's `auto`).
-6. **`leading-*` / `lh-*` / `line-height-*`** — `TextBlock.LineHeightProperty` plus the (small)
-   `lineHeight` scale; very common in typography-heavy UIs.
-7. **`tracking-*`** — `TextElement.LetterSpacingProperty`; convert the `em`-based scale at
-   `RemToPxFactor`.
-8. **`font-{family}`** — `TextElement.FontFamilyProperty` plus the `fontFamily` scale (sans/serif/
-   mono are already spelled out upstream).
-9. **`top/right/bottom/left-*` + `inset-*`** — `Canvas.Left/Top/Right/Bottom`; only meaningful in a
-   `Canvas`, but that is the Avalonia idiom for absolute placement.
+1. **`fill-*` / `stroke-*`** — `Shape.Fill`/`Stroke`/`StrokeThickness`/`StrokeDashArray` already
+   exist; what's missing is value parsing and a brush resource for the colors.
+2. **`transform.ts`** (`translate-*`, `rotate-*`, `scale-*`, `skew-*`, `origin-*`) — each needs an
+   accumulating composite host, like `MarginSides`, so several transform tokens compose instead of
+   clobbering `RenderTransform`.
+3. **`transition-*`** — `Animatable.Transitions` takes whole transition objects, not a setter value;
+   needs a design similar to the composite hosts.
+4. **`ring-*`** — no box-shadow ring primitive; needs an emulation design (`Border`, or
+   `Visual.Effect`).
+5. **`bg-[url(...)]` / gradients** — `ImageBrush` and gradient brushes exist; the CSS syntax is the
+   missing design.
+6. **Structural variants** (`first:`, `last:`, `odd:`, `even:`, `not:`, `*:`, `all:`) — blocked on
+   `SelectorExpression` learning Avalonia's structural selectors/combinators.
 
 Trivial aliases (`text-truncate`, `decoration-none`, `gap-col-*`, `text-size-*`, `b-*`/`rd-*`,
 `text-align-*`, ...) are deliberately *not* in this list: they add surface without new capability.

@@ -59,8 +59,9 @@ Value resolution — always go through `ThemeScale` (`Dynamic/ThemeScale.cs`), n
 
 | Helper | Order tried | Bare number means |
 |---|---|---|
-| `TryResolve` | `[arbitrary]` → scale key → bare number | **rem** × `RemToPxFactor` (spacing, sizes, radii, font sizes) |
+| `TryResolve` | `[arbitrary]` → scale key → bare number | **quarter-rems** (`n / 4` rem, as UnoCSS) × `RemToPxFactor` (spacing, sizes, radii, font sizes) |
 | `TryResolvePx` | `[arbitrary]` → scale key → bare number | **px** as-is (line widths: border/ring/outline) |
+| `TryResolveUnscaled` | `[arbitrary]` → bare number | **quarter-rems** × `RemToPxFactor`; no scale — for a family whose upstream entries are relative (`leading-*` multipliers, `tracking-*` `em`) |
 
 Arbitrary `[...]` is always px (optional `px` suffix, other units rejected), never rem, and always a
 `StyleValue.Literal`. Colors don't use `ThemeScale`: reuse `ArbitraryColor` in `ColorRules.cs`.
@@ -114,7 +115,7 @@ the source order. Don't try to encode that with `StringifiedUtil.Sort`, which is
 in the family's file (`SpacingRuleTests.cs`, `BorderRuleTests.cs`, ...) or a new
 `<Family>RuleTests.cs`. Cover:
 
-- a scale key, a bare number (check the rem conversion), an arbitrary `[..px]` value, a miss;
+- a scale key, a bare number (check the quarter-rem conversion), an arbitrary `[..px]` value, a miss;
 - each named group branch (each `side`/`axis`);
 - shared prefix → a case in `AmbiguousPrefixTests.cs` both ways;
 - per-side/composite values → assert the *effective* property on a shown control, not just the

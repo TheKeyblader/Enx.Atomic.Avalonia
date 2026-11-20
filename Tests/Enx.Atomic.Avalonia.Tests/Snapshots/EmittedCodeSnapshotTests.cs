@@ -35,6 +35,7 @@ public class EmittedCodeSnapshotTests
         border border-2 border-t-4 rounded-md rounded-tl-lg
         shadow-md shadow-inner
         grid-cols-3 grid-rows-2 col-span-2 row-span-2
+        size-4 border-x-2 opacity-50 z-10 leading-[20px] tracking-[1px] font-serif font-sans top-4
         hover:w-8 w-4 sm:flex-col max-sm:w-4 dark:bg-slate-800 dark:hover:bg-red-600
         """;
 

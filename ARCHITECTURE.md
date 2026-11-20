@@ -102,12 +102,12 @@ A string like `hover:bg-red-500` goes through four steps:
 
 - **`Parts/`** — one interface per theme scale (`ISpacingPart.Spacing`,
   `IColorPart.Colors`, `IRadiusPart.Radii`, `ISizePart.Sizes`,
-  `ILineWidthPart.LineWidths`, `IFontSizePart.FontSizes`, `IBoxShadowPart.BoxShadows`,
-  `IBreakpointPart.Breakpoints`, `IRemToPxPart.RemToPxFactor`). Numeric scales and the
-  rem factor are `double` — the CLR type of every Avalonia length property — so a
-  resolved value can be boxed into a `Setter` without a widening step. Each dynamic rule
-  requires, via `where TTheme : ...`, only the parts it actually needs — a user theme
-  can implement any subset of them.
+  `ILineWidthPart.LineWidths`, `IFontSizePart.FontSizes`, `IFontFamilyPart.FontFamilies`,
+  `IBoxShadowPart.BoxShadows`, `IBreakpointPart.Breakpoints`, `IRemToPxPart.RemToPxFactor`).
+  Numeric scales and the rem factor are `double` — the CLR type of every Avalonia length
+  property — so a resolved value can be boxed into a `Setter` without a widening step.
+  Each dynamic rule requires, via `where TTheme : ...`, only the parts it actually needs
+  — a user theme can implement any subset of them.
 - **`Static/`** — static rules, independent of any theme (`hidden`, `cursor-pointer`,
   `flex-row`, ...).
 - **`Dynamic/`** — theme-driven rules. Directional families (margin/padding/gap,
@@ -120,9 +120,14 @@ A string like `hover:bg-red-500` goes through four steps:
   order; `StringifiedUtil.Rank` carries it to `StyleOrdering`.
   - **`ThemeScale`** — resolves a theme key, falling back, in order, to an
     `ArbitraryValue` then a bare number. `TryResolve` treats the bare-number fallback
-    as **rem** (converted to px via `RemToPxFactor`) — the behavior of most UnoCSS
-    scales (`spacing`, `borderRadius`, ...). `TryResolvePx` treats it as a **raw px**
+    as **quarter-rems**, like UnoCSS's `rem` handler (`n` → `n / 4` rem, so `w-4` =
+    1rem = 16px, then px via `RemToPxFactor`) — the behavior of most UnoCSS scales
+    (`spacing`, `borderRadius`, ...), and consistent with the spacing scale's own
+    numeric keys. `TryResolvePx` treats it as a **raw px**
     value, no conversion — UnoCSS's `lineWidth` scale behavior (border/ring/outline).
+    `TryResolveUnscaled` keeps only the arbitrary-px and bare-number fallbacks, for a family
+    whose upstream scale has no portable entries at all (`leading-*`'s unitless
+    multipliers, `tracking-*`'s `em` values — both absolute pixels in Avalonia).
   - **`ArbitraryValue`** — UnoCSS/Tailwind's `{prefix}-[{value}]` bracket syntax,
     bypassing the theme scale entirely (`w-[123px]`, `bg-[#ff0000]`). `TryUnwrap`
     strips the brackets (underscore→space, since a class token can't contain a literal
@@ -306,7 +311,10 @@ each `Style` and its `Setter`s directly. It works entirely off data:
 - **`Values/IValueEmitter`** — one emitter per value shape a `Setter` can carry:
   `PrimitiveValueEmitter` (bool/numeric/string), `EnumValueEmitter` (generic over any
   enum type), `Thickness`/`CornerRadiusValueEmitter`, `BrushValueEmitter` (any
-  `ISolidColorBrush`), `CursorValueEmitter` (reconstructs
+  `ISolidColorBrush`), `FontFamilyValueEmitter` (`new FontFamily("Georgia, Cambria")`
+  from the family-name list, or `FontFamily.Default`; throws for a family loaded from a
+  font asset, whose source URI isn't recoverable from its names), `CursorValueEmitter`
+  (reconstructs
   `new Cursor(StandardCursorType.X)`), `TextDecorationsValueEmitter` (the three named
   `TextDecorations.*` constants), `TextTrimmingValueEmitter` (the named
   `TextTrimming.*` instances `truncate`/`text-clip`/`text-ellipsis` set — `TextTrimming`

@@ -9,6 +9,32 @@ All notable changes to this project are documented here. The format follows
 
 ### Added
 
+- `size-*`, `size-min-*` and `size-max-*`: set `Width` + `Height` (or the `Min*`/`Max*` pair) from
+  the existing `Sizes` scale, with the same bare-number and arbitrary-px resolution as `w-*`/`h-*`.
+  Registered before `w-*`/`h-*` — upstream's order — so `size-4 w-8` keeps the axis token's width and
+  `size-4`'s height; `size-full`/`size-auto` are the two-axis forms of `w-full`/`w-auto`.
+- `border-x-*` and `border-y-*`: left+right / top+bottom border widths through the existing
+  `BorderThicknessSides` composite host. `BorderWidthRule` now ranks uniform (0) < axis (1) < side
+  (2), so `border-2 border-x-4 border-t-8` composes to 4/8/4/2 whatever the source order.
+- `opacity-*` and `op-*`: set `Visual.OpacityProperty`. A bare token is a percentage
+  (`opacity-50` = 0.5), while an arbitrary value is taken as written (`opacity-[0.35]` fraction,
+  `opacity-[50%]` percentage). No theme scale.
+- `z-*` and `z{n}`: set `Visual.ZIndexProperty` (`int`); a fractional value is a miss rather than a
+  rounded one. Upstream's `z-auto` is not ported — an `int` cannot express "as if unset".
+- `leading-*`, `lh-*` and `line-height-*` (**partial**): set `TextBlock.LineHeightProperty` from an
+  arbitrary px value (`leading-[24px]`) or a bare number. Upstream's named scale is unitless
+  multipliers with no absolute Avalonia equivalent, so `leading-tight`/... do not resolve.
+- `tracking-*` (**partial**): sets `TextElement.LetterSpacingProperty` from an arbitrary px value or
+  a bare number. Upstream's scale is in `em` (relative to the element's font size), which
+  Avalonia's pixel `LetterSpacing` cannot express, so `tracking-wide`/... do not resolve.
+- `font-sans`, `font-serif` and `font-mono`: set the inherited `TextElement.FontFamilyProperty` from
+  a new `IFontFamilyPart.FontFamilies` scale, plus a public `FontFamilyValueEmitter` that emits
+  `new FontFamily("...")` (or `FontFamily.Default`) — covered by the Roslyn compile check. The static
+  `font-bold`-style weight tokens still win the shared `font-` prefix.
+- `inset-*`, `inset-x-*`, `inset-y-*`, `inset-{t,r,b,l}-*`, `top-*`/`right-*`/`bottom-*`/`left-*`
+  (**partial**): set `Canvas`'s attached placement properties from the spacing scale, with a leading
+  `-` negating the value; ranked uniform < axis < side. Only meaningful on a child of a `Canvas`;
+  `start`/`end` and upstream's `auto`/fraction forms are not ported.
 - `w-full`/`h-full` and `w-auto`/`h-auto`. Avalonia has no percentage lengths, so
   `w-full`/`h-full` clear `Width`/`Height` to `double.NaN` and set the matching
   alignment to `Stretch` (filling the space the parent offers), while
@@ -38,6 +64,12 @@ All notable changes to this project are documented here. The format follows
 - An ambiguous (forking) variant dropped every variant an earlier pass had matched:
   `a:` was lost from each branch of `a:b:x`. Preset.Mini's variants are never
   ambiguous, so this only affected custom variants.
+- **Breaking (visual):** a bare number that isn't a scale key is now read in quarter-rems,
+  as UnoCSS's `rem` handler does (`n` → `n / 4` rem), instead of whole rems. `w-4`/`h-4`
+  are 16px (were 64px), `w-64` is 256px (was 1024px), and the same applies to every
+  `TryResolve` family's unmatched numbers (`size-*`, `min-/max-w/h-*`, `rounded-*`,
+  `text-*` sizes, `m-*`/`p-*`/`gap-*` beyond the spacing scale, `leading-*`,
+  `tracking-*`). Spacing keys already in the scale (`m-4` = 16px) are unchanged.
 
 ### Changed
 

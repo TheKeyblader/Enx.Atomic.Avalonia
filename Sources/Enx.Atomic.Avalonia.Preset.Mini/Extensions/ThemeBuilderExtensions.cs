@@ -68,6 +68,9 @@ public static class ThemeBuilderExtensions
         foreach (var (key, value) in DefaultTheme.Sizes)
             builder.Theme.Sizes[key] = value;
 
+        // UnoCSS declares the `size-*` entry before `(w|h)-*`, so an axis-specific token registered later wins
+        // the property it sets (`size-4 w-8` keeps w-8's width) — rule index, not source order, decides that.
+        configuration.AddRuleOnce(new SizeBothRule<TTheme>());
         configuration.AddRuleOnce(new SizeRule<TTheme>());
         return builder;
     }
@@ -183,6 +186,65 @@ public static class ThemeBuilderExtensions
         return builder;
     }
 
+    /// <summary>Registers <see cref="OpacityRule{TTheme}"/>. Not tied to any theme part — a bare token is a percentage and an arbitrary value is taken literally.</summary>
+    public static ThemeBuilder<TTheme> AddOpacityRules<TTheme>(
+        this ThemeBuilder<TTheme> builder,
+        AtomicConfiguration<TTheme> configuration
+    )
+        where TTheme : class, new()
+    {
+        configuration.AddRuleOnce(new OpacityRule<TTheme>());
+        return builder;
+    }
+
+    /// <summary>Registers <see cref="ZIndexRule{TTheme}"/>. Not tied to any theme part — Avalonia's <c>int</c> z-index has no scale (upstream's <c>z-auto</c> cannot be expressed).</summary>
+    public static ThemeBuilder<TTheme> AddZIndexRules<TTheme>(
+        this ThemeBuilder<TTheme> builder,
+        AtomicConfiguration<TTheme> configuration
+    )
+        where TTheme : class, new()
+    {
+        configuration.AddRuleOnce(new ZIndexRule<TTheme>());
+        return builder;
+    }
+
+    /// <summary>Registers <see cref="LineHeightRule{TTheme}"/> and <see cref="LetterSpacingRule{TTheme}"/>. No scale is seeded: upstream's line-height entries are unitless multipliers and its letter-spacing entries are in <c>em</c>, neither of which an absolute Avalonia pixel length can express — only the arbitrary-px and bare-number forms resolve.</summary>
+    public static ThemeBuilder<TTheme> AddTypographyLengthRules<TTheme>(
+        this ThemeBuilder<TTheme> builder,
+        AtomicConfiguration<TTheme> configuration
+    )
+        where TTheme : class, IRemToPxPart, new()
+    {
+        configuration.AddRuleOnce(new LineHeightRule<TTheme>());
+        configuration.AddRuleOnce(new LetterSpacingRule<TTheme>());
+        return builder;
+    }
+
+    /// <summary>Seeds <see cref="IFontFamilyPart.FontFamilies"/> and registers <see cref="FontFamilyRule{TTheme}"/>. Shares the <c>font-</c> prefix with the static weight rules only (which always win), so its position relative to them doesn't matter.</summary>
+    public static ThemeBuilder<TTheme> AddFontFamilyRules<TTheme>(
+        this ThemeBuilder<TTheme> builder,
+        AtomicConfiguration<TTheme> configuration
+    )
+        where TTheme : class, IFontFamilyPart, new()
+    {
+        foreach (var (key, value) in DefaultTheme.FontFamilies)
+            builder.Theme.FontFamilies[key] = value;
+
+        configuration.AddRuleOnce(new FontFamilyRule<TTheme>());
+        return builder;
+    }
+
+    /// <summary>Registers <see cref="InsetRule{TTheme}"/>. It reads the same <see cref="ISpacingPart.Spacing"/> scale as the margin/padding rules but targets <see cref="Canvas"/>'s attached placement properties, so it is chained next to <see cref="AddSpacingRules{TTheme}"/>.</summary>
+    public static ThemeBuilder<TTheme> AddInsetRules<TTheme>(
+        this ThemeBuilder<TTheme> builder,
+        AtomicConfiguration<TTheme> configuration
+    )
+        where TTheme : class, ISpacingPart, IRemToPxPart, new()
+    {
+        configuration.AddRuleOnce(new InsetRule<TTheme>());
+        return builder;
+    }
+
     /// <summary>Registers <see cref="DarkVariant{TTheme}"/> onto <see cref="AtomicConfiguration{TTheme}.Variants"/>. Not tied to any theme part.</summary>
     public static ThemeBuilder<TTheme> AddDarkVariant<TTheme>(
         this ThemeBuilder<TTheme> builder,
@@ -242,11 +304,16 @@ public static class ThemeBuilderExtensions
         builder
             .AddStaticRules(configuration)
             .AddSpacingRules(configuration)
+            .AddInsetRules(configuration)
             .AddSizeRules(configuration)
+            .AddOpacityRules(configuration)
+            .AddZIndexRules(configuration)
+            .AddTypographyLengthRules(configuration)
             .AddRadiusRules(configuration)
             .AddLineWidthRules(configuration)
             .AddBoxShadowRules(configuration)
             .AddFontSizeRules(configuration)
+            .AddFontFamilyRules(configuration)
             .AddBreakpointRules(configuration)
             .AddColorRules(configuration)
             .AddPseudoClassVariants(configuration)
