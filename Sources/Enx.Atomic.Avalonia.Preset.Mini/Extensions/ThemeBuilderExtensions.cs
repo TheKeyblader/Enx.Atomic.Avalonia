@@ -68,6 +68,9 @@ public static class ThemeBuilderExtensions
         foreach (var (key, value) in DefaultTheme.Sizes)
             builder.Theme.Sizes[key] = value;
 
+        // UnoCSS declares the `size-*` entry before `(w|h)-*`, so an axis-specific token registered later wins
+        // the property it sets (`size-4 w-8` keeps w-8's width) — rule index, not source order, decides that.
+        configuration.AddRuleOnce(new SizeBothRule<TTheme>());
         configuration.AddRuleOnce(new SizeRule<TTheme>());
         return builder;
     }

@@ -211,7 +211,7 @@ upstream's order.
 |---|---|---|---|---|
 | `w-{n}` / `h-{n}` | ✅ ported | `Dynamic/SizeRules.cs` (`SizeRule<TTheme>`) | `w-4`, `h-4`, `w-[123px]` | `Layoutable.WidthProperty`/`HeightProperty`; reads the `Sizes` scale, then bare rem. |
 | `min-w-*` / `max-w-*` / `min-h-*` / `max-h-*` | ✅ ported | `Dynamic/SizeRules.cs` (`SizeRule<TTheme>`) | `min-w-4`, `max-h-4` | Respective `Layoutable` properties. |
-| `size-{n}`, `size-min-*`, `size-max-*` | ⏳ todo | — | | Sets width *and* height (two to four properties); not registered. |
+| `size-{n}`, `size-min-*`, `size-max-*` | ✅ ported | `Dynamic/SizeRules.cs` (`SizeBothRule<TTheme>`) | `size-xs`, `size-4`, `size-full`, `size-auto` | `Width` + `Height` (or `Min*`/`Max*`) through the same `Sizes` scale, bare-rem and arbitrary-px resolution as `w-*`/`h-*`. Registered before `SizeRule` (as upstream declares it), so `size-4 w-8` keeps `w-8`'s width and `size-4`'s height; within the rule `auto` < a concrete size < `full`, as for the single-axis keywords. |
 | `w-full` / `h-full` | 🟡 partial | `Dynamic/SizeRules.cs` (`SizeRule<TTheme>`) | `w-full`, `h-full` | No percentage lengths in Avalonia: clears `Width`/`Height` (`double.NaN`) and sets `HorizontalAlignment`/`VerticalAlignment` to `Stretch`. Fills the space the parent offers (a Grid cell, a DockPanel, a StackPanel's cross axis) but cannot express "100%" on a StackPanel's main axis. Ranks above a concrete size, so it wins over `w-4` in either source order. |
 | `w-screen` / `h-screen`, `w-{a/b}` fractions | ❌ dropped | — | | Viewport units and percentages aren't representable: `Layoutable.Width` is an absolute `double`. |
 | `w-min` / `w-max` / `w-fit` | ❌ dropped | — | | No content-based (`min-content`/`fit-content`) sizing. |
@@ -505,10 +505,10 @@ whether the corresponding utilities can read it — and its examples are tokens 
 
 | Section | ✅ ported | 🟡 partial | ❌ dropped | ⏳ todo | Total |
 |---|---|---|---|---|---|
-| Rules | 35 | 12 | 71 | 44 | 162 |
+| Rules | 36 | 12 | 71 | 43 | 162 |
 | Variants | 3 | 1 | 19 | 7 | 30 |
 | Theme scales | 3 | 7 | 6 | 13 | 29 |
-| **Total** | **41** | **20** | **96** | **64** | **221** |
+| **Total** | **42** | **20** | **96** | **63** | **221** |
 
 > Counts are asserted by `ParityMatrixTests.Counts_MatchSummary` — update this table when rows change.
 
