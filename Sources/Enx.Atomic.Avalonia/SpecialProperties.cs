@@ -6,8 +6,8 @@ namespace Enx.Atomic.Avalonia;
 /// Ghost properties: real, registered <see cref="AvaloniaProperty{TValue}"/> instances whose owner type
 /// (this class) is never referenced by a consuming project — see the "Source transformers and ghost
 /// properties" section of <c>ARCHITECTURE.md</c>. A dynamic rule can target one of these instead of building
-/// a zeroed struct on the real composite property directly (e.g. <c>ml-4</c> targeting
-/// <see cref="MarginLeftProperty"/> instead of zeroing three sides of <c>Layoutable.MarginProperty</c>);
+/// a zeroed struct on the real composite property directly (e.g. <c>pl-4</c> targeting
+/// <see cref="PaddingLeftProperty"/> instead of zeroing three sides of <c>Decorator.PaddingProperty</c>);
 /// <see cref="GhostPropertyCombiner{TTheme}"/> recognizes them via <see cref="GhostProperties.Map"/> and
 /// assembles the real composite value. Derives from <see cref="StyledElement"/> — not
 /// <see cref="AvaloniaObject"/> — purely because <see cref="Avalonia.Styling.Selectors.Is{T}"/> requires it;
@@ -15,27 +15,6 @@ namespace Enx.Atomic.Avalonia;
 /// </summary>
 public class SpecialProperties : StyledElement
 {
-    // Margin (Layoutable.MarginProperty)
-    public static readonly AvaloniaProperty<float> MarginLeftProperty = AvaloniaProperty.Register<
-        SpecialProperties,
-        float
-    >("MarginLeft");
-
-    public static readonly AvaloniaProperty<float> MarginTopProperty = AvaloniaProperty.Register<
-        SpecialProperties,
-        float
-    >("MarginTop");
-
-    public static readonly AvaloniaProperty<float> MarginRightProperty = AvaloniaProperty.Register<
-        SpecialProperties,
-        float
-    >("MarginRight");
-
-    public static readonly AvaloniaProperty<float> MarginBottomProperty = AvaloniaProperty.Register<
-        SpecialProperties,
-        float
-    >("MarginBottom");
-
     // Padding (Decorator.PaddingProperty)
     public static readonly AvaloniaProperty<float> PaddingLeftProperty = AvaloniaProperty.Register<
         SpecialProperties,

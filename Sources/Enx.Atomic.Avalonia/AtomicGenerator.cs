@@ -278,7 +278,7 @@ public class AtomicGenerator<TTheme>
 
         var staticRule = this.Configuration.Rules.OfType<IStaticRule>().FirstOrDefault(s => s.Name == processed);
         if (staticRule?.Styles.Any() == true)
-            return ResolveStylingResult(raw, staticRule.Styles, staticRule, scopeContext);
+            return ResolveStylingResult(raw, staticRule.Styles, staticRule, scopeContext, rank: 0);
 
         foreach (var rule in this.Configuration.Rules.OfType<IDynamicRule<TTheme>>())
         {
@@ -290,7 +290,8 @@ public class AtomicGenerator<TTheme>
             if (!result.Any())
                 continue;
 
-            return ResolveStylingResult(raw, result, rule, scopeContext);
+            var rank = rule is IOrderRankedDynamicRule<TTheme> rankedRule ? rankedRule.GetOrderRank(match) : 0;
+            return ResolveStylingResult(raw, result, rule, scopeContext, rank);
         }
 
         return [];
@@ -301,7 +302,8 @@ public class AtomicGenerator<TTheme>
         string raw,
         IEnumerable<StyleValue> styleValues,
         IRule rule,
-        RuleContext<TTheme> context
+        RuleContext<TTheme> context,
+        int rank
     )
     {
         if (!styleValues.Any())
@@ -318,6 +320,7 @@ public class AtomicGenerator<TTheme>
             return new ParsedUtil
             {
                 Index = rule.Metadata.Index,
+                Rank = rank,
                 Raw = raw,
                 StyleEntries = [.. g],
                 Metadata = rule.Metadata,
@@ -342,6 +345,7 @@ public class AtomicGenerator<TTheme>
                     SelectorData = util.SelectorData,
                     Body = [.. util.Entries.Select(x => new Setter(x.UntypedProperty, x.UntypedValue))],
                     Index = parsed.Index,
+                    Rank = parsed.Rank,
                     Metadata = parsed.Metadata,
                     ContainerQuery = util.ContainerQuery,
                     ContainerQueryData = util.ContainerQueryData,

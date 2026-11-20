@@ -9,6 +9,13 @@ internal record ParsedUtil
     /// <summary>The declaration order of the originating rule, for stable output ordering.</summary>
     public required int Index { get; init; }
 
+    /// <summary>
+    /// The originating rule's own rank for <em>this</em> match, for a rule implementing
+    /// <see cref="IOrderRankedDynamicRule{TTheme}"/> — see <see cref="StringifiedUtil.Rank"/>. <c>0</c> for
+    /// every other rule.
+    /// </summary>
+    public int Rank { get; init; }
+
     /// <summary>The original, unstripped token.</summary>
     public required string Raw { get; init; }
 

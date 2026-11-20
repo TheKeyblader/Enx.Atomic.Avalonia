@@ -233,8 +233,9 @@ public static class ThemeBuilderExtensions
 
     /// <summary>
     /// Registers <see cref="GhostPropertyCombiner{TTheme}"/> onto <see cref="AtomicConfiguration{TTheme}.Transformers"/>.
-    /// Without it, the ghost-property branches of <c>MarginRule</c>/<c>PaddingRule</c>/<c>RoundedRule</c>
-    /// (e.g. <c>ml-4</c>) never resolve to anything real. Not tied to any theme part.
+    /// Without it, the ghost-property branches of <c>PaddingRule</c>/<c>RoundedRule</c>/<c>BorderWidthRule</c>
+    /// (e.g. <c>pl-4</c>) never resolve to anything real. Margin no longer needs it — <c>MarginRule</c> writes
+    /// the <c>MarginSides</c> composite host instead. Not tied to any theme part.
     /// </summary>
     public static ThemeBuilder<TTheme> AddGhostPropertyCombiner<TTheme>(
         this ThemeBuilder<TTheme> builder,

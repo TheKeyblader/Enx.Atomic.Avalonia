@@ -31,6 +31,33 @@ public interface IDynamicRule<TTheme> : IRule
     ImmutableArray<StyleValue> Match(Match match, RuleContext<TTheme> context);
 }
 
+/// <summary>
+/// Optional companion to <see cref="IDynamicRule{TTheme}"/> for a rule that consolidates what UnoCSS keeps as
+/// several separate rule entries into one regex — a directional family such as <c>m-*</c>/<c>mx-*</c>/<c>ml-*</c>
+/// (see <see cref="RuleContext{TTheme}"/> and the "one class per family" convention in Preset.Mini).
+///
+/// <para>
+/// In UnoCSS those directions are distinct entries with increasing indices, so <c>m-4 mx-2</c> lets the axis win
+/// and <c>mx-2 ml-1</c> lets the side win regardless of source order. A consolidated rule has a single
+/// <see cref="IRule.Metadata"/> index, so the relative order of its matches has to be reported here instead;
+/// <see cref="StyleOrdering"/> then sorts them by it immediately after the rule index, before any other
+/// tie-breaker. This is deliberately a separate channel from <see cref="StringifiedUtil.Sort"/> (a variant hint)
+/// so the two can never overwrite each other. Rules that don't implement this interface rank every match
+/// <c>0</c>.
+/// </para>
+/// </summary>
+public interface IOrderRankedDynamicRule<TTheme> : IDynamicRule<TTheme>
+    where TTheme : class
+{
+    /// <summary>
+    /// The rank of a successful match relative to the rule's other matches, ascending — a higher rank is emitted
+    /// later and therefore wins a cascade conflict between two of them. Only called after <see cref="Match"/>
+    /// returned a non-empty result, and must be a pure function of the match (the uniform direction is <c>0</c>).
+    /// </summary>
+    /// <param name="match">The successful regex match the rule just resolved.</param>
+    int GetOrderRank(Match match);
+}
+
 /// <summary>Computes style values for a <see cref="Rule.Dynamic{TTheme}"/> from its regex match and the current <see cref="RuleContext{TTheme}"/>.</summary>
 public delegate ImmutableArray<StyleValue> DynamicMatcher<TTheme>(Match match, RuleContext<TTheme> context)
     where TTheme : class;

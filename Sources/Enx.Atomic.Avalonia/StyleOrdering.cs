@@ -30,6 +30,9 @@ namespace Enx.Atomic.Avalonia;
 /// then the <c>sm:</c>/<c>md:</c>/... lower bounds ascending by breakpoint size, mirroring UnoCSS's
 /// <c>parentOrder</c> for breakpoints (wider breakpoints are emitted later, as with ascending media blocks).</item>
 /// <item><b>Rule index</b> — the declaration order of the originating rule (see <see cref="StringifiedUtil.Index"/>).</item>
+/// <item><b>Rule rank</b> — the originating rule's own rank for this match (see <see cref="StringifiedUtil.Rank"/>),
+/// so a rule that consolidates what UnoCSS keeps as several entries still emits them in that order
+/// (<c>m-*</c> before <c>mx-*</c> before <c>ml-*</c>).</item>
 /// <item><b>Variant sort hint</b> — see <see cref="StringifiedUtil.Sort"/>.</item>
 /// <item><b>Selector text</b> — a stable, culture-independent description, so otherwise identical styles still come
 /// out in one deterministic order (e.g. the three owner-scoped utilities <c>bg-*</c> produces).</item>
@@ -49,6 +52,7 @@ public static class StyleOrdering
                 .ThenBy(x => x.Key.ContainerGroup)
                 .ThenBy(x => x.Key.ContainerOrder)
                 .ThenBy(x => x.Key.RuleIndex)
+                .ThenBy(x => x.Key.Rank)
                 .ThenBy(x => x.Key.Sort)
                 .ThenBy(x => x.Key.Text, StringComparer.Ordinal)
                 .Select(x => x.Util),
@@ -83,6 +87,7 @@ public static class StyleOrdering
             ContainerGroup = containerGroup,
             ContainerOrder = containerOrder,
             RuleIndex = util.Index,
+            Rank = util.Rank,
             Sort = util.Sort,
             Text = DescribeSelector(util.SelectorData),
         };
@@ -219,6 +224,7 @@ public static class StyleOrdering
         public int ContainerGroup { get; init; }
         public double ContainerOrder { get; init; }
         public int RuleIndex { get; init; }
+        public int Rank { get; init; }
         public int Sort { get; init; }
         public string Text { get; init; }
     }

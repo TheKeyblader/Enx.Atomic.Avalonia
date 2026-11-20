@@ -16,8 +16,17 @@ public record StringifiedUtil
     public required int Index { get; init; }
 
     /// <summary>
+    /// Relative order of this util <em>within</em> its originating rule — the value an
+    /// <see cref="IOrderRankedDynamicRule{TTheme}"/> reported for its match, so a rule that consolidates what
+    /// UnoCSS keeps as several entries (<c>m-*</c> &lt; <c>mx-*</c> &lt; <c>ml-*</c>) still emits in the order
+    /// those entries would have. Sorted right after <see cref="Index"/> and before <see cref="Sort"/>; always
+    /// <c>0</c> for a rule that doesn't implement that interface.
+    /// </summary>
+    public int Rank { get; init; }
+
+    /// <summary>
     /// Relative ordering hint a variant handler may set (propagated from <c>VariantHandlerContext.Sort</c>), used by
-    /// <see cref="StyleOrdering"/> as a tie-breaker after the rule index — the equivalent of UnoCSS's per-rule
+    /// <see cref="StyleOrdering"/> as a tie-breaker after the rule index and rank — the equivalent of UnoCSS's per-rule
     /// <c>sort</c> context. No variant in the Mini preset sets it today; it stays <c>0</c> for every rule.
     /// </summary>
     public int Sort { get; init; }

@@ -1,6 +1,5 @@
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Layout;
 
 namespace Enx.Atomic.Avalonia;
 
@@ -19,28 +18,6 @@ public static class GhostProperties
 
     public static readonly IReadOnlyDictionary<AvaloniaProperty, Entry> Map = new Dictionary<AvaloniaProperty, Entry>
     {
-        // Margin: Thickness slot order is Left, Top, Right, Bottom.
-        [SpecialProperties.MarginLeftProperty] = new(
-            Layoutable.MarginProperty,
-            0,
-            ThicknessSetter(Layoutable.MarginProperty)
-        ),
-        [SpecialProperties.MarginTopProperty] = new(
-            Layoutable.MarginProperty,
-            1,
-            ThicknessSetter(Layoutable.MarginProperty)
-        ),
-        [SpecialProperties.MarginRightProperty] = new(
-            Layoutable.MarginProperty,
-            2,
-            ThicknessSetter(Layoutable.MarginProperty)
-        ),
-        [SpecialProperties.MarginBottomProperty] = new(
-            Layoutable.MarginProperty,
-            3,
-            ThicknessSetter(Layoutable.MarginProperty)
-        ),
-
         // Padding: same Thickness slot order.
         [SpecialProperties.PaddingLeftProperty] = new(
             Decorator.PaddingProperty,

@@ -70,16 +70,14 @@ public class ArbitraryValueTests
     }
 
     [AvaloniaFact]
-    public void ArbitraryMargin_UniformSide_SetsThickness()
+    public void ArbitraryMargin_UniformSide_WritesAllFourSides()
     {
         var (_, generator) = TestHelpers.CreateMiniGenerator();
 
-        var results = generator.ParseToken("m-[10px]");
+        var util = Assert.Single(generator.ParseToken("m-[10px]"));
 
-        var util = Assert.Single(results);
-        var setter = Assert.Single(util.Body);
-        Assert.Equal(Layoutable.MarginProperty, setter.Property);
-        Assert.Equal(new Thickness(10), setter.Value);
+        Assert.Equal(4, util.Body.Length);
+        Assert.All(util.Body, setter => Assert.Equal(10d, Assert.IsType<double>(setter.Value)));
     }
 
     [AvaloniaFact]

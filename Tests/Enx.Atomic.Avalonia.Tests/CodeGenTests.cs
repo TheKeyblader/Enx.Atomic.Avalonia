@@ -16,8 +16,9 @@ namespace Enx.Atomic.Avalonia.Tests;
 /// fine — the mismatch only surfaces as a runtime cast failure once Avalonia tries to apply the boxed value.
 /// Covers a mix deliberately chosen to exercise most of the emitter — a single-owner static rule, a
 /// multi-owner one (grouping), a color/brush value, a null value (<c>no-underline</c>), a pseudo-class
-/// variant (selector chaining), a breakpoint variant (container query), ghost-property combining
-/// (<c>SpecialProperties</c> owner type, a compound selector via <see cref="GhostPropertyCombiner{TTheme}"/>),
+/// variant (selector chaining), a breakpoint variant (container query), a composite host's embedded copy
+/// (<c>ml-1</c>/<c>mr-2</c> now write <c>MarginSides</c>' side attached properties, so the generated file
+/// must also embed that host and its recomposition helper),
 /// and a whole-number <c>double</c>-valued token (<c>max-w-md</c> — the exact int/double boxing bug above), and
 /// a <c>PropertyEquals</c> selector node with an explicit declaring type (<c>dark:bg-red-500</c> — the
 /// <c>ThemeVariantScope</c>/<c>AddOwner</c> pitfall documented on <see cref="Enx.Atomic.Avalonia.StyleValue.TargetType"/>),
@@ -39,6 +40,13 @@ public class CodeGenTests
         Assert.NotEmpty(utils);
 
         var emitted = StyleEmitter.Emit(utils, "GeneratedStyles", "AtomicStyles");
+
+        // The margin utilities write an embeddable composite host, so the file must carry its own copy — and
+        // the two tokens must stay independent styles (the old ghost combiner merged them into one compound
+        // `.ml-1.mr-2` style writing a whole Thickness).
+        Assert.Contains("file static class MarginSides", emitted);
+        Assert.Contains("MarginSides.MarginLeftProperty", emitted);
+        Assert.DoesNotContain(".Class(\"ml-1\").Class(\"mr-2\")", emitted);
 
         var (assembly, errors) = Compile(emitted);
         Assert.True(errors.Length == 0, string.Join('\n', errors.Select(e => e.ToString())) + "\n\n" + emitted);
