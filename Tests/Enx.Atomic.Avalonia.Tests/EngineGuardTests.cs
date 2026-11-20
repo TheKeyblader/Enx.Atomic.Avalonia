@@ -77,6 +77,24 @@ public class EngineGuardTests
         );
     }
 
+    [Fact]
+    public void MatchVariants_AmbiguousVariantKeepingTheToken_ForksWithTheTokenUnchanged()
+    {
+        var generator = CreateGenerator(new AmbiguousVariant("b:", Consume: false));
+
+        var results = generator.MatchVariants("b:x");
+
+        Assert.Equal(2, results.Length);
+        Assert.All(
+            results,
+            result =>
+            {
+                Assert.Equal("b:x", result.Current);
+                Assert.Single(result.Handlers);
+            }
+        );
+    }
+
     [AvaloniaFact]
     public void PropertyEquals_WithPropertyNotDeclaredOnTheGivenType_ThrowsNamingTypeAndProperty()
     {
@@ -140,17 +158,24 @@ public class EngineGuardTests
                 : [];
     }
 
-    /// <summary>Strips <see cref="Prefix"/> two different ways (two handlers), forcing a fork.</summary>
-    private sealed record AmbiguousVariant(string Prefix) : VariantBase<TestTheme>
+    /// <summary>
+    /// Matches <see cref="Prefix"/> two different ways (two handlers), forcing a fork. With
+    /// <see cref="Consume"/> off, its handlers leave the token unchanged (<c>Matcher = null</c>).
+    /// </summary>
+    private sealed record AmbiguousVariant(string Prefix, bool Consume = true) : VariantBase<TestTheme>
     {
-        public override VariantHandlerBase[] Match(string matcher, VariantContext<TestTheme> context) =>
-            matcher.StartsWith(Prefix, StringComparison.Ordinal)
-                ?
-                [
-                    new PassThroughHandler { Matcher = matcher[Prefix.Length..], Order = 0 },
-                    new PassThroughHandler { Matcher = matcher[Prefix.Length..], Order = 1 },
-                ]
-                : [];
+        public override VariantHandlerBase[] Match(string matcher, VariantContext<TestTheme> context)
+        {
+            if (!matcher.StartsWith(Prefix, StringComparison.Ordinal))
+                return [];
+
+            var rest = Consume ? matcher[Prefix.Length..] : null;
+            return
+            [
+                new PassThroughHandler { Matcher = rest, Order = 0 },
+                new PassThroughHandler { Matcher = rest, Order = 1 },
+            ];
+        }
     }
 
     /// <summary>Matches every token without consuming anything, so a MultiPass loop never converges.</summary>
