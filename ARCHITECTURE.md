@@ -185,6 +185,10 @@ The practical consequences: source order never matters, so a variant may be writ
 before its base; a wider breakpoint wins over a narrower one when both match; and a more
 specific selector outranks any container query.
 
+`StyleOrdering.GetSortKey` exposes that key (`StyleOrdering.SortKey`, one field per
+step above) for diagnostics — `AtomicCli probe` prints it next to each style so a
+surprising position can be explained without re-deriving the comparison by hand.
+
 `StyleOrdering.Distinct` is the companion used on the build-time path only: transformer
 output registered through `AddUtil` has no token to deduplicate by, so it is compared
 structurally (selector data, container query, setter property instance and value) and
@@ -298,7 +302,10 @@ each `Style` and its `Setter`s directly. It works entirely off data:
   enum type), `Thickness`/`CornerRadiusValueEmitter`, `BrushValueEmitter` (any
   `ISolidColorBrush`), `CursorValueEmitter` (reconstructs
   `new Cursor(StandardCursorType.X)`), `TextDecorationsValueEmitter` (the three named
-  `TextDecorations.*` constants), `ThemeVariantValueEmitter`, `GridDefinitionsValueEmitter`
+  `TextDecorations.*` constants), `TextTrimmingValueEmitter` (the named
+  `TextTrimming.*` instances `truncate`/`text-clip`/`text-ellipsis` set — `TextTrimming`
+  is a class, not an enum, so `EnumValueEmitter` can't handle it),
+  `ThemeVariantValueEmitter`, `GridDefinitionsValueEmitter`
   (see grid utilities), and `DynamicResourceValueEmitter` — a `StyleValue.Resource`'s
   `UntypedValue` is a `DynamicResourceExtension`; this emitter only needs its `Key`
   text (`new DynamicResourceExtension("Colors[red-500]")`), never the value the key
@@ -316,7 +323,13 @@ each `Style` and its `Setter`s directly. It works entirely off data:
   the embedded type's own field name.
 
 Verified by `Tests/.../CodeGenTests.cs`, which actually **compiles** the emitted text
-with Roslyn (`Microsoft.CodeAnalysis.CSharp`) and asserts no errors.
+with Roslyn (`Microsoft.CodeAnalysis.CSharp`) and asserts no errors, and by
+`Tests/.../Snapshots/EmittedCodeSnapshotTests.cs`: [Verify](https://github.com/VerifyTests/Verify)
+snapshots of the styles and resource dictionary emitted for one token set covering
+every rule family and variant, so any byte change in the output shows up as a
+reviewable diff. Each snapshot test also asserts the emitter is byte-for-byte
+repeatable, so an ordering regression can't hide behind re-accepting the snapshot.
+The snapshot files are excluded from the test project's compilation.
 
 **Resource-based theming (`ResourceDictionaryEmitter.cs`).** A color value (`bg-*`,
 `text-*`, `border-*`) is a `StyleValue.Resource`, so `StyleEmitter` emits a
@@ -347,8 +360,10 @@ which the consuming app merges once at startup — see
 **The CLI (`AtomicCli.cs`).** A user's configuration project is a small executable
 that references `Enx.Atomic.Avalonia`(`.Preset.Mini`)`.CodeGen`, builds its
 `AtomicConfiguration<TTheme>`, and calls `AtomicCli.Run(args, configuration)` from
-`Main`. `AtomicCli` is a [Spectre.Console.Cli](https://spectreconsole.net/cli/)
-command with `--output`/`--namespace`/`--class`/`--container` options plus a list of
+`Main`. `AtomicCli` is a [Spectre.Console.Cli](https://spectreconsole.net/cli/) app
+with two commands: `generate`, the default — so the `.targets` invocation, which
+passes no command name, is routed to it unchanged — and `probe` (below). `generate`
+takes `--output`/`--namespace`/`--class`/`--container` options plus a list of
 source files. It runs transformers and extractors per file (with the file path as the
 transformers' `id`, so an `IdFilter` can scope one to a single source) but accumulates
 extraction into **one shared token set**, then resolves that union once, merges in the
@@ -363,6 +378,32 @@ resource generation entirely) do the same for `ResourceDictionaryEmitter`. See
 bootstraps Avalonia's headless platform before touching `AddMiniTheme`, because some
 static rules (e.g. `Cursors`) construct real Avalonia types at static-init time and
 need `AvaloniaLocator` populated.
+
+Spectre instantiates commands through `Activator.CreateInstance`, so `Run` hands the
+configuration — and an optional `IAnsiConsole`, which lets a test or an in-process
+host capture the output — to them through a static, single-shot holder rather than
+constructor injection: one `Run` per process.
+
+**`probe` — the diagnostic loop.** `AtomicCli probe "hover:ml-4 p-4"` (or
+`--file <path>`, repeatable; the text and files go through the configured
+extractors, so markup like `Classes="..."` works too) explains a token set instead of
+writing files. Per token: each variant peeled off and the class that recognised it,
+the base token, the winning rule with its declaration index and rank, and a hint when
+nothing matched (a known variant over an unknown base, or an unknown prefix over a
+known utility). Per resolved style: its 1-based position in `StyleOrdering.Sort`'s
+order for the whole probed set together with the `SortKey` parts that produced it,
+the selector and container query rendered from the data trees, and every setter
+(with its resource key, for a `DynamicResource`). `--control <Type>` (with `--width`,
+`--pseudo :pointerover`, ...) goes further: it shows a real control on the headless
+platform the config project already bootstraps, inside a `top-level` width container,
+applies the styles in emitted order plus a resource dictionary built the way
+`ResourceDictionaryEmitter` builds one, and reports the values Avalonia actually ended
+up with — composite properties included, with the sides they were recomposed from.
+`--json` prints one stable document (`tokens`/`resources`/`control`, documented on
+`ProbeSettings`) for agents and scripts. It deliberately goes through the same public
+API the runtime and build-time paths use, so what it reports is what `generate`
+emits. The repo's `/probe` OpenCode command runs it against
+`Examples/Enx.Atomic.Avalonia.Example.Config`.
 
 **The MSBuild wiring (`build/Enx.Atomic.Avalonia.CodeGen.targets`).** A consuming
 project opts in by setting `EnxAtomicConfigProject` to the configuration project's
@@ -417,6 +458,10 @@ reference the assembly it generates into).
 - **Versioning**: [MinVer](https://github.com/adamralph/minver), referenced once in
   the root `Directory.Build.props` (`MinVerTagPrefix` = `v`), derives every project's
   `Version` from the nearest git tag — no project hand-maintains a version number.
+- **Dependencies**: Central Package Management — every `PackageReference` is
+  versionless and the root `Directory.Packages.props` holds the single version of
+  each package (MinVer included), so the shipped packages, examples and tests can't
+  drift onto different Avalonia versions.
 - **Publishing**: [NuGet Trusted Publishing](https://learn.microsoft.com/nuget/nuget-org/trusted-publishing)
   — the workflow requests a GitHub OIDC token (`permissions: id-token: write`) and
   exchanges it for a short-lived nuget.org API key via the `NuGet/login` action,

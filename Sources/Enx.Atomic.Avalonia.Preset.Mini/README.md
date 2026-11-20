@@ -6,6 +6,10 @@ utility-class token it registers — see the root
 [README.md](../../README.md)/[ARCHITECTURE.md](../../ARCHITECTURE.md) for how the engine itself
 resolves them.
 
+For how this compares to upstream, family by family (what's ported, partial, dropped
+and why, or still to do), see [PARITY.md](PARITY.md). It is test-backed: every example
+token listed for a ported or partial family must resolve.
+
 ## Usage
 
 ```csharp
