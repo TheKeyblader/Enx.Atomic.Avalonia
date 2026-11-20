@@ -150,6 +150,12 @@ internal sealed class GenerateCommand<TTheme> : Command<AtomicCliSettings>
         // declared in one file emitted after the base utility another file declares (Avalonia's equal-priority
         // cascade is insertion order — see StyleOrdering).
         var utils = new List<StringifiedUtil>(generator.Generate(tokens, new AtomicGenerator<TTheme>.Options()));
+
+        // A shortcut expanding to a token no rule matches is a configuration typo, not a build failure: the rest
+        // of the shortcut still applies, so report it like the missing-source warning above and keep going.
+        foreach (var diagnostic in generator.Diagnostics)
+            console.MarkupLineInterpolated($"[yellow]Enx.Atomic.Avalonia.CodeGen: {diagnostic}.[/]");
+
         utils.AddRange(StyleOrdering.Distinct(pendingUtils));
         var ordered = StyleOrdering.Sort(utils);
 

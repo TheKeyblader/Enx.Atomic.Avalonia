@@ -37,6 +37,13 @@ internal sealed record ProbeTokenReport
     [JsonPropertyName("baseToken")]
     public required string BaseToken { get; init; }
 
+    /// <summary>
+    /// The leaf utility tokens a shortcut base token expanded to (nested shortcuts already flattened), or
+    /// <see langword="null"/> when the base token isn't a shortcut.
+    /// </summary>
+    [JsonPropertyName("shortcut")]
+    public IReadOnlyList<string>? Shortcut { get; init; }
+
     [JsonPropertyName("matched")]
     public required bool Matched { get; init; }
 
@@ -110,6 +117,10 @@ internal sealed record ProbeSortKeyReport
 
     [JsonPropertyName("typeCount")]
     public required int TypeCount { get; init; }
+
+    /// <summary>The cascade layer: 0 = shortcut, 1 = plain utility — see <see cref="StyleLayer"/>.</summary>
+    [JsonPropertyName("layer")]
+    public required int Layer { get; init; }
 
     /// <summary>0 = unconditional, 1 = <c>max-*</c>, 2 = lower-bound breakpoint, 3 = unrecognized.</summary>
     [JsonPropertyName("containerGroup")]

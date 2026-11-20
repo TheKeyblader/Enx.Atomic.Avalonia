@@ -15,10 +15,20 @@ namespace Enx.Atomic.Avalonia;
 public class AtomicGenerator<TTheme>
     where TTheme : class
 {
+    /// <summary>
+    /// How many nested shortcuts an expansion may enter before it is treated as a cycle. UnoCSS's
+    /// <c>expandShortcut(..., depth = 5)</c> equivalent; a few levels cover realistic composition, and a
+    /// self-referencing shortcut must fail loudly rather than recurse forever.
+    /// </summary>
+    private const int MaxShortcutDepth = 5;
+
     /// <summary>The rules, variants, extractors, emitters and theme this generator resolves tokens against.</summary>
     public AtomicConfiguration<TTheme> Configuration { get; }
     private readonly HashSet<IRule> _activatedRules = [];
     private readonly Dictionary<string, StringifiedUtil[]> _cache = [];
+    private readonly Dictionary<string, string[]> _shortcutExpansions = [];
+    private readonly List<string> _diagnostics = [];
+    private readonly HashSet<string> _diagnosticSet = [];
     private readonly List<StringifiedUtil> _pendingUtils = [];
     private readonly Dictionary<string, StyleValue.Resource> _resolvedResources = [];
 
@@ -31,8 +41,19 @@ public class AtomicGenerator<TTheme>
     /// </summary>
     public IReadOnlyDictionary<string, StyleValue.Resource> ResolvedResources => _resolvedResources;
 
+    /// <summary>
+    /// Non-fatal problems found while resolving shortcuts — today only an expansion token no rule or shortcut
+    /// matched (a configuration typo). Deduplicated in first-seen order, so a token used across several sources
+    /// reports once. A build must not fail on these: the rest of the shortcut still applies, so <c>AtomicCli</c>
+    /// prints them as warnings rather than throwing.
+    /// </summary>
+    public IReadOnlyList<string> Diagnostics => _diagnostics;
+
     /// <summary>Creates a generator for the given configuration, assigning each rule its declaration-order index.</summary>
-    /// <exception cref="InvalidOperationException">A configured rule is neither <see cref="IStaticRule"/> nor <see cref="IDynamicRule{TTheme}"/>.</exception>
+    /// <exception cref="InvalidOperationException">
+    /// A configured rule is neither <see cref="IStaticRule"/> nor <see cref="IDynamicRule{TTheme}"/>, or a
+    /// configured shortcut is neither <see cref="IStaticShortcut"/> nor <see cref="IDynamicShortcut{TTheme}"/>.
+    /// </exception>
     public AtomicGenerator(AtomicConfiguration<TTheme> configuration)
     {
         Configuration = configuration;
@@ -52,6 +73,14 @@ public class AtomicGenerator<TTheme>
             var offending = Configuration.Rules.First(r => r is not (IStaticRule or IDynamicRule<TTheme>));
             throw new InvalidOperationException(
                 $"Configured rule '{offending.GetType().FullName}' is neither an IStaticRule nor an IDynamicRule<{typeof(TTheme).Name}>; every rule passed to AtomicConfiguration<{typeof(TTheme).Name}>.Rules must implement one of them."
+            );
+        }
+
+        if (!Configuration.Shortcuts.All(s => s is IStaticShortcut or IDynamicShortcut<TTheme>))
+        {
+            var offending = Configuration.Shortcuts.First(s => s is not (IStaticShortcut or IDynamicShortcut<TTheme>));
+            throw new InvalidOperationException(
+                $"Configured shortcut '{offending.GetType().FullName}' is neither an IStaticShortcut nor an IDynamicShortcut<{typeof(TTheme).Name}>; every shortcut passed to AtomicConfiguration<{typeof(TTheme).Name}>.Shortcuts must implement one of them."
             );
         }
     }
@@ -150,15 +179,19 @@ public class AtomicGenerator<TTheme>
 
     /// <summary>
     /// Resolves a single raw utility token into its final Avalonia styles, running pre-processors, variant
-    /// matching, rule resolution and stringification. Results are cached by raw token.
+    /// matching, shortcut expansion, rule resolution and stringification. Results are cached by raw token.
     /// </summary>
+    /// <remarks>
+    /// Shortcuts are tried before rules (see <see cref="IShortcut{TTheme}"/>): a base token that matches one is
+    /// expanded into further tokens, each resolved through the normal pipeline and re-keyed on the raw token the
+    /// user wrote, so the outer class (<c>hover:btn-red</c>) is what the final selectors target. The inner tokens
+    /// are never cached or emitted as standalone utilities.
+    /// </remarks>
     /// <param name="raw">The raw token, e.g. <c>"hover:bg-red-500"</c>.</param>
     /// <returns>The styles produced by the token, or an empty array if no rule matched.</returns>
     public StringifiedUtil[] ParseToken(string raw)
     {
-        var cacheKey = $"{raw}";
-
-        if (_cache.TryGetValue(cacheKey, out var value))
+        if (_cache.TryGetValue(raw, out var value))
             return value;
 
         var current = Configuration.PreProcessors.Aggregate(raw, (acc, p) => p.Process(acc) ?? acc);
@@ -166,15 +199,179 @@ public class AtomicGenerator<TTheme>
         var variantResults = MatchVariants(raw, current);
         var result = variantResults.SelectMany(HandleVariantResult);
 
-        return _cache[cacheKey] = [.. result];
+        return _cache[raw] = [.. result];
 
         StringifiedUtil[] HandleVariantResult(VariantMatchedResult<TTheme> matched)
         {
             var context = MakeContext(raw, matched);
 
+            var expansion = ExpandShortcut(context.CurrentSelector, context);
+            if (expansion is not null)
+                return ExpandShortcutToken(raw, matched, expansion);
+
             var parsed = ParseUtil(context.Match, context);
-            return [.. parsed.SelectMany(x => StringifyUtils(x, context))];
+            return [.. parsed.SelectMany(x => StringifyUtils(x, StyleLayer.Default))];
         }
+    }
+
+    /// <summary>
+    /// The leaf utility tokens the most recent <see cref="ParseToken"/> resolved for a shortcut token, e.g.
+    /// <c>btn-red</c> → <c>bg-red-500</c>, <c>px-4</c>; <see langword="null"/> when that token's base is not a
+    /// shortcut (or it wasn't parsed yet). Diagnostic only — mirrors <c>probe</c>'s need to show the expansion
+    /// without re-deriving it, and deliberately returns tokens rather than styles since the styles are already in
+    /// the parse result.
+    /// </summary>
+    /// <param name="raw">The raw token whose expansion to read.</param>
+    public IReadOnlyList<string>? GetShortcutExpansion(string raw)
+    {
+        _ = ParseToken(raw);
+        return _shortcutExpansions.TryGetValue(raw, out var expansion) ? expansion : null;
+    }
+
+    /// <summary>
+    /// Expands <paramref name="token"/> against the configured shortcuts, in declaration order: the first static
+    /// exact-name match or first dynamic regex match yielding a non-empty expansion wins.
+    /// </summary>
+    /// <param name="token">The variant-stripped base token, e.g. <c>btn-red</c>.</param>
+    /// <param name="context">The resolution context handed to a dynamic shortcut's matcher (for the theme).</param>
+    /// <returns>The expansion tokens, or <see langword="null"/> when no shortcut matched.</returns>
+    private IReadOnlyList<string>? ExpandShortcut(string token, RuleContext<TTheme> context)
+    {
+        foreach (var shortcut in Configuration.Shortcuts)
+        {
+            switch (shortcut)
+            {
+                case IStaticShortcut { Expansion.Count: > 0 } staticShortcut when staticShortcut.Name == token:
+                    return staticShortcut.Expansion;
+
+                case IDynamicShortcut<TTheme> dynamicShortcut:
+                {
+                    var match = dynamicShortcut.Regex.Match(token);
+                    if (!match.Success)
+                        continue;
+
+                    var expansion = dynamicShortcut.Match(match, context);
+                    if (expansion is { Count: > 0 })
+                        return expansion;
+
+                    // A dynamic shortcut whose matcher returned nothing is a miss: keep looking, exactly like a
+                    // dynamic rule that matches but yields no StyleValue.
+                    break;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Resolves a shortcut expansion into styles: one <see cref="StringifiedUtil"/> per inner utility (per
+    /// target-type group, as for a plain token), all selecting on the outer raw token and carrying the
+    /// <see cref="StyleLayer.Shortcuts"/> layer.
+    /// </summary>
+    /// <remarks>
+    /// Deliberately no merging of setters into one style: keeping each inner utility separate preserves its own
+    /// rule index/rank (so <c>p-2 px-4</c> inside a shortcut keeps uniform-before-axis on the composite side
+    /// properties) and avoids two setters for the same property in one <c>Style</c>. An inner token nothing
+    /// matches is a configuration typo: it is recorded in <see cref="Diagnostics"/> and skipped, never thrown, so
+    /// the rest of the shortcut still applies.
+    /// </remarks>
+    private StringifiedUtil[] ExpandShortcutToken(
+        string raw,
+        VariantMatchedResult<TTheme> matched,
+        IReadOnlyList<string> expansion
+    )
+    {
+        List<(string Token, VariantMatchedResult<TTheme> Matched, RuleContext<TTheme> Context)> leaves = [];
+        CollectShortcutLeaves(expansion, matched.Handlers, raw, prefix: "", depth: 0, [raw], leaves);
+
+        var uniqueLeaves = leaves.DistinctBy(leaf => leaf.Token, StringComparer.Ordinal).ToArray();
+        _shortcutExpansions[raw] = [.. uniqueLeaves.Select(leaf => leaf.Token)];
+
+        List<StringifiedUtil> result = [];
+        foreach (var leaf in uniqueLeaves)
+        {
+            var parsed = ParseUtil(leaf.Matched, leaf.Context);
+            if (parsed.Length == 0)
+            {
+                AddDiagnostic($"unmatched utility \"{leaf.Token}\" in shortcut \"{raw}\"");
+                continue;
+            }
+
+            result.AddRange(parsed.SelectMany(x => StringifyUtils(x, StyleLayer.Shortcuts)));
+        }
+
+        return [.. result];
+    }
+
+    /// <summary>
+    /// Walks an expansion, resolving nested shortcuts recursively while combining each level's variant handlers
+    /// with the parent's (inner handlers first, then outer), so <c>hover:nested</c> inside a shortcut works. Each
+    /// leaf keeps the outer raw token as its base class and the merged handlers as its
+    /// <see cref="ParsedUtil.VariantHandlers"/>; <see cref="ApplyVariants"/> then sorts the composed pipeline by
+    /// handler order.
+    /// </summary>
+    /// <param name="expansion">The tokens to resolve at this level.</param>
+    /// <param name="outerHandlers">The variant handlers accumulated by the enclosing tokens.</param>
+    /// <param name="raw">The raw token the user wrote — the base class every resulting style selects on.</param>
+    /// <param name="prefix">The variant text the enclosing levels contributed (<c>hover:</c> for <c>hover:inner</c>), prepended to each leaf's written form.</param>
+    /// <param name="depth">How many nested shortcuts were entered so far.</param>
+    /// <param name="chain">The shortcut tokens entered so far, for the cycle error message.</param>
+    /// <param name="leaves">The leaf tokens (as written, variants included) to resolve through rules, with their merged match/context.</param>
+    private void CollectShortcutLeaves(
+        IReadOnlyList<string> expansion,
+        VariantHandlerBase[] outerHandlers,
+        string raw,
+        string prefix,
+        int depth,
+        List<string> chain,
+        List<(string Token, VariantMatchedResult<TTheme> Matched, RuleContext<TTheme> Context)> leaves
+    )
+    {
+        foreach (var token in expansion)
+        {
+            // A shortcut token may itself carry variants (hover:inner, sm:...), which must wrap the outer ones.
+            foreach (var innerMatched in MatchVariants(token))
+            {
+                var handlers = new VariantHandlerBase[innerMatched.Handlers.Length + outerHandlers.Length];
+                innerMatched.Handlers.CopyTo(handlers, 0);
+                outerHandlers.CopyTo(handlers, innerMatched.Handlers.Length);
+
+                var merged = innerMatched with { Raw = raw, Handlers = handlers };
+                var context = MakeContext(raw, merged);
+
+                // The leaf's identity is the token as written with its variants (hover:opacity-50), not the bare
+                // base token, so two leaves differing only by variant both survive deduplication — UnoCSS's
+                // uniq over the rewritten strings. The variant prefix is whatever precedes the base token.
+                var matcherIndex = token.LastIndexOf(merged.Current, StringComparison.Ordinal);
+                var variantPrefix = matcherIndex < 0 ? "" : token[..matcherIndex];
+                var written = prefix + (matcherIndex < 0 ? token : variantPrefix + merged.Current);
+
+                var nested = ExpandShortcut(merged.Current, context);
+                if (nested is null)
+                {
+                    leaves.Add((written, merged, context));
+                    continue;
+                }
+
+                if (depth >= MaxShortcutDepth)
+                    throw new InvalidOperationException(
+                        $"Shortcut expansion exceeded {MaxShortcutDepth} nested shortcuts while resolving '{raw}': "
+                            + $"{string.Join(" -> ", chain.Append(merged.Current))}. A shortcut probably references itself, directly or through another shortcut."
+                    );
+
+                chain.Add(merged.Current);
+                CollectShortcutLeaves(nested, handlers, raw, prefix + variantPrefix, depth + 1, chain, leaves);
+                chain.RemoveAt(chain.Count - 1);
+            }
+        }
+    }
+
+    /// <summary>Records a non-fatal resolution problem once, preserving first-seen order — see <see cref="Diagnostics"/>.</summary>
+    private void AddDiagnostic(string message)
+    {
+        if (_diagnosticSet.Add(message))
+            _diagnostics.Add(message);
     }
 
     /// <summary>Strips and records every configured variant that matches <paramref name="raw"/>, starting from a fresh match state.</summary>
@@ -339,7 +536,7 @@ public class AtomicGenerator<TTheme>
     }
 
     /// <summary>Applies variant handlers to a resolved util and converts each resulting <see cref="Internal.UtilObject"/> into a <see cref="StringifiedUtil"/>.</summary>
-    private StringifiedUtil[] StringifyUtils(ParsedUtil parsed, RuleContext<TTheme> context)
+    private StringifiedUtil[] StringifyUtils(ParsedUtil parsed, int layer)
     {
         var utilities = ApplyVariants(parsed);
         List<StringifiedUtil> result = [];
@@ -353,6 +550,7 @@ public class AtomicGenerator<TTheme>
                     Body = [.. util.Entries.Select(x => new Setter(x.UntypedProperty, x.UntypedValue))],
                     Index = parsed.Index,
                     Rank = parsed.Rank,
+                    Layer = layer,
                     Metadata = parsed.Metadata,
                     ContainerQuery = util.ContainerQuery,
                     ContainerQueryData = util.ContainerQueryData,

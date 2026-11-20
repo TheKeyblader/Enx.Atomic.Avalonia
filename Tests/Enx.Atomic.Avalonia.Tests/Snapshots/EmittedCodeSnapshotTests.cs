@@ -68,6 +68,35 @@ public class EmittedCodeSnapshotTests
         await Verify(resources, "cs");
     }
 
+    /// <summary>
+    /// A shortcut token set, kept separate from <see cref="Styles"/> so the every-family source stays
+    /// unambiguous: the written shortcut class is what every style selects on, the inner utilities keep their own
+    /// order (<c>p-2</c> before <c>px-4</c> on the composite padding sides), and a plain utility of equal
+    /// specificity is emitted after them (the shortcut layer).
+    /// </summary>
+    [AvaloniaFact]
+    public async Task ShortcutStyles()
+    {
+        var (configuration, _) = TestHelpers.CreateMiniGenerator();
+        configuration.Shortcuts.Add(Shortcut.Static("card", "p-2 px-4"));
+        configuration.Shortcuts.Add(Shortcut.Static("done", "line-through hover:opacity-50"));
+        var generator = new AtomicGenerator<MiniTheme>(configuration);
+
+        var styles = EmitShortcutStyles(generator);
+
+        Assert.Equal(styles, EmitShortcutStyles(generator));
+        await Verify(styles, "cs");
+    }
+
+    private static string EmitShortcutStyles(AtomicGenerator<MiniTheme> generator)
+    {
+        var utils = generator.Generate(
+            "card done opacity-100",
+            new AtomicGenerator<MiniTheme>.Options { Id = "shortcuts.axaml" }
+        );
+        return StyleEmitter.Emit(utils, "Enx.Atomic.Avalonia.Tests.Snapshots", "AtomicStyles", "top-level");
+    }
+
     private static string EmitStyles(AtomicGenerator<MiniTheme> generator)
     {
         var utils = generator.Generate(Source, new AtomicGenerator<MiniTheme>.Options());
