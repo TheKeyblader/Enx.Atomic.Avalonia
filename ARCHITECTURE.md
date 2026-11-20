@@ -15,6 +15,7 @@ adapted from it to Avalonia properties and selectors instead of CSS.
 | `Sandbox` | An Avalonia console app used as a manual test bed for the engine and the presets. |
 | `Examples/Enx.Atomic.Avalonia.Example.Config` | A minimal configuration project — the pattern a consumer's own config project follows. |
 | `Examples/Enx.Atomic.Avalonia.Example.App` | A minimal Avalonia app wired to build-time codegen via the Config project above. |
+| `Examples/Enx.Atomic.Avalonia.Example.TodoApp` | A small but complete app (a todo list) styled almost entirely with utility classes, conditional `Classes.name="{Binding ...}"` classes included — same wiring, same Config project. |
 | `Tests/Enx.Atomic.Avalonia.Tests` | The automated test suite (xUnit v3). |
 
 ## How a token becomes a style
@@ -22,7 +23,8 @@ adapted from it to Avalonia properties and selectors instead of CSS.
 A string like `hover:bg-red-500` goes through four steps:
 
 1. **Extraction** — an `Extractor` scans source text and pulls out candidate tokens
-   (e.g. every word inside `Classes="..."`).
+   (e.g. every word inside `Classes="..."`, or the `line-through` of a conditional
+   `Classes.line-through="{Binding IsDone}"`).
 2. **Variant matching** — a `VariantBase<TTheme>` strips a recognized prefix/suffix
    (`hover:`) and remembers how it should transform the final selector or container
    query. This repeats until no variant matches, which is what makes chaining
@@ -88,6 +90,19 @@ A string like `hover:bg-red-500` goes through four steps:
   `AtomicGenerator.AddUtil` as a side effect; `PendingUtils` exposes what the most
   recent `ApplyTransformers` call registered, and `Generate` folds those utilities into
   its own output.
+- **`Extractor`** (`Extractors/`) — pulls candidate tokens out of a source's text; a
+  candidate no rule matches is simply dropped downstream, so extractors over-collect
+  rather than parse. Two run by default. `SplitExtractor` splits on whitespace, quotes,
+  `;` and `{}`, which covers `Classes="..."` and any quoted string in code-behind
+  (`Classes.Set("dark:underline", v)`). It deliberately doesn't split on `.` or `=`
+  (`p-0.5` would break), so Avalonia's conditional class syntax,
+  `Classes.line-through="{Binding IsDone}"`, reaches it as one unmatchable candidate —
+  `ClassesAttributeExtractor` covers that form, capturing the name after `Classes.`,
+  which is exactly the class the XAML compiler toggles (`Classes.Set(name, value)`).
+  That name is an XML attribute name, so it can't carry a variant (`:` is a namespace
+  prefix), an arbitrary `[...]` value or a `/`; a name containing `.` isn't matched.
+  Those cases go through code-behind instead. A configuration replacing `Extractors`
+  should keep both.
 - **`AtomicConfiguration<TTheme>`** — assembles `Transformers`, `PreProcessors`,
   `Rules`, `Variants`, `Extractors`, and the `TTheme` instance.
 - **`AtomicGenerator<TTheme>`** — the engine itself. `Generate(...)` runs the full

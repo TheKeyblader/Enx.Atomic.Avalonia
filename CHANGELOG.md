@@ -7,6 +7,21 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- `ClassesAttributeExtractor`, now in the default `AtomicConfiguration.Extractors` alongside
+  `SplitExtractor`: a conditional class, `Classes.line-through="{Binding IsDone}"`, now gets its
+  style generated. Before, `SplitExtractor` saw `Classes.line-through=` as one unmatchable
+  candidate and the class silently had no style. The class name is an XML attribute name, so it
+  can't carry a variant, an arbitrary `[...]` value or a `/` (and a name containing `.` isn't
+  matched) — toggle those from code-behind (`Classes.Set("dark:line-through", v)`), whose quoted
+  string `SplitExtractor` already picks up. A configuration that replaces `Extractors` must add it
+  back to get this.
+- `Examples/Enx.Atomic.Avalonia.Example.TodoApp`: a small todo app (add, toggle, delete, filter,
+  clear completed) styled almost entirely with utility classes — `dark:`, `hover:`, `focus:`,
+  `checked:` and `disabled:` variants, and conditional `Classes.line-through`/`Classes.opacity-45`
+  for completed items. It reuses the existing `Example.Config` project.
+
 ## [0.0.6] - 2026-11-20
 
 ### Added

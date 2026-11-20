@@ -26,6 +26,12 @@ want part of it — see `Extensions/ThemeBuilderExtensions.cs`.
 <Button Classes="flex-row p-4 gap-2 rounded-md bg-blue-500 hover:bg-blue-600 sm:flex-col" />
 ```
 
+A token also works as a conditional class toggled by a binding —
+`<TextBlock Classes.line-through="{Binding IsDone}" Classes.opacity-45="{Binding IsDone}" />` —
+as long as it's a plain token: the part after `Classes.` is an XML attribute name, so no
+variant (`hover:`, `dark:`, ...), no arbitrary `[...]` value, no `/` and no `.`. Toggle those
+from code-behind instead (`Classes.Set("dark:line-through", isDone)`).
+
 ## Variants
 
 Prefixed onto a token with `:`. Chainable — `hover:focus:underline` applies both.

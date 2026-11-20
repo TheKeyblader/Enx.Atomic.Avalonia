@@ -14,6 +14,9 @@ hand-written XAML `Style`s.
 
 ```xml
 <Button Classes="flex-row p-4 rounded-md bg-blue-500 hover:bg-blue-600" Content="Click me" />
+
+<!-- A class toggled by a binding gets its style too -->
+<TextBlock Classes="truncate" Classes.line-through="{Binding IsDone}" Text="{Binding Title}" />
 ```
 
 See [ARCHITECTURE.md](ARCHITECTURE.md) for how the engine actually works — rules,
@@ -27,7 +30,7 @@ variants, source transformers, the Mini preset, and build-time code generation.
 | `Sources/Enx.Atomic.Avalonia.Preset.Mini` | A concrete rule/variant set, inspired by `@unocss/preset-mini` — see its [README](Sources/Enx.Atomic.Avalonia.Preset.Mini/README.md) for the full utility-class reference. |
 | `Sources/Enx.Atomic.Avalonia.CodeGen` | Build-time C# code generation: emitter, CLI, and MSBuild wiring. |
 | `Sandbox` | An Avalonia console app used as a manual test bed for the engine and the presets. |
-| `Examples/` | A minimal end-to-end example of the build-time code generation pipeline. |
+| `Examples/` | End-to-end examples of the build-time code generation pipeline: a shared config project, a minimal app, and a small todo app styled almost entirely with utility classes. |
 | `Tests/Enx.Atomic.Avalonia.Tests` | The automated test suite (xUnit v3). |
 
 ## Getting started
