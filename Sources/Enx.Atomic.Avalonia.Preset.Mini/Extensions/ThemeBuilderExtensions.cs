@@ -32,17 +32,6 @@ public static class ThemeBuilderExtensions
             configuration.Variants.Add(variant);
     }
 
-    /// <summary>Adds <paramref name="transformer"/> to <paramref name="configuration"/> unless a transformer of the same type is already registered — see <see cref="AddRuleOnce{TTheme}"/>.</summary>
-    private static void AddTransformerOnce<TTheme>(
-        this AtomicConfiguration<TTheme> configuration,
-        ISourceTransformer<TTheme> transformer
-    )
-        where TTheme : class
-    {
-        if (configuration.Transformers.All(t => t.GetType() != transformer.GetType()))
-            configuration.Transformers.Add(transformer);
-    }
-
     /// <summary>
     /// Adds <paramref name="rule"/> to <paramref name="configuration"/> unless a static rule with the same
     /// <see cref="IStaticRule.Name"/> is already registered. Unlike the dynamic rules, every <c>Static/</c> rule
@@ -231,23 +220,7 @@ public static class ThemeBuilderExtensions
         return builder;
     }
 
-    /// <summary>
-    /// Registers <see cref="GhostPropertyCombiner{TTheme}"/> onto <see cref="AtomicConfiguration{TTheme}.Transformers"/>.
-    /// Without it, the ghost-property branches of <c>PaddingRule</c>/<c>RoundedRule</c>/<c>BorderWidthRule</c>
-    /// (e.g. <c>pl-4</c>) never resolve to anything real. Margin no longer needs it — <c>MarginRule</c> writes
-    /// the <c>MarginSides</c> composite host instead. Not tied to any theme part.
-    /// </summary>
-    public static ThemeBuilder<TTheme> AddGhostPropertyCombiner<TTheme>(
-        this ThemeBuilder<TTheme> builder,
-        AtomicConfiguration<TTheme> configuration
-    )
-        where TTheme : class, new()
-    {
-        configuration.AddTransformerOnce(new GhostPropertyCombiner<TTheme>());
-        return builder;
-    }
-
-    /// <summary>Seeds every part <see cref="MiniTheme"/> implements with its <see cref="DefaultTheme"/> scale, and registers every rule/variant/transformer depending on it into <paramref name="configuration"/>.</summary>
+    /// <summary>Seeds every part <see cref="MiniTheme"/> implements with its <see cref="DefaultTheme"/> scale, and registers every rule/variant depending on it into <paramref name="configuration"/>.</summary>
     public static ThemeBuilder<MiniTheme> AddMiniTheme(
         this ThemeBuilder<MiniTheme> builder,
         AtomicConfiguration<MiniTheme> configuration
@@ -264,6 +237,5 @@ public static class ThemeBuilderExtensions
             .AddPseudoClassVariants(configuration)
             .AddDarkVariant(configuration)
             .AddGridRules(configuration)
-            .AddGhostPropertyCombiner(configuration)
             .AddRemToPxFactor();
 }

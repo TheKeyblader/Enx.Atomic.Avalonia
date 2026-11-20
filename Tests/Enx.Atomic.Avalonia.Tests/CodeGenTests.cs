@@ -16,9 +16,11 @@ namespace Enx.Atomic.Avalonia.Tests;
 /// fine — the mismatch only surfaces as a runtime cast failure once Avalonia tries to apply the boxed value.
 /// Covers a mix deliberately chosen to exercise most of the emitter — a single-owner static rule, a
 /// multi-owner one (grouping), a color/brush value, a null value (<c>no-underline</c>), a pseudo-class
-/// variant (selector chaining), a breakpoint variant (container query), a composite host's embedded copy
-/// (<c>ml-1</c>/<c>mr-2</c> now write <c>MarginSides</c>' side attached properties, so the generated file
-/// must also embed that host and its recomposition helper),
+/// variant (selector chaining), a breakpoint variant (container query), the composite side hosts
+/// (<c>ml-1</c>/<c>mr-2</c>, <c>p-2</c>, <c>border-2</c>/<c>border-t-4</c>,
+/// <c>rounded-md</c>/<c>rounded-tl-lg</c> write <c>MarginSides</c>/<c>PaddingSides</c>/
+/// <c>BorderThicknessSides</c>/<c>CornerRadiusSides</c>' side attached properties, so the generated file must
+/// also embed those hosts and their shared recomposition helper),
 /// and a whole-number <c>double</c>-valued token (<c>max-w-md</c> — the exact int/double boxing bug above), and
 /// a <c>PropertyEquals</c> selector node with an explicit declaring type (<c>dark:bg-red-500</c> — the
 /// <c>ThemeVariantScope</c>/<c>AddOwner</c> pitfall documented on <see cref="Enx.Atomic.Avalonia.StyleValue.TargetType"/>),
@@ -34,18 +36,25 @@ public class CodeGenTests
         var (_, generator) = TestHelpers.CreateMiniGenerator();
 
         var source =
-            "Classes=\"ml-1 mr-2 hidden flex-row cursor-pointer no-underline hover:bg-red-500 sm:hidden max-w-md dark:bg-red-500 grid-cols-3 col-span-2 bg-[#123456] w-[123px]\"";
+            "Classes=\"ml-1 mr-2 p-2 border-2 border-t-4 rounded-md rounded-tl-lg hidden flex-row cursor-pointer no-underline hover:bg-red-500 sm:hidden max-w-md dark:bg-red-500 grid-cols-3 col-span-2 bg-[#123456] w-[123px]\"";
 
         var utils = generator.Generate(source, new AtomicGenerator<MiniTheme>.Options { Id = "test.axaml" });
         Assert.NotEmpty(utils);
 
         var emitted = StyleEmitter.Emit(utils, "GeneratedStyles", "AtomicStyles");
 
-        // The margin utilities write an embeddable composite host, so the file must carry its own copy — and
-        // the two tokens must stay independent styles (the old ghost combiner merged them into one compound
-        // `.ml-1.mr-2` style writing a whole Thickness).
+        // Each family's tokens write an embeddable composite host, so the file must carry one copy of each host
+        // (and one shared helper) — and the tokens must stay independent styles (the old ghost combiner merged a
+        // pair into one compound `.ml-1.mr-2` style writing a whole Thickness).
         Assert.Contains("file static class MarginSides", emitted);
+        Assert.Contains("file static class PaddingSides", emitted);
+        Assert.Contains("file static class BorderThicknessSides", emitted);
+        Assert.Contains("file static class CornerRadiusSides", emitted);
+        Assert.Equal(1, CountOccurrences(emitted, "file static class CompositeSideRecomposition"));
         Assert.Contains("MarginSides.MarginLeftProperty", emitted);
+        Assert.Contains("PaddingSides.PaddingTopProperty", emitted);
+        Assert.Contains("BorderThicknessSides.BorderThicknessTopProperty", emitted);
+        Assert.Contains("CornerRadiusSides.CornerRadiusTopLeftProperty", emitted);
         Assert.DoesNotContain(".Class(\"ml-1\").Class(\"mr-2\")", emitted);
 
         var (assembly, errors) = Compile(emitted);
@@ -74,6 +83,18 @@ public class CodeGenTests
         }
 
         Assert.True(checkedAnySetter, "No Setter was found to check — the test source stopped exercising the emitter.");
+    }
+
+    private static int CountOccurrences(string haystack, string needle)
+    {
+        var count = 0;
+        for (var index = haystack.IndexOf(needle, StringComparison.Ordinal); index >= 0; )
+        {
+            count++;
+            index = haystack.IndexOf(needle, index + needle.Length, StringComparison.Ordinal);
+        }
+
+        return count;
     }
 
     private static IEnumerable<Setter> EnumerateSetters(IEnumerable<IStyle> styles)

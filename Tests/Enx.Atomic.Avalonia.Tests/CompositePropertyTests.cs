@@ -116,7 +116,6 @@ public class CompositePropertyTests
         // (non-generated) host's EmbeddableSource string. (The file header does name the generator, so the
         // assertion targets the host namespaces rather than the product name.)
         Assert.DoesNotContain("Enx.Atomic.Avalonia.Composites", source);
-        Assert.DoesNotContain("Enx.Atomic.Avalonia.SpecialProperties", source);
         Assert.DoesNotContain("EmbeddableSource", source);
         Assert.Contains("#nullable enable", source);
     }

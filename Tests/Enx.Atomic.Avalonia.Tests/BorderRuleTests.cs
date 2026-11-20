@@ -1,46 +1,53 @@
 using Avalonia;
 using Avalonia.Controls;
+using Enx.Atomic.Avalonia.Composites;
 
 namespace Enx.Atomic.Avalonia.Tests;
 
 public class BorderRuleTests
 {
     [AvaloniaFact]
-    public void BorderWidth_UniformVariant_SetsTheRealBorderThicknessProperty()
+    public void BorderWidth_UniformVariant_WritesAllFourSides()
     {
         var (_, generator) = TestHelpers.CreateMiniGenerator();
 
-        var results = generator.ParseToken("border-2");
+        var util = Assert.Single(generator.ParseToken("border-2"));
 
-        var util = Assert.Single(results);
-        var setter = Assert.Single(util.Body);
-        Assert.Equal(Border.BorderThicknessProperty, setter.Property);
-        Assert.Equal(new Thickness(2), setter.Value);
+        // Uniform border width is the host's four sides, not Border.BorderThicknessProperty: writing the real
+        // property from a class-selected style would replace any other border-width utility's whole Thickness.
+        Assert.Equal(4, util.Body.Length);
+        Assert.All(util.Body, setter => Assert.Equal(2d, Assert.IsType<double>(setter.Value)));
+        Assert.Equal(
+            [
+                BorderThicknessSides.BorderThicknessLeftProperty,
+                BorderThicknessSides.BorderThicknessTopProperty,
+                BorderThicknessSides.BorderThicknessRightProperty,
+                BorderThicknessSides.BorderThicknessBottomProperty,
+            ],
+            util.Body.Select(setter => setter.Property)
+        );
     }
 
     public static TheoryData<string, AvaloniaProperty> BorderWidthSideCases =>
         new()
         {
-            { "border-t-2", SpecialProperties.BorderThicknessTopProperty },
-            { "border-r-2", SpecialProperties.BorderThicknessRightProperty },
-            { "border-b-2", SpecialProperties.BorderThicknessBottomProperty },
-            { "border-l-2", SpecialProperties.BorderThicknessLeftProperty },
+            { "border-t-2", BorderThicknessSides.BorderThicknessTopProperty },
+            { "border-r-2", BorderThicknessSides.BorderThicknessRightProperty },
+            { "border-b-2", BorderThicknessSides.BorderThicknessBottomProperty },
+            { "border-l-2", BorderThicknessSides.BorderThicknessLeftProperty },
         };
 
     [AvaloniaTheory]
     [MemberData(nameof(BorderWidthSideCases))]
-    public void BorderWidthSide_TargetsGhostPropertyNotTheRealProperty(string token, AvaloniaProperty property)
+    public void BorderWidthSide_TargetsItsOwnSideProperty(string token, AvaloniaProperty property)
     {
-        // Like the per-side margin/padding branches, this doesn't zero the other sides on the real
-        // property — it targets a ghost property, which the combiner assembles into a real value.
         var (_, generator) = TestHelpers.CreateMiniGenerator();
 
-        var results = generator.ParseToken(token);
+        var util = Assert.Single(generator.ParseToken(token));
 
-        var util = Assert.Single(results);
         var setter = Assert.Single(util.Body);
         Assert.Equal(property, setter.Property);
-        Assert.Equal(2f, setter.Value);
+        Assert.Equal(2d, Assert.IsType<double>(setter.Value));
     }
 
     [AvaloniaFact]
@@ -48,11 +55,11 @@ public class BorderRuleTests
     {
         var (_, generator) = TestHelpers.CreateMiniGenerator();
 
-        var results = generator.ParseToken("border-t");
+        var util = Assert.Single(generator.ParseToken("border-t"));
 
-        var util = Assert.Single(results);
         var setter = Assert.Single(util.Body);
-        Assert.Equal(SpecialProperties.BorderThicknessTopProperty, setter.Property);
+        Assert.Equal(BorderThicknessSides.BorderThicknessTopProperty, setter.Property);
+        Assert.Equal(1d, Assert.IsType<double>(setter.Value));
     }
 
     [AvaloniaFact]

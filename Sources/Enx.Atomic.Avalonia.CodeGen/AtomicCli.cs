@@ -85,7 +85,8 @@ internal sealed class GenerateCommand<TTheme> : Command<AtomicCliSettings>
             );
 
         var generator = new AtomicGenerator<TTheme>(configuration);
-        var utils = new List<StringifiedUtil>();
+        var tokens = new HashSet<string>();
+        var pendingUtils = new List<StringifiedUtil>();
 
         foreach (var source in settings.Sources)
         {
@@ -97,14 +98,22 @@ internal sealed class GenerateCommand<TTheme> : Command<AtomicCliSettings>
                 continue;
             }
 
+            // Transformers still run per file (Id = the file path, so an IdFilter can scope one to a given
+            // source), but extraction accumulates into one shared token set: resolving per file and
+            // concatenating emitted a token used by two files twice. A transformer's AddUtil output has no
+            // token to key on, so it is collected per file and deduplicated structurally at the end.
             var content = File.ReadAllText(source);
-            utils.AddRange(generator.Generate(content, new AtomicGenerator<TTheme>.Options { Id = source }));
+            var transformed = generator.ApplyTransformers(content, source);
+            generator.ApplyExtractors(transformed, source, tokens);
+            pendingUtils.AddRange(generator.PendingUtils);
         }
 
-        // Sort the concatenation, not each file's slice: a variant declared in one file must still be emitted after
-        // the base utility another file declares (Avalonia's equal-priority cascade is insertion order — see
-        // StyleOrdering). Per-file sorting is what generator.Generate already does; the global pass is
-        // what makes the emitted class correct across the whole source set.
+        // One resolution pass over the union of every source's tokens, then the transformer-registered styles,
+        // deduplicated and sorted together. Sorting the concatenation — not each file's slice — keeps a variant
+        // declared in one file emitted after the base utility another file declares (Avalonia's equal-priority
+        // cascade is insertion order — see StyleOrdering).
+        var utils = new List<StringifiedUtil>(generator.Generate(tokens, new AtomicGenerator<TTheme>.Options()));
+        utils.AddRange(StyleOrdering.Distinct(pendingUtils));
         var ordered = StyleOrdering.Sort(utils);
 
         var emitted = StyleEmitter.Emit(ordered, settings.Namespace, settings.ClassName, settings.ContainerName);

@@ -2,9 +2,9 @@ namespace Enx.Atomic.Avalonia;
 
 /// <summary>
 /// Marks a class declaring one or more "ghost" <see cref="AvaloniaProperty"/>s that can't be resolved away
-/// into a pre-existing Avalonia property before emission, unlike <see cref="SpecialProperties"/>/<see cref="GhostPropertyCombiner{TTheme}"/>
-/// — the class itself has to exist as real compiled code wherever a <see cref="Avalonia.Styling.Setter"/>
-/// targeting one of its properties is applied (e.g. Preset.Mini's <c>GridDefinitions</c>, whose class handler
+/// into a pre-existing Avalonia property before emission: the class itself has to exist as real compiled code
+/// wherever a <see cref="Avalonia.Styling.Setter"/> targeting one of its properties is applied (e.g. the four
+/// composite side hosts under <c>Composites/</c>, or Preset.Mini's <c>GridDefinitions</c>, whose class handler
 /// is the only thing standing in for a property Avalonia itself doesn't expose).
 ///
 /// For the runtime resolution path that's automatic — the consumer already references whatever assembly

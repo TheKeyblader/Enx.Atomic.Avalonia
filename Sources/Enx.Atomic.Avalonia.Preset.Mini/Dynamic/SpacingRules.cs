@@ -2,6 +2,7 @@ using System.Collections.Immutable;
 using System.Text.RegularExpressions;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Layout;
 using Enx.Atomic.Avalonia.Composites;
@@ -88,11 +89,29 @@ public partial class MarginRule<TTheme> : IOrderRankedDynamicRule<TTheme>
 
 /// <summary>
 /// Dynamic rule setting padding from <see cref="ISpacingPart.Spacing"/> (<c>p-*</c>, <c>px-*</c>, <c>py-*</c>,
-/// <c>pt-*</c>, <c>pr-*</c>, <c>pb-*</c>, <c>pl-*</c>). The uniform variant (<c>p-*</c>, no side) sets
-/// <see cref="Decorator.PaddingProperty"/> directly; every other variant targets <see cref="SpecialProperties"/>
-/// ghost properties instead of zeroing the sides it doesn't cover — see <see cref="GhostPropertyCombiner{TTheme}"/>.
+/// <c>pt-*</c>, <c>pr-*</c>, <c>pb-*</c>, <c>pl-*</c>).
+///
+/// <para>
+/// Every direction — including the uniform one — writes only <see cref="PaddingSides"/>' side attached properties
+/// (<c>double</c>, <c>NaN</c> when unset); the host's class handler recomposes
+/// <see cref="Decorator.PaddingProperty"/> from them. A uniform <c>p-*</c> writes all four sides rather than the
+/// real property, so <c>p-4 px-2</c> composes instead of replacing the whole <see cref="Thickness"/>.
+/// </para>
+/// <para>
+/// Targeting <c>Control</c> explicitly is what fixes the old <c>Is&lt;Decorator&gt;</c> selector: Padding is
+/// <see cref="Decorator.PaddingProperty"/> <c>AddOwner</c>'ed by <see cref="TemplatedControl"/>,
+/// <see cref="TextBlock"/> and <see cref="ContentPresenter"/>, so a token scoped to <see cref="Decorator"/> alone
+/// never reached a <see cref="Button"/> (a <see cref="TemplatedControl"/>). <see cref="Control"/> is the widest
+/// honest target; the handler's <c>IsRegistered</c> guard is what keeps it a no-op on a control such as
+/// <see cref="Canvas"/> that never registers Padding at all.
+/// </para>
+/// <para>
+/// The uniform/axis/side directions are one regex rather than UnoCSS's three rule entries, so
+/// <see cref="GetOrderRank"/> reports their relative order explicitly: <c>p-4 px-2</c> must let the axis win and
+/// <c>px-2 pl-1</c> the side, whatever the source order.
+/// </para>
 /// </summary>
-public partial class PaddingRule<TTheme> : IDynamicRule<TTheme>
+public partial class PaddingRule<TTheme> : IOrderRankedDynamicRule<TTheme>
     where TTheme : class, ISpacingPart, IRemToPxPart
 {
     public RuleMetadata Metadata { get; init; } = new();
@@ -103,25 +122,44 @@ public partial class PaddingRule<TTheme> : IDynamicRule<TTheme>
         if (!context.Theme.Spacing.TryResolve(match.Groups["value"].Value, context.Theme.RemToPxFactor, out var value))
             return [];
 
+        // The side properties are AttachedProperty<double>; the spacing scale is float, so convert explicitly —
+        // a boxed float fails the setter's type check once Avalonia applies it.
+        var pixels = (double)value;
+
         return match.Groups["side"].Value switch
         {
             "x" =>
             [
-                SpecialProperties.PaddingLeftProperty.ToLiteral(value),
-                SpecialProperties.PaddingRightProperty.ToLiteral(value),
+                PaddingSides.PaddingLeftProperty.ToLiteral(pixels, typeof(Control)),
+                PaddingSides.PaddingRightProperty.ToLiteral(pixels, typeof(Control)),
             ],
             "y" =>
             [
-                SpecialProperties.PaddingTopProperty.ToLiteral(value),
-                SpecialProperties.PaddingBottomProperty.ToLiteral(value),
+                PaddingSides.PaddingTopProperty.ToLiteral(pixels, typeof(Control)),
+                PaddingSides.PaddingBottomProperty.ToLiteral(pixels, typeof(Control)),
             ],
-            "t" => [SpecialProperties.PaddingTopProperty.ToLiteral(value)],
-            "r" => [SpecialProperties.PaddingRightProperty.ToLiteral(value)],
-            "b" => [SpecialProperties.PaddingBottomProperty.ToLiteral(value)],
-            "l" => [SpecialProperties.PaddingLeftProperty.ToLiteral(value)],
-            _ => [Decorator.PaddingProperty.ToLiteral(new Thickness(value))],
+            "t" => [PaddingSides.PaddingTopProperty.ToLiteral(pixels, typeof(Control))],
+            "r" => [PaddingSides.PaddingRightProperty.ToLiteral(pixels, typeof(Control))],
+            "b" => [PaddingSides.PaddingBottomProperty.ToLiteral(pixels, typeof(Control))],
+            "l" => [PaddingSides.PaddingLeftProperty.ToLiteral(pixels, typeof(Control))],
+            _ =>
+            [
+                PaddingSides.PaddingLeftProperty.ToLiteral(pixels, typeof(Control)),
+                PaddingSides.PaddingTopProperty.ToLiteral(pixels, typeof(Control)),
+                PaddingSides.PaddingRightProperty.ToLiteral(pixels, typeof(Control)),
+                PaddingSides.PaddingBottomProperty.ToLiteral(pixels, typeof(Control)),
+            ],
         };
     }
+
+    /// <summary>Uniform beats nothing (rank 0), an axis overrides the uniform sides it covers (1), a single side overrides its axis (2).</summary>
+    public int GetOrderRank(Match match) =>
+        match.Groups["side"].Value switch
+        {
+            "" => 0,
+            "x" or "y" => 1,
+            _ => 2,
+        };
 
     [GeneratedRegex("^p(?<side>[xytrbl])?-(?<value>.+)$")]
     private static partial Regex CompiledRegex();

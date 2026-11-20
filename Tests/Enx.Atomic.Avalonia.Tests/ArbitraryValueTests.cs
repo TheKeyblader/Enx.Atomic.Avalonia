@@ -1,4 +1,3 @@
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Documents;
 using Avalonia.Layout;
@@ -81,16 +80,14 @@ public class ArbitraryValueTests
     }
 
     [AvaloniaFact]
-    public void ArbitraryRadius_SetsCornerRadius()
+    public void ArbitraryRadius_WritesAllFourCorners()
     {
         var (_, generator) = TestHelpers.CreateMiniGenerator();
 
-        var results = generator.ParseToken("rounded-[6px]");
+        var util = Assert.Single(generator.ParseToken("rounded-[6px]"));
 
-        var util = Assert.Single(results);
-        var setter = Assert.Single(util.Body);
-        Assert.Equal(Border.CornerRadiusProperty, setter.Property);
-        Assert.Equal(new CornerRadius(6), setter.Value);
+        Assert.Equal(4, util.Body.Length);
+        Assert.All(util.Body, setter => Assert.Equal(6d, Assert.IsType<double>(setter.Value)));
     }
 
     [AvaloniaFact]
@@ -98,12 +95,10 @@ public class ArbitraryValueTests
     {
         var (_, generator) = TestHelpers.CreateMiniGenerator();
 
-        var results = generator.ParseToken("border-[3px]");
+        var util = Assert.Single(generator.ParseToken("border-[3px]"));
 
-        var util = Assert.Single(results);
-        var setter = Assert.Single(util.Body);
-        Assert.Equal(Border.BorderThicknessProperty, setter.Property);
-        Assert.Equal(new Thickness(3), setter.Value);
+        Assert.Equal(4, util.Body.Length);
+        Assert.All(util.Body, setter => Assert.Equal(3d, Assert.IsType<double>(setter.Value)));
     }
 
     [AvaloniaFact]
@@ -136,10 +131,9 @@ public class ArbitraryValueTests
     {
         var (_, generator) = TestHelpers.CreateMiniGenerator();
 
-        var results = generator.ParseToken("p-4");
+        var util = Assert.Single(generator.ParseToken("p-4"));
 
-        var util = Assert.Single(results);
-        var setter = Assert.Single(util.Body);
-        Assert.Equal(Decorator.PaddingProperty, setter.Property);
+        Assert.Equal(4, util.Body.Length);
+        Assert.All(util.Body, setter => Assert.Equal(16d, Assert.IsType<double>(setter.Value)));
     }
 }

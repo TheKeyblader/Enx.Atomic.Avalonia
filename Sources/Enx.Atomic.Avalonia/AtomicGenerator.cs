@@ -96,6 +96,14 @@ public class AtomicGenerator<TTheme>
     /// </summary>
     public void AddUtil(StringifiedUtil util) => _pendingUtils.Add(util);
 
+    /// <summary>
+    /// The utilities a <see cref="ISourceTransformer{TTheme}"/> registered through <see cref="AddUtil"/> during
+    /// the most recent <see cref="ApplyTransformers"/> call. <see cref="Generate(string, Options)"/> folds them
+    /// in automatically; a caller orchestrating several sources itself (e.g. <c>AtomicCli</c>) reads this after
+    /// each file so the per-file transformer output can be ordered and deduplicated with the rest.
+    /// </summary>
+    public IReadOnlyList<StringifiedUtil> PendingUtils => _pendingUtils;
+
     /// <summary>Runs the configured <see cref="Extractor"/>s over <paramref name="code"/> to pull out candidate utility tokens.</summary>
     /// <param name="code">The source text to scan.</param>
     /// <param name="id">Optional identifier passed to extractors that need to scope tokens to this source.</param>
@@ -436,8 +444,8 @@ public class AtomicGenerator<TTheme>
         var transformed = ApplyTransformers(input, options.Id);
         var tokens = ApplyExtractors(transformed, options.Id);
 
-        // Sort once more over the concatenation: utils a transformer registered through AddUtil (ghost-combined
-        // styles) are only known after ApplyTransformers ran, and must be ordered together with the rest.
+        // Sort once more over the concatenation: utils a transformer registered through AddUtil are only known
+        // after ApplyTransformers ran, and must be ordered together with the rest.
         return StyleOrdering.Sort([.. Generate(tokens, options), .. _pendingUtils]);
     }
 
@@ -453,14 +461,7 @@ public class AtomicGenerator<TTheme>
             if (matched.Contains(token))
                 continue;
 
-            // Ghost properties (see SpecialProperties) never produce real output on their own — their
-            // owner type isn't a real Avalonia control, so a style scoped to it could never match anything.
-            // They stay visible from ParseToken (an ISourceTransformer like GhostPropertyCombiner needs to
-            // see them to recognize and combine them into a real composite property); this is the actual
-            // emission boundary where an uncombined one is finally dropped.
-            var payload = ParseToken(token)
-                .Where(u => u.Body.Length == 0 || u.Body[0].Property?.OwnerType != typeof(SpecialProperties))
-                .ToArray();
+            var payload = ParseToken(token);
             if (payload.Length == 0)
                 continue;
 

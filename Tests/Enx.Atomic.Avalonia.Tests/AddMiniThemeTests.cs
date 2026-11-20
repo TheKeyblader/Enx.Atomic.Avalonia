@@ -23,17 +23,6 @@ public class AddMiniThemeTests
     }
 
     [AvaloniaFact]
-    public void RegistersGhostPropertyCombiner()
-    {
-        var builder = ThemeBuilder<MiniTheme>.Create();
-        var configuration = new AtomicConfiguration<MiniTheme> { Theme = builder.Theme };
-
-        builder.AddMiniTheme(configuration);
-
-        Assert.Contains(configuration.Transformers, t => t is GhostPropertyCombiner<MiniTheme>);
-    }
-
-    [AvaloniaFact]
     public void PopulatesEveryThemeScale()
     {
         var builder = ThemeBuilder<MiniTheme>.Create();

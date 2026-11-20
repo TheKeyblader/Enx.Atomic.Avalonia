@@ -1,7 +1,7 @@
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Documents;
 using Avalonia.Markup.Xaml.MarkupExtensions;
+using Enx.Atomic.Avalonia.Composites;
 
 namespace Enx.Atomic.Avalonia.Tests;
 
@@ -17,12 +17,13 @@ public class AmbiguousPrefixTests
     {
         var (_, generator) = TestHelpers.CreateMiniGenerator();
 
-        var results = generator.ParseToken("border");
+        var util = Assert.Single(generator.ParseToken("border"));
 
-        var util = Assert.Single(results);
-        var setter = Assert.Single(util.Body);
-        Assert.Equal(Border.BorderThicknessProperty, setter.Property);
-        Assert.Equal(new Thickness(1), setter.Value);
+        // Uniform width writes the composite host's four sides (see BorderWidthRule); the prefix decision this
+        // test is about is that "border" resolved as a width at all, not as a color.
+        Assert.Equal(4, util.Body.Length);
+        Assert.All(util.Body, setter => Assert.Equal(1d, Assert.IsType<double>(setter.Value)));
+        Assert.All(util.Body, setter => Assert.Equal(typeof(BorderThicknessSides), setter.Property!.OwnerType));
     }
 
     [AvaloniaFact]
@@ -30,12 +31,11 @@ public class AmbiguousPrefixTests
     {
         var (_, generator) = TestHelpers.CreateMiniGenerator();
 
-        var results = generator.ParseToken("border-2");
+        var util = Assert.Single(generator.ParseToken("border-2"));
 
-        var util = Assert.Single(results);
-        var setter = Assert.Single(util.Body);
-        Assert.Equal(Border.BorderThicknessProperty, setter.Property);
-        Assert.Equal(new Thickness(2), setter.Value);
+        Assert.Equal(4, util.Body.Length);
+        Assert.All(util.Body, setter => Assert.Equal(2d, Assert.IsType<double>(setter.Value)));
+        Assert.All(util.Body, setter => Assert.Equal(typeof(BorderThicknessSides), setter.Property!.OwnerType));
     }
 
     [AvaloniaFact]

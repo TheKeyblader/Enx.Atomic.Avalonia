@@ -15,12 +15,12 @@ namespace Enx.Atomic.Avalonia.Preset.Mini.Dynamic;
 /// can only belong to one collection's <c>Parent</c> at a time.
 ///
 /// <para>
-/// Marked <see cref="EmittableGhostPropertyHostAttribute"/>: unlike <see cref="SpecialProperties"/>, this
-/// class's own compiled code is what actually applies the effect (the class handler below), so a project only
-/// consuming the build-time codegen output — which may not reference this assembly at all — needs an
-/// equivalent copy of it. <see cref="EmbeddableSource"/> is that copy, kept in sync by hand: same field names,
-/// same behavior, just <c>global::</c>-qualified throughout and calling <c>AddClassHandler</c> by its static
-/// method form instead of as an extension, so it needs no <c>using</c> directives of its own.
+/// Marked <see cref="EmittableGhostPropertyHostAttribute"/>: this class's own compiled code is what actually
+/// applies the effect (the class handler below), so a project only consuming the build-time codegen output —
+/// which may not reference this assembly at all — needs an equivalent copy of it. <see cref="EmbeddableSource"/>
+/// is that copy, kept in sync by hand: same field names, same behavior, just <c>global::</c>-qualified throughout
+/// and calling <c>AddClassHandler</c> by its static method form instead of as an extension, so it needs no
+/// <c>using</c> directives of its own.
 /// </para>
 /// </summary>
 [EmittableGhostPropertyHost]

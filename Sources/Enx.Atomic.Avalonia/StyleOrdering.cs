@@ -46,8 +46,7 @@ public static class StyleOrdering
         [
             .. utils
                 .Select(util => (Util: util, Key: GetKey(util)))
-                .OrderBy(x => x.Key.GhostBucket)
-                .ThenBy(x => x.Key.ClassCount)
+                .OrderBy(x => x.Key.ClassCount)
                 .ThenBy(x => x.Key.TypeCount)
                 .ThenBy(x => x.Key.ContainerGroup)
                 .ThenBy(x => x.Key.ContainerOrder)
@@ -57,6 +56,32 @@ public static class StyleOrdering
                 .ThenBy(x => x.Key.Text, StringComparer.Ordinal)
                 .Select(x => x.Util),
         ];
+
+    /// <summary>
+    /// Returns <paramref name="utils"/> without structurally identical duplicates, keeping the first occurrence
+    /// of each — same selector data, same container query, and same setters (property instance, and value for
+    /// value types).
+    /// </summary>
+    /// <remarks>
+    /// Token-level deduplication already happens in <c>AtomicGenerator.Generate(ISet&lt;string&gt;, ...)</c>, so
+    /// rule output never needs this. It exists for the other half of a multi-source build: an
+    /// <c>ISourceTransformer</c> registers styles through <c>AtomicGenerator.AddUtil</c>, which has no token to
+    /// key on, and the same transformer output therefore arrives once per file it ran over. Reference-typed
+    /// setter values only compare equal when they are the same instance, so two distinct resources are never
+    /// merged on a guess.
+    /// </remarks>
+    /// <param name="utils">The utilities to deduplicate, in any order.</param>
+    public static StringifiedUtil[] Distinct(IEnumerable<StringifiedUtil> utils)
+    {
+        var distinct = new List<StringifiedUtil>();
+        foreach (var util in utils)
+        {
+            if (!distinct.Any(candidate => AreIdentical(candidate, util)))
+                distinct.Add(util);
+        }
+
+        return [.. distinct];
+    }
 
     /// <summary>Upper-bound container conditions (<c>max-sm:</c>), emitted after unconditional utilities.</summary>
     private const int MaxWidthGroup = 1;
@@ -69,19 +94,10 @@ public static class StyleOrdering
 
     private static SortKey GetKey(StringifiedUtil util)
     {
-        // GhostPropertyCombiner<,> registers its compound-selector styles through AddUtil with Index = int.MaxValue.
-        // They are not ordinary rule output — several of them routinely target the very same real property
-        // (margin) with differing class counts — and that subsystem is slated for replacement, so they keep
-        // today's behaviour exactly: emitted after everything else, in the order the combiner produced them. A
-        // constant key plus OrderBy's stable sort is what preserves that relative order.
-        if (util.Index == int.MaxValue)
-            return new SortKey { GhostBucket = 1 };
-
         var (classCount, typeCount) = GetSpecificity(util.SelectorData);
         var (containerGroup, containerOrder) = GetContainerOrder(util.ContainerQueryData);
         return new SortKey
         {
-            GhostBucket = 0,
             ClassCount = classCount,
             TypeCount = typeCount,
             ContainerGroup = containerGroup,
@@ -191,6 +207,21 @@ public static class StyleOrdering
     }
 
     /// <summary>
+    /// Whether two utilities describe exactly the same style. Selector/query data are expression records, so
+    /// their generated structural equality walks the whole chain; setter values use <see cref="object.Equals(object)"/>
+    /// for the same reason — a boxed <c>double</c> compares by value, a brush or binding by identity.
+    /// </summary>
+    private static bool AreIdentical(StringifiedUtil left, StringifiedUtil right) =>
+        Equals(left.SelectorData, right.SelectorData)
+        && Equals(left.ContainerQueryData, right.ContainerQueryData)
+        && left.Body.Length == right.Body.Length
+        && left.Body.Zip(right.Body)
+            .All(pair =>
+                ReferenceEquals(pair.First.Property, pair.Second.Property)
+                && Equals(pair.First.Value, pair.Second.Value)
+            );
+
+    /// <summary>
     /// A deterministic, culture-independent text form of the selector chain, used only as the final tie-breaker so
     /// that utilities with an identical ordering key still emit in a stable order.
     /// </summary>
@@ -218,7 +249,6 @@ public static class StyleOrdering
 
     private readonly record struct SortKey
     {
-        public int GhostBucket { get; init; }
         public int ClassCount { get; init; }
         public int TypeCount { get; init; }
         public int ContainerGroup { get; init; }
