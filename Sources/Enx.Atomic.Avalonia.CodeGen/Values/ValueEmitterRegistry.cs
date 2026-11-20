@@ -12,6 +12,7 @@ public sealed class ValueEmitterRegistry(IEnumerable<IValueEmitter>? emitters = 
         new BrushValueEmitter(),
         new CursorValueEmitter(),
         new TextDecorationsValueEmitter(),
+        new TextTrimmingValueEmitter(),
         new ThemeVariantValueEmitter(),
         new GridDefinitionsValueEmitter(),
         new DynamicResourceValueEmitter(),

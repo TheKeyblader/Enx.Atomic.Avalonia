@@ -92,6 +92,41 @@ public static class StyleOrdering
     /// <summary>A container condition <see cref="ClassifyContainerNode"/> doesn't understand; still after unconditional utilities.</summary>
     private const int UnclassifiedContainerGroup = 3;
 
+    /// <summary>
+    /// The individual components of the ordering key <see cref="Sort"/> compares, in that same ascending
+    /// order. Exposed so diagnostics (the CLI's <c>probe</c> command) can explain <em>why</em> a style landed
+    /// where it did without re-deriving the cascade in a second place that could drift from this one.
+    /// </summary>
+    public readonly record struct SortKey
+    {
+        /// <summary>Class-like selector nodes (CSS's class/attribute/pseudo-class column).</summary>
+        public int ClassCount { get; init; }
+
+        /// <summary>Type selector nodes (<c>Is</c>/<c>OfType</c>, CSS's lower type column).</summary>
+        public int TypeCount { get; init; }
+
+        /// <summary>Unconditional = 0, upper-bound <c>max-*</c> queries = 1, lower-bound queries = 2, unrecognized = 3.</summary>
+        public int ContainerGroup { get; init; }
+
+        /// <summary>Order within <see cref="ContainerGroup"/> (breakpoint size, negated for upper bounds).</summary>
+        public double ContainerOrder { get; init; }
+
+        /// <summary>The originating rule's declaration index — see <see cref="StringifiedUtil.Index"/>.</summary>
+        public int RuleIndex { get; init; }
+
+        /// <summary>The originating rule's rank for this match — see <see cref="StringifiedUtil.Rank"/>.</summary>
+        public int Rank { get; init; }
+
+        /// <summary>The variant sort hint — see <see cref="StringifiedUtil.Sort"/>.</summary>
+        public int Sort { get; init; }
+
+        /// <summary>Culture-independent selector description, the final tie-breaker.</summary>
+        public string Text { get; init; }
+    }
+
+    /// <summary>Returns the ordering key <see cref="Sort"/> uses for <paramref name="util"/> — see <see cref="SortKey"/>.</summary>
+    public static SortKey GetSortKey(StringifiedUtil util) => GetKey(util);
+
     private static SortKey GetKey(StringifiedUtil util)
     {
         var (classCount, typeCount) = GetSpecificity(util.SelectorData);
@@ -245,17 +280,5 @@ public static class StyleOrdering
 
         parts.Reverse();
         return string.Join(' ', parts);
-    }
-
-    private readonly record struct SortKey
-    {
-        public int ClassCount { get; init; }
-        public int TypeCount { get; init; }
-        public int ContainerGroup { get; init; }
-        public double ContainerOrder { get; init; }
-        public int RuleIndex { get; init; }
-        public int Rank { get; init; }
-        public int Sort { get; init; }
-        public string Text { get; init; }
     }
 }

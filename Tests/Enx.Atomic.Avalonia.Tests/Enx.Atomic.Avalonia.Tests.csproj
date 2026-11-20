@@ -16,6 +16,7 @@
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.10.1" />
+        <PackageReference Include="Verify.XunitV3" Version="32.0.1" />
         <PackageReference Include="xunit.v3" Version="3.2.2" />
         <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5">
             <PrivateAssets>all</PrivateAssets>
@@ -33,5 +34,13 @@
         <ProjectReference Include="..\..\Sources\Enx.Atomic.Avalonia\Enx.Atomic.Avalonia.csproj" />
         <ProjectReference Include="..\..\Sources\Enx.Atomic.Avalonia.Preset.Mini\Enx.Atomic.Avalonia.Preset.Mini.csproj" />
         <ProjectReference Include="..\..\Sources\Enx.Atomic.Avalonia.CodeGen\Enx.Atomic.Avalonia.CodeGen.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- Verify snapshots are expected output, not source: they must stay byte-identical to what the
+           emitter produces, so they are excluded from compilation (including the .received.cs files a
+           failing run drops next to them). -->
+        <Compile Remove="Snapshots/**/*.verified.cs" />
+        <Compile Remove="Snapshots/**/*.received.cs" />
     </ItemGroup>
 </Project>

@@ -26,7 +26,8 @@ namespace Enx.Atomic.Avalonia.Tests;
 /// <c>ThemeVariantScope</c>/<c>AddOwner</c> pitfall documented on <see cref="Enx.Atomic.Avalonia.StyleValue.TargetType"/>),
 /// and the <c>ColumnDefinitions</c>/<c>RowDefinitions</c> ghost properties (<c>grid-cols-3</c>), and an
 /// arbitrary bracket value of each kind it resolves to — a literal brush (<c>bg-[#123456]</c>) and a literal
-/// pixel double (<c>w-[123px]</c>).
+/// pixel double (<c>w-[123px]</c>), and the <see cref="Avalonia.Media.TextTrimming"/> strategies
+/// (<c>truncate</c>/<c>text-ellipsis</c> — a class of static singletons, not an enum).
 /// </summary>
 public class CodeGenTests
 {
@@ -36,7 +37,7 @@ public class CodeGenTests
         var (_, generator) = TestHelpers.CreateMiniGenerator();
 
         var source =
-            "Classes=\"ml-1 mr-2 p-2 border-2 border-t-4 rounded-md rounded-tl-lg hidden flex-row cursor-pointer no-underline hover:bg-red-500 sm:hidden max-w-md dark:bg-red-500 grid-cols-3 col-span-2 bg-[#123456] w-[123px]\"";
+            "Classes=\"ml-1 mr-2 p-2 border-2 border-t-4 rounded-md rounded-tl-lg hidden flex-row cursor-pointer no-underline truncate text-ellipsis hover:bg-red-500 sm:hidden max-w-md dark:bg-red-500 grid-cols-3 col-span-2 bg-[#123456] w-[123px]\"";
 
         var utils = generator.Generate(source, new AtomicGenerator<MiniTheme>.Options { Id = "test.axaml" });
         Assert.NotEmpty(utils);

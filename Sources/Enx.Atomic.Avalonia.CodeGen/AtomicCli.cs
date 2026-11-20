@@ -11,28 +11,70 @@ namespace Enx.Atomic.Avalonia.CodeGen;
 /// A configuration project references this and calls <see cref="Run{TTheme}"/> from its own <c>Main</c>,
 /// building its own <see cref="AtomicConfiguration{TTheme}"/> however it likes — this class only owns the
 /// command-line contract (via Spectre.Console.Cli) and the read/resolve/emit/write orchestration.
+///
+/// <para>
+/// Two commands are registered: <c>generate</c> (the default, so the MSBuild <c>.targets</c> invocation
+/// <c>dotnet exec Config.dll --output ... files...</c> keeps working unchanged) and <c>probe</c> (a diagnostic
+/// command that explains how a set of tokens resolves — see <see cref="ProbeSettings"/>).
+/// </para>
 /// </summary>
 public static class AtomicCli
 {
     /// <summary>
-    /// Parses <paramref name="args"/>, resolves every source file's utility tokens against
-    /// <paramref name="configuration"/>, and writes the emitted C# to the requested output path.
+    /// Parses <paramref name="args"/> and runs the matching command: the default <c>generate</c> command, or
+    /// <c>probe</c> when it is the first argument.
     /// </summary>
+    /// <param name="args">The raw process arguments.</param>
+    /// <param name="configuration">The configuration generated styles are resolved against.</param>
+    /// <param name="console">
+    /// The console to write to. Omit to use <see cref="AnsiConsole.Console"/>; an embedding host (a test, or
+    /// another tool driving the CLI in-process) can supply its own to capture the output.
+    /// </param>
     /// <returns>The process exit code Spectre.Console.Cli produces: <c>0</c> on success, non-zero on a
-    /// parse/validation failure or an unhandled exception from <see cref="GenerateCommand{TTheme}"/>.</returns>
-    public static int Run<TTheme>(string[] args, AtomicConfiguration<TTheme> configuration)
+    /// parse/validation failure or an unhandled exception from a command.</returns>
+    public static int Run<TTheme>(
+        string[] args,
+        AtomicConfiguration<TTheme> configuration,
+        IAnsiConsole? console = null
+    )
         where TTheme : class
     {
-        // No custom ITypeRegistrar: CommandApp<T> falls back to plain Activator.CreateInstance for the
-        // command, which needs a parameterless constructor — so the configuration is handed to
-        // GenerateCommand<TTheme> via a static field instead of constructor injection. Safe because this is
-        // always a single, synchronous, single-shot CLI invocation (one Run call per process).
-        GenerateCommand<TTheme>.Configuration = configuration;
+        // No custom ITypeRegistrar: CommandApp falls back to plain Activator.CreateInstance for the commands,
+        // which needs a parameterless constructor — so the configuration and console are handed to them via a
+        // static holder instead of constructor injection. Safe because this is always a single, synchronous,
+        // single-shot CLI invocation (one Run call per process).
+        CliState<TTheme>.Configuration = configuration;
+        CliState<TTheme>.Console = console ?? AnsiConsole.Console;
 
-        var app = new CommandApp<GenerateCommand<TTheme>>(null);
-        app.Configure(config => config.SetApplicationName("enx-atomic"));
+        var app = new CommandApp();
+        app.Configure(config =>
+        {
+            config.SetApplicationName("enx-atomic");
+            config.AddCommand<GenerateCommand<TTheme>>("generate");
+            config.AddCommand<ProbeCommand<TTheme>>("probe");
+        });
+
+        // The default command keeps the MSBuild .targets invocation working: `dotnet exec Config.dll --output ...`
+        // has no command name, so Spectre routes it here unchanged.
+        app.SetDefaultCommand<GenerateCommand<TTheme>>();
+
         return app.Run(args);
     }
+}
+
+/// <summary>Shared, single-shot state for the commands Spectre instantiates without constructor arguments.</summary>
+internal static class CliState<TTheme>
+    where TTheme : class
+{
+    public static AtomicConfiguration<TTheme>? Configuration { get; set; }
+
+    public static IAnsiConsole Console { get; set; } = AnsiConsole.Console;
+
+    public static AtomicConfiguration<TTheme> RequireConfiguration(string command) =>
+        Configuration
+        ?? throw new InvalidOperationException(
+            $"{command}'s configuration was not set before running the command — call it through {nameof(AtomicCli)}.{nameof(AtomicCli.Run)}."
+        );
 }
 
 public sealed class AtomicCliSettings : CommandSettings
@@ -74,15 +116,10 @@ public sealed class AtomicCliSettings : CommandSettings
 internal sealed class GenerateCommand<TTheme> : Command<AtomicCliSettings>
     where TTheme : class
 {
-    internal static AtomicConfiguration<TTheme>? Configuration { get; set; }
-
     public override int Execute(CommandContext context, AtomicCliSettings settings, CancellationToken cancellationToken)
     {
-        var configuration =
-            Configuration
-            ?? throw new InvalidOperationException(
-                $"{nameof(GenerateCommand<TTheme>)}.{nameof(Configuration)} was not set before running the command — call it through {nameof(AtomicCli)}.{nameof(AtomicCli.Run)}."
-            );
+        var configuration = CliState<TTheme>.RequireConfiguration(nameof(GenerateCommand<TTheme>));
+        var console = CliState<TTheme>.Console;
 
         var generator = new AtomicGenerator<TTheme>(configuration);
         var tokens = new HashSet<string>();
@@ -92,7 +129,7 @@ internal sealed class GenerateCommand<TTheme> : Command<AtomicCliSettings>
         {
             if (!File.Exists(source))
             {
-                AnsiConsole.MarkupLineInterpolated(
+                console.MarkupLineInterpolated(
                     $"[yellow]Enx.Atomic.Avalonia.CodeGen: source file not found, skipping: '{source}'.[/]"
                 );
                 continue;
@@ -118,6 +155,7 @@ internal sealed class GenerateCommand<TTheme> : Command<AtomicCliSettings>
 
         var emitted = StyleEmitter.Emit(ordered, settings.Namespace, settings.ClassName, settings.ContainerName);
         WriteIfDifferent(
+            console,
             settings.Output,
             emitted,
             $"{utils.Count} style(s) from {settings.Sources.Length} source file(s)"
@@ -132,6 +170,7 @@ internal sealed class GenerateCommand<TTheme> : Command<AtomicCliSettings>
                 settings.ResourcesClassName
             );
             WriteIfDifferent(
+                console,
                 settings.ResourcesOutput,
                 resourcesEmitted,
                 $"{generator.ResolvedResources.Count} resource(s)"
@@ -146,7 +185,7 @@ internal sealed class GenerateCommand<TTheme> : Command<AtomicCliSettings>
     // can touch its output assembly's timestamp for reasons unrelated to any actual rule/theme change), so
     // leaving the output's mtime untouched when nothing actually changed is what lets the *consuming*
     // project's own incremental compile still skip recompiling the generated file.
-    private static void WriteIfDifferent(string path, string content, string what)
+    private static void WriteIfDifferent(IAnsiConsole console, string path, string content, string what)
     {
         var directory = Path.GetDirectoryName(path);
         if (!string.IsNullOrEmpty(directory))
@@ -154,11 +193,11 @@ internal sealed class GenerateCommand<TTheme> : Command<AtomicCliSettings>
 
         if (File.Exists(path) && File.ReadAllText(path) == content)
         {
-            AnsiConsole.MarkupLineInterpolated($"Enx.Atomic.Avalonia.CodeGen: {what} unchanged at '{path}'.");
+            console.MarkupLineInterpolated($"Enx.Atomic.Avalonia.CodeGen: {what} unchanged at '{path}'.");
             return;
         }
 
         File.WriteAllText(path, content);
-        AnsiConsole.MarkupLineInterpolated($"Enx.Atomic.Avalonia.CodeGen: wrote {what} to '{path}'.");
+        console.MarkupLineInterpolated($"Enx.Atomic.Avalonia.CodeGen: wrote {what} to '{path}'.");
     }
 }

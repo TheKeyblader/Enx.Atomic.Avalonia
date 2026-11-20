@@ -184,7 +184,8 @@ the registration order, and the tests expected:
 | `add-value-emitter` | Codegen fails with `No value emitter registered for type ...` |
 | `port-unocss-rule` | Bringing an upstream `@unocss/preset-mini` rule/variant/scale over |
 
-Commands: `/verify` (build + test + format check), `/update-docs` (the four docs together, when
+Commands: `/verify` (build + test + format check), `/probe` (resolve tokens and explain matching,
+emission order and effective values, `--json` for agents), `/update-docs` (the four docs together, when
 asked).
 
 ## Commands
@@ -202,6 +203,9 @@ dotnet build Enx.Atomic.Avalonia.slnx
 
 # Run the full test suite
 dotnet test Tests/Enx.Atomic.Avalonia.Tests/Enx.Atomic.Avalonia.Tests.csproj
+
+# Probe tokens against the example configuration (add --control Button, --pseudo :pointerover, --json)
+dotnet run --project Examples/Enx.Atomic.Avalonia.Example.Config -- probe "hover:ml-4 p-4"
 
 # With coverage (Cobertura report under coverage/)
 dotnet test Tests/Enx.Atomic.Avalonia.Tests/Enx.Atomic.Avalonia.Tests.csproj \
