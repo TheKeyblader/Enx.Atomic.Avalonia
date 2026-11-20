@@ -69,8 +69,8 @@ upstream's order.
 |---|---|---|---|---|
 | `border`, `border-{width}` (uniform) | ✅ ported | `Dynamic/BorderRules.cs` (`BorderWidthRule<TTheme>`) | `border`, `border-2`, `border-none` | Writes the four `BorderThicknessSides` doubles, recomposed into `Border.BorderThicknessProperty`; unmatched bare numbers are px (`lineWidth`). |
 | `border-{width\|size}-{n}` | ⏳ todo | — | | Explicit alias form of the family above; not registered. |
-| `border-x-{width}`, `border-y-{width}` | ⏳ todo | — | | `BorderThicknessSides` left+right / top+bottom, exactly like the ported uniform and single-side forms. |
-| `border-t/r/b/l-{width}` | ✅ ported | `Dynamic/BorderRules.cs` (`BorderWidthRule<TTheme>`) | `border-t-2`, `border-b`, `border-l-2` | One side each; rank 1 keeps a side above the uniform rank-0 entry. |
+| `border-x-{width}`, `border-y-{width}` | ✅ ported | `Dynamic/BorderRules.cs` (`BorderWidthRule<TTheme>`) | `border-x-2`, `border-y-4` | `BorderThicknessSides` left+right / top+bottom, exactly like the ported uniform and single-side forms; rank 1, between the uniform token (0) and a single side (2). |
+| `border-t/r/b/l-{width}` | ✅ ported | `Dynamic/BorderRules.cs` (`BorderWidthRule<TTheme>`) | `border-t-2`, `border-b`, `border-l-2` | One side each; rank 2 keeps a side above the axis (1) and uniform (0) entries. |
 | `border-s/e-{width}` | ❌ dropped | — | | Logical sides can't map: `BorderThickness` is physical, and a style cannot branch on `FlowDirection`. |
 | `border-block-*` / `border-inline-*` | ❌ dropped | — | | Same physical-only limitation. |
 | `border-bs/be/is/ie-*` | ❌ dropped | — | | Same physical-only limitation. |
@@ -505,10 +505,10 @@ whether the corresponding utilities can read it — and its examples are tokens 
 
 | Section | ✅ ported | 🟡 partial | ❌ dropped | ⏳ todo | Total |
 |---|---|---|---|---|---|
-| Rules | 34 | 12 | 71 | 45 | 162 |
+| Rules | 35 | 12 | 71 | 44 | 162 |
 | Variants | 3 | 1 | 19 | 7 | 30 |
 | Theme scales | 3 | 7 | 6 | 13 | 29 |
-| **Total** | **40** | **20** | **96** | **65** | **221** |
+| **Total** | **41** | **20** | **96** | **64** | **221** |
 
 > Counts are asserted by `ParityMatrixTests.Counts_MatchSummary` — update this table when rows change.
 
@@ -520,17 +520,15 @@ above.
 1. **`size-*`** — sets `Width` + `Height` (and their `min`/`max` forms) from the existing `Sizes`
    scale; the only new part is emitting two to four properties per token.
 2. **`w-auto` / `h-auto`** — `double.NaN` is exactly "auto"; trivial, and completes the size family.
-3. **`border-x-*` / `border-y-*`** — the same `BorderThicknessSides` mechanism already used for
-   `border-*` and `border-t-*`; just two sides instead of one or four.
-4. **`opacity-*`** — `Visual.OpacityProperty` is a direct 1:1 (`50` → `0.5`); no theme scale needed.
-5. **`z-*`** — `Visual.ZIndexProperty`; accepts an integer directly (plus upstream's `auto`).
-6. **`leading-*` / `lh-*` / `line-height-*`** — `TextBlock.LineHeightProperty` plus the (small)
+3. **`opacity-*`** — `Visual.OpacityProperty` is a direct 1:1 (`50` → `0.5`); no theme scale needed.
+4. **`z-*`** — `Visual.ZIndexProperty`; accepts an integer directly (plus upstream's `auto`).
+5. **`leading-*` / `lh-*` / `line-height-*`** — `TextBlock.LineHeightProperty` plus the (small)
    `lineHeight` scale; very common in typography-heavy UIs.
-7. **`tracking-*`** — `TextElement.LetterSpacingProperty`; convert the `em`-based scale at
+6. **`tracking-*`** — `TextElement.LetterSpacingProperty`; convert the `em`-based scale at
    `RemToPxFactor`.
-8. **`font-{family}`** — `TextElement.FontFamilyProperty` plus the `fontFamily` scale (sans/serif/
+7. **`font-{family}`** — `TextElement.FontFamilyProperty` plus the `fontFamily` scale (sans/serif/
    mono are already spelled out upstream).
-9. **`top/right/bottom/left-*` + `inset-*`** — `Canvas.Left/Top/Right/Bottom`; only meaningful in a
+8. **`top/right/bottom/left-*` + `inset-*`** — `Canvas.Left/Top/Right/Bottom`; only meaningful in a
    `Canvas`, but that is the Avalonia idiom for absolute placement.
 
 Trivial aliases (`text-truncate`, `decoration-none`, `gap-col-*`, `text-size-*`, `b-*`/`rd-*`,

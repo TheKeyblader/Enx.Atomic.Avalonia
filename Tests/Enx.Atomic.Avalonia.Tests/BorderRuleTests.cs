@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
 using Enx.Atomic.Avalonia.Composites;
+using Enx.Atomic.Avalonia.Preset.Mini;
 
 namespace Enx.Atomic.Avalonia.Tests;
 
@@ -74,5 +75,55 @@ public class BorderRuleTests
         var util = Assert.Single(results);
         var setter = Assert.Single(util.Body);
         Assert.Equal(Border.BorderBrushProperty, setter.Property);
+    }
+
+    [AvaloniaFact]
+    public void BorderWidthAxis_TargetsBothSidesForThatAxis()
+    {
+        var (_, generator) = TestHelpers.CreateMiniGenerator();
+
+        var util = Assert.Single(generator.ParseToken("border-x-2"));
+
+        Assert.Equal(
+            [BorderThicknessSides.BorderThicknessLeftProperty, BorderThicknessSides.BorderThicknessRightProperty],
+            util.Body.Select(setter => setter.Property)
+        );
+        Assert.All(util.Body, setter => Assert.Equal(2d, Assert.IsType<double>(setter.Value)));
+    }
+
+    [AvaloniaFact]
+    public void BorderWidthHorizontalAxis_ResolvesAnArbitraryPixelValue()
+    {
+        var (_, generator) = TestHelpers.CreateMiniGenerator();
+
+        var util = Assert.Single(generator.ParseToken("border-y-[3px]"));
+
+        Assert.Equal(2, util.Body.Length);
+        Assert.All(util.Body, setter => Assert.Equal(3d, Assert.IsType<double>(setter.Value)));
+    }
+
+    /// <summary>
+    /// Uniform, axis and side widths all write the composite host's sides, so they compose into one thickness
+    /// instead of replacing each other. The rule's rank — uniform &lt; axis &lt; side — decides which wins for a
+    /// given side, whatever the source order (see ARCHITECTURE.md, "Emission order").
+    /// </summary>
+    [AvaloniaTheory]
+    [InlineData("border-2 border-x-4 border-t-8")]
+    [InlineData("border-t-8 border-x-4 border-2")]
+    public void BorderWidth_RanksAxisAboveUniformAndSideAboveAxis(string source)
+    {
+        var (_, generator) = TestHelpers.CreateMiniGenerator();
+        var utils = generator.Generate(source, new AtomicGenerator<MiniTheme>.Options());
+        var border = new Border { Classes = { "border-2", "border-x-4", "border-t-8" } };
+
+        var window = utils.ShowWithStyles(border);
+        try
+        {
+            Assert.Equal(new Thickness(4, 8, 4, 2), border.BorderThickness);
+        }
+        finally
+        {
+            window.Close();
+        }
     }
 }

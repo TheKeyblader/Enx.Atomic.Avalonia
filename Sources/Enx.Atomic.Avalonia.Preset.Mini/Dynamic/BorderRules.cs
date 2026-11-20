@@ -10,11 +10,12 @@ namespace Enx.Atomic.Avalonia.Preset.Mini.Dynamic;
 
 /// <summary>
 /// Dynamic rule setting border widths from <see cref="ILineWidthPart.LineWidths"/>, either uniformly on all four
-/// sides (<c>border</c>, <c>border-*</c>) or on a single side (<c>border-t-*</c>, <c>border-r-*</c>,
-/// <c>border-b-*</c>, <c>border-l-*</c>). Tried before <see cref="BorderColorRule{TTheme}"/>, since both share the
-/// <c>border-</c> prefix — a value that resolves in the line-width scale is treated as a width, otherwise it falls
-/// through to the color rule. Unmatched bare numbers fall back to px (not rem, unlike the other scales) — mirroring
-/// UnoCSS, where <c>lineWidth</c> is the one scale whose raw-number fallback stays in pixels.
+/// sides (<c>border</c>, <c>border-*</c>), on an axis (<c>border-x-*</c> = left + right, <c>border-y-*</c> = top +
+/// bottom) or on a single side (<c>border-t-*</c>, <c>border-r-*</c>, <c>border-b-*</c>, <c>border-l-*</c>). Tried
+/// before <see cref="BorderColorRule{TTheme}"/>, since both share the <c>border-</c> prefix — a value that resolves
+/// in the line-width scale is treated as a width, otherwise it falls through to the color rule. Unmatched bare
+/// numbers fall back to px (not rem, unlike the other scales) — mirroring UnoCSS, where <c>lineWidth</c> is the one
+/// scale whose raw-number fallback stays in pixels.
 ///
 /// <para>
 /// Every direction — including the uniform one — writes only <see cref="BorderThicknessSides"/>' side attached
@@ -27,9 +28,10 @@ namespace Enx.Atomic.Avalonia.Preset.Mini.Dynamic;
 /// <see cref="ContentPresenter"/> — a <c>Border</c>-scoped selector would never reach a <see cref="Button"/>.
 /// </para>
 /// <para>
-/// UnoCSS splits uniform and per-side widths into separate rule entries with increasing indices; this rule
+/// UnoCSS splits uniform, axis and per-side widths into separate rule entries with increasing indices; this rule
 /// consolidates them into one regex, so <see cref="GetOrderRank"/> reports that order explicitly —
-/// <c>border-2 border-t-4</c> must let the side win whatever the source order.
+/// <c>border-2 border-t-4</c> must let the side win whatever the source order, and <c>border-2 border-x-4</c> must
+/// let the axis win over the uniform token while still losing to an explicit side.
 /// </para>
 /// </summary>
 public partial class BorderWidthRule<TTheme> : IOrderRankedDynamicRule<TTheme>
@@ -46,6 +48,16 @@ public partial class BorderWidthRule<TTheme> : IOrderRankedDynamicRule<TTheme>
 
         return match.Groups["side"].Value switch
         {
+            "x" =>
+            [
+                BorderThicknessSides.BorderThicknessLeftProperty.ToLiteral(value, typeof(Control)),
+                BorderThicknessSides.BorderThicknessRightProperty.ToLiteral(value, typeof(Control)),
+            ],
+            "y" =>
+            [
+                BorderThicknessSides.BorderThicknessTopProperty.ToLiteral(value, typeof(Control)),
+                BorderThicknessSides.BorderThicknessBottomProperty.ToLiteral(value, typeof(Control)),
+            ],
             "t" => [BorderThicknessSides.BorderThicknessTopProperty.ToLiteral(value, typeof(Control))],
             "r" => [BorderThicknessSides.BorderThicknessRightProperty.ToLiteral(value, typeof(Control))],
             "b" => [BorderThicknessSides.BorderThicknessBottomProperty.ToLiteral(value, typeof(Control))],
@@ -60,9 +72,18 @@ public partial class BorderWidthRule<TTheme> : IOrderRankedDynamicRule<TTheme>
         };
     }
 
-    /// <summary>Uniform beats nothing (rank 0); a single side overrides the uniform sides it covers (1) — UnoCSS's uniform entry comes first.</summary>
-    public int GetOrderRank(Match match) => match.Groups["side"].Value.Length == 0 ? 0 : 1;
+    /// <summary>
+    /// Uniform beats nothing (rank 0), an axis overrides the uniform sides it covers (1), and a single side overrides
+    /// its axis (2) — UnoCSS's uniform, axis and side entries come in that order.
+    /// </summary>
+    public int GetOrderRank(Match match) =>
+        match.Groups["side"].Value switch
+        {
+            "" => 0,
+            "x" or "y" => 1,
+            _ => 2,
+        };
 
-    [GeneratedRegex("^border(?:-(?<side>[trbl])(?:-(?<value>.+))?|-(?<value>.+))?$")]
+    [GeneratedRegex("^border(?:-(?<side>[xytrbl])(?:-(?<value>.+))?|-(?<value>.+))?$")]
     private static partial Regex CompiledRegex();
 }
