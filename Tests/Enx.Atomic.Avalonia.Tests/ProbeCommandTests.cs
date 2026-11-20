@@ -160,6 +160,21 @@ public class ProbeCommandTests
         Assert.True(shortcutStyle.GetProperty("position").GetInt32() < utilityStyle.GetProperty("position").GetInt32());
     }
 
+    [AvaloniaFact]
+    public void ShortcutToken_HumanOutputShowsTheExpansionAndTheLayer()
+    {
+        var (configuration, _) = TestHelpers.CreateMiniGenerator();
+        configuration.Shortcuts.Add(Shortcut.Static("btn", "opacity-50 hover:opacity-100"));
+        var (console, writer) = CreateConsole();
+
+        var exitCode = AtomicCli.Run(["probe", "btn"], configuration, console);
+
+        Assert.Equal(0, exitCode);
+        var output = writer.ToString();
+        Assert.Contains("shortcut: opacity-50 hover:opacity-100", output);
+        Assert.Contains($"layer {StyleLayer.Shortcuts}", output);
+    }
+
     private static (IAnsiConsole Console, StringWriter Writer) CreateConsole()
     {
         var writer = new StringWriter();

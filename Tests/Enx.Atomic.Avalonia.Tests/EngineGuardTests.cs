@@ -24,6 +24,26 @@ public class EngineGuardTests
     }
 
     [Fact]
+    public void Constructor_WithShortcutThatIsNeitherStaticNorDynamic_ThrowsNamingTheShortcut()
+    {
+        // Valid shortcuts of both shapes first: the message must name the offending one, not the first one.
+        var configuration = new AtomicConfiguration<TestTheme>
+        {
+            Theme = new(),
+            Shortcuts =
+            [
+                Shortcut.Static("a", "b"),
+                Shortcut.Dynamic<TestTheme>(new System.Text.RegularExpressions.Regex("^c$"), (_, _) => "d"),
+                new BogusShortcut(),
+            ],
+        };
+
+        var exception = Assert.Throws<InvalidOperationException>(() => new AtomicGenerator<TestTheme>(configuration));
+
+        Assert.Contains(typeof(BogusShortcut).FullName!, exception.Message);
+    }
+
+    [Fact]
     public void MatchVariants_AmbiguousMultiPassVariant_ThrowsNamingTheVariantAndToken()
     {
         var generator = CreateGenerator(new AmbiguousVariant("b:") { MultiPass = true });
@@ -140,6 +160,8 @@ public class EngineGuardTests
     {
         public RuleMetadata Metadata { get; } = new();
     }
+
+    private sealed class BogusShortcut : IShortcut<TestTheme>;
 
     private sealed record PassThroughHandler : VariantHandlerBase
     {

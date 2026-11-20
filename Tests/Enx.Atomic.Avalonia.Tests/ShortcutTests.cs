@@ -383,6 +383,110 @@ public class ShortcutTests
         }
     }
 
+    /// <summary>
+    /// A dynamic shortcut whose matcher returns nothing for a successful regex match is a miss, for both factory
+    /// overloads: <see langword="null"/>, and an expansion that is empty once whitespace-split. The next shortcut is
+    /// tried, and with none left the token falls through to the rules.
+    /// </summary>
+    [AvaloniaFact]
+    public void DynamicShortcut_ReturningNothing_IsAMissAndTheNextShortcutOrRuleApplies()
+    {
+        var (configuration, generator) = CreateGenerator(configuration =>
+        {
+            configuration.Shortcuts.Add(
+                Shortcut.Dynamic<MiniTheme>(new Regex("^(fx|opacity)-.+$"), (_, _) => (string?)null)
+            );
+            configuration.Shortcuts.Add(
+                Shortcut.Dynamic<MiniTheme>(new Regex("^(fx|opacity)-.+$"), (_, _) => (IEnumerable<string>?)null)
+            );
+            configuration.Shortcuts.Add(
+                Shortcut.Dynamic<MiniTheme>(new Regex("^(fx|opacity)-.+$"), (_, _) => ["  ", ""])
+            );
+            configuration.Shortcuts.Add(Shortcut.Static("fx-soft", "opacity-40"));
+        });
+
+        Assert.Equal(new[] { "opacity-40" }, generator.GetShortcutExpansion("fx-soft"));
+
+        Assert.Null(generator.GetShortcutExpansion("opacity-50"));
+        var utility = Assert.Single(generator.ParseToken("opacity-50"));
+        Assert.Equal(StyleLayer.Default, utility.Layer);
+    }
+
+    /// <summary>
+    /// A variant may rewrite the token instead of stripping a prefix from it (its handler's <c>Matcher</c> is not
+    /// a suffix of the input). The written form of such a leaf can't be rebuilt as "variant prefix + base", so it
+    /// stays the token as written in the shortcut — and the leaf still resolves.
+    /// </summary>
+    [AvaloniaFact]
+    public void InnerVariantRewritingTheToken_KeepsTheTokenAsWritten()
+    {
+        var (configuration, generator) = CreateGenerator(configuration =>
+        {
+            configuration.Variants.Add(new RewritingVariant("faded:", "opacity-50"));
+            configuration.Shortcuts.Add(Shortcut.Static("soft", "faded:anything"));
+        });
+
+        var utils = Generate(generator, "soft");
+
+        Assert.Equal(new[] { "faded:anything" }, generator.GetShortcutExpansion("soft"));
+        var util = Assert.Single(utils);
+        Assert.Contains("soft", ClassNames(util));
+        Assert.Contains(util.Body, setter => setter.Property == Visual.OpacityProperty && Equals(setter.Value, 0.5));
+    }
+
+    /// <summary>
+    /// An ambiguous outer variant forks the token into several branches, each expanding the shortcut again: the
+    /// same unmatched inner token is then reported once, not once per branch.
+    /// </summary>
+    [AvaloniaFact]
+    public void UnmatchedInnerToken_ReachedFromSeveralBranches_IsDiagnosedOnce()
+    {
+        var (configuration, generator) = CreateGenerator(configuration =>
+        {
+            configuration.Variants.Add(new ForkingVariant("fork:"));
+            configuration.Shortcuts.Add(Shortcut.Static("card", "bg-rde-500 opacity-50"));
+        });
+
+        var utils = generator.ParseToken("fork:card");
+
+        Assert.Equal(2, utils.Length);
+        Assert.Equal(new[] { "unmatched utility \"bg-rde-500\" in shortcut \"fork:card\"" }, generator.Diagnostics);
+    }
+
+    private sealed record PassThroughHandler : VariantHandlerBase
+    {
+        public override VariantHandlerContext Handle(
+            VariantHandlerContext input,
+            Func<VariantHandlerContext, VariantHandlerContext> next
+        ) => next(input);
+    }
+
+    /// <summary>Replaces any token starting with <see cref="Prefix"/> by <see cref="Replacement"/> (an alias, not a strip).</summary>
+    private sealed record RewritingVariant(string Prefix, string Replacement) : VariantBase<MiniTheme>
+    {
+        public override VariantHandlerBase[] Match(string matcher, VariantContext<MiniTheme> context) =>
+            matcher.StartsWith(Prefix, StringComparison.Ordinal)
+                ? [new PassThroughHandler { Matcher = Replacement }]
+                : [];
+    }
+
+    /// <summary>Strips <see cref="Prefix"/> two different ways, forking the match into two branches.</summary>
+    private sealed record ForkingVariant(string Prefix) : VariantBase<MiniTheme>
+    {
+        public override VariantHandlerBase[] Match(string matcher, VariantContext<MiniTheme> context)
+        {
+            if (!matcher.StartsWith(Prefix, StringComparison.Ordinal))
+                return [];
+
+            var rest = matcher[Prefix.Length..];
+            return
+            [
+                new PassThroughHandler { Matcher = rest, Order = 0 },
+                new PassThroughHandler { Matcher = rest, Order = 1 },
+            ];
+        }
+    }
+
     private static (AtomicConfiguration<MiniTheme> Configuration, AtomicGenerator<MiniTheme> Generator) CreateGenerator(
         Action<AtomicConfiguration<MiniTheme>> configure
     )
