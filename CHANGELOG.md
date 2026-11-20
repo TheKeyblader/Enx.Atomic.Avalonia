@@ -7,6 +7,22 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Fixed
+
+- A cyclic `MultiPass` variant looped forever instead of throwing:
+  `AtomicGenerator.MatchVariants`' 500-handler guard read a count captured before its
+  matching loop and never tripped.
+- An ambiguous (forking) variant dropped every variant an earlier pass had matched:
+  `a:` was lost from each branch of `a:b:x`. Preset.Mini's variants are never
+  ambiguous, so this only affected custom variants.
+
+### Changed
+
+- CI builds and tests on `windows-latest` as well as `ubuntu-latest`. Verify snapshots
+  are checked out with LF endings on every OS (`.gitattributes`).
+- The release workflow uses `actions/checkout`/`actions/setup-dotnet` v5 and has job
+  and test-step timeouts.
+
 ## [0.0.5] - 2026-11-20
 
 ### Added
