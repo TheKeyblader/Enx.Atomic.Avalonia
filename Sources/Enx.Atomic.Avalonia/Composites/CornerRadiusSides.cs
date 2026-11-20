@@ -1,4 +1,4 @@
-using Avalonia;
+﻿using Avalonia;
 using Avalonia.Controls;
 
 namespace Enx.Atomic.Avalonia.Composites;
@@ -54,19 +54,12 @@ public static class CornerRadiusSides
             "CornerRadius"
         );
 
-    static CornerRadiusSides()
-    {
-        new CompositePropertyHandler<CornerRadius>(
+    static CornerRadiusSides() =>
+        CompositeProperty.Register(
             Descriptor,
-            Border.CornerRadiusProperty,
-            [
-                CornerRadiusTopLeftProperty,
-                CornerRadiusTopRightProperty,
-                CornerRadiusBottomRightProperty,
-                CornerRadiusBottomLeftProperty,
-            ],
-            static (topLeft, topRight, bottomRight, bottomLeft) =>
-                new CornerRadius(topLeft, topRight, bottomRight, bottomLeft)
-        ).RegisterClassHandlers();
-    }
+            CornerRadiusTopLeftProperty,
+            CornerRadiusTopRightProperty,
+            CornerRadiusBottomRightProperty,
+            CornerRadiusBottomLeftProperty
+        );
 }
