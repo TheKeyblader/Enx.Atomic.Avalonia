@@ -41,6 +41,28 @@ All notable changes to this project are documented here. The format follows
   `Sort` is a variant-provided hint (still unused by the Mini preset).
 - `AtomicGenerator.PendingUtils`, exposing the styles a source transformer registered
   through `AddUtil` during the last `ApplyTransformers` call.
+- `AtomicCli probe`, a diagnostic command that explains how a token set resolves:
+  - per token: the variants peeled off, the winning rule (with its index and rank), and
+    a hint when nothing matched;
+  - per style: its position in the emission order and the sort key behind it, its
+    selector, container query and setters;
+  - with `--control <Type>` (plus `--width`/`--pseudo`): the effective values on a real
+    headless control, composite properties included;
+  - `--json` prints a stable machine-readable document.
+
+  The existing behaviour stays the default `generate` command, so the MSBuild
+  invocation is unchanged.
+- `AtomicCli.Run(args, configuration, IAnsiConsole? console = null)`: an optional
+  console, so a test or an in-process host can capture the CLI's output.
+- `ProbeSettings`, the `probe` command's options. Its XML doc describes the `--json`
+  schema.
+- `StyleOrdering.SortKey`/`StyleOrdering.GetSortKey`, which expose the ordering key
+  `StyleOrdering.Sort` uses.
+- `TextTrimmingValueEmitter`, the value emitter for `TextBlock.TextTrimming`.
+- `Preset.Mini/PARITY.md`, a family-by-family matrix of `@unocss/preset-mini` against
+  this port, kept honest by `ParityMatrixTests`: every example token of a ported or
+  partial row must resolve, and the summary counts must match the tables.
+- Verify snapshot tests of the emitted styles and resource dictionary.
 
 ### Changed
 
@@ -59,6 +81,13 @@ All notable changes to this project are documented here. The format follows
   (from its `CompositePropertyDescriptor`) plus one shared recomposition helper,
   alongside the existing hand-written `EmbeddableSource` path `GridDefinitions` still
   uses.
+- `AtomicGenerator.MatchVariants` throws `InvalidOperationException` instead of a bare
+  `Exception` when a token accumulates more than 500 variant handlers (a cyclic
+  variant). Every engine exception that had no message now says what failed: the
+  offending rule type, the ambiguous `MultiPass` variant and its token, or the
+  Avalonia member a reflection lookup couldn't find.
+- Package versions are managed centrally (`Directory.Packages.props`). The published
+  packages' dependency versions are unchanged.
 
 ### Removed
 
@@ -77,6 +106,12 @@ All notable changes to this project are documented here. The format follows
 - `p-*`, `border-*` (width) and `rounded-*` not applying to `TemplatedControl`
   subclasses such as `Button`.
 - A token used in two source files being emitted twice by `AtomicCli`.
+- `truncate`, `text-clip` and `text-ellipsis` broke code generation ("No value emitter
+  registered" for `TextTrimming`).
+- CI hanging indefinitely in `dotnet test`: the MSBuild integration tests' nested
+  `dotnet build` could leave build servers holding its redirected output open. Nested
+  builds now disable build servers, drain stdout/stderr concurrently and time out. CI
+  also has job/step timeouts and `--blame-hang-timeout` diagnostics.
 
 ## [0.0.4] - 2026-08-25
 

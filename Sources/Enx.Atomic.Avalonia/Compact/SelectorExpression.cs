@@ -40,7 +40,10 @@ public abstract record SelectorExpression
                 typeof(Selectors).GetMethod(
                     nameof(Selectors.PropertyEquals),
                     [typeof(Selector), typeof(AvaloniaProperty), typeof(object)]
-                ) ?? throw new InvalidOperationException();
+                )
+                ?? throw new InvalidOperationException(
+                    "Could not find Selectors.PropertyEquals(Selector, AvaloniaProperty, object); Avalonia's public API no longer matches what SelectorExpression.PropertyEquals expects."
+                );
         }
 
         /// <summary>The property to compare.</summary>
@@ -88,7 +91,9 @@ public abstract record SelectorExpression
                 }
 
                 if (prop is null)
-                    throw new InvalidOperationException();
+                    throw new InvalidOperationException(
+                        $"Could not find a public static field on '{declaringType.FullName}' exposing AvaloniaProperty '{Property.Name}' (owner type '{Property.OwnerType.FullName}'). Pass PropertyEquals' declaringType explicitly when the property was brought in through AvaloniaProperty.AddOwner and is not declared as a public static field on its owner type."
+                    );
             }
 
             var propAccess = Expression.MakeMemberAccess(null, prop);
@@ -105,7 +110,9 @@ public abstract record SelectorExpression
         {
             CallInfo =
                 typeof(Selectors).GetMethod(nameof(Selectors.Class), [typeof(Selector), typeof(string)])
-                ?? throw new InvalidOperationException();
+                ?? throw new InvalidOperationException(
+                    "Could not find Selectors.Class(Selector, string); Avalonia's public API no longer matches what SelectorExpression.Class expects."
+                );
         }
 
         /// <summary>The style class name to match.</summary>

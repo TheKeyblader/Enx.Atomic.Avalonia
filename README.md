@@ -66,6 +66,19 @@ dotnet test Tests/Enx.Atomic.Avalonia.Tests/Enx.Atomic.Avalonia.Tests.csproj \
   /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:CoverletOutput=../../coverage/
 ```
 
+The emitted code is snapshot-tested with [Verify](https://github.com/VerifyTests/Verify)
+(`Tests/Enx.Atomic.Avalonia.Tests/Snapshots/`): an intended change to the generated
+output shows up as a failing test plus a `.received.cs` file. Review the diff, then
+accept it by replacing the matching `.verified.cs` file with it.
+
+To see how a set of tokens resolves (variants and rule matched, emission order,
+setters, and, with `--control`, the values Avalonia actually applies), use the
+CLI's `probe` command against the example configuration:
+
+```bash
+dotnet run --project Examples/Enx.Atomic.Avalonia.Example.Config -- probe "hover:ml-4 p-4" --control Button
+```
+
 ## Releasing
 
 `Enx.Atomic.Avalonia`, `Enx.Atomic.Avalonia.Preset.Mini`, and
