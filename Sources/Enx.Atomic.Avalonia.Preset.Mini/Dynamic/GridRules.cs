@@ -1,4 +1,4 @@
-using System.Collections.Immutable;
+﻿using System.Collections.Immutable;
 using System.Text.RegularExpressions;
 using Avalonia;
 using Avalonia.Controls;
@@ -15,12 +15,16 @@ namespace Enx.Atomic.Avalonia.Preset.Mini.Dynamic;
 /// can only belong to one collection's <c>Parent</c> at a time.
 ///
 /// <para>
-/// Marked <see cref="EmittableGhostPropertyHostAttribute"/>: this class's own compiled code is what actually
-/// applies the effect (the class handler below), so a project only consuming the build-time codegen output —
-/// which may not reference this assembly at all — needs an equivalent copy of it. <see cref="EmbeddableSource"/>
-/// is that copy, kept in sync by hand: same field names, same behavior, just <c>global::</c>-qualified throughout
-/// and calling <c>AddClassHandler</c> by its static method form instead of as an extension, so it needs no
-/// <c>using</c> directives of its own.
+/// The explicit static constructor below registers those handlers, so the utilities have a real effect on the
+/// runtime (<c>AtomicGenerator.Generate</c>) path too — without it the type is <c>beforefieldinit</c> and the
+/// resolved ghost property would be set with nothing listening.
+/// </para>
+/// <para>
+/// Marked <see cref="EmittableGhostPropertyHostAttribute"/>: this class's own compiled code is what applies the
+/// effect at runtime, so a project only consuming the build-time codegen output — which may not reference this
+/// assembly at all — needs an equivalent copy of it. <see cref="EmbeddableSource"/> is that copy, kept in sync by
+/// hand: same field names, same behavior, just <c>global::</c>-qualified throughout and calling <c>AddClassHandler</c>
+/// by its static method form instead of as an extension, so it needs no <c>using</c> directives of its own.
 /// </para>
 /// </summary>
 [EmittableGhostPropertyHost]
@@ -33,6 +37,47 @@ public static class GridDefinitions
         Grid,
         RowDefinitions?
     >("EnxRowDefinitions", typeof(GridDefinitions));
+
+    /// <summary>
+    /// Mirrors <see cref="EmbeddableSource"/> exactly: a real attached property carries the desired definitions,
+    /// and a class handler syncs them into <see cref="Grid.ColumnDefinitions"/>/<see cref="Grid.RowDefinitions"/>
+    /// whenever it changes, cloning each definition (a <see cref="ColumnDefinition"/>/<see cref="RowDefinition"/>
+    /// can only belong to one collection's <c>Parent</c> at a time).
+    /// <para>
+    /// The explicit static constructor is load-bearing twice over: it makes the type not <c>beforefieldinit</c>, so
+    /// the handlers are registered before the first field read, and — unlike a type with only field initializers —
+    /// it guarantees that read can never observe the properties without the handlers. This is what makes the grid
+    /// utilities work on the runtime (<c>AtomicGenerator.Generate</c>) path, not only through the embedded copy.
+    /// </para>
+    /// </summary>
+    static GridDefinitions()
+    {
+        ColumnDefinitionsProperty.Changed.AddClassHandler<Grid, ColumnDefinitions?>(
+            (grid, e) =>
+            {
+                grid.ColumnDefinitions.Clear();
+                var newValue = e.NewValue.GetValueOrDefault();
+                if (newValue is not null)
+                {
+                    foreach (var column in newValue)
+                        grid.ColumnDefinitions.Add(new ColumnDefinition(column.Width));
+                }
+            }
+        );
+
+        RowDefinitionsProperty.Changed.AddClassHandler<Grid, RowDefinitions?>(
+            (grid, e) =>
+            {
+                grid.RowDefinitions.Clear();
+                var newValue = e.NewValue.GetValueOrDefault();
+                if (newValue is not null)
+                {
+                    foreach (var row in newValue)
+                        grid.RowDefinitions.Add(new RowDefinition(row.Height));
+                }
+            }
+        );
+    }
 
     /// <summary>Kept in sync by hand with this class's own body — see the type's remarks.</summary>
     public const string EmbeddableSource = """

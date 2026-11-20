@@ -35,9 +35,10 @@ So the `Examples` column is not illustrative prose: it is executable. When you p
 the C# type to `Here`, flip the status, add one or two tokens that the test can resolve, and remove
 the row from [Next to port](#next-to-port) below.
 
-Some examples resolve but are **codegen-only** (`grid-*`, `col-*`, `row-*`, and any resource-backed
-color): `AtomicGenerator.Generate` returns the styles, but only the CLI emits them.
-`ARCHITECTURE.md#runtime-resolution` explains why that is deliberate, not a bug.
+Resource-backed colors (`bg-*`, `text-*`, `border-*`) are **codegen-only**: `AtomicGenerator.Generate`
+returns the style, but only the CLI builds the `ResourceDictionary` its `DynamicResource` lookup resolves
+against. `ARCHITECTURE.md#runtime-resolution` explains why that is deliberate, not a bug. Grid utilities
+work on both paths.
 
 ## Rules
 

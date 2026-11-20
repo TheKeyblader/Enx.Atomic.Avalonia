@@ -1,6 +1,7 @@
-using System.Reflection;
+﻿using System.Reflection;
 using Avalonia;
 using Avalonia.Controls;
+using Enx.Atomic.Avalonia.Preset.Mini;
 using Enx.Atomic.Avalonia.Preset.Mini.Dynamic;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -12,12 +13,11 @@ public class GridRuleTests
     [AvaloniaFact]
     public void EmbeddableSource_CompilesAndAppliesToARealGrid()
     {
-        // GridDefinitions' real (non-embedded) class only holds the two AttachedProperty fields — enough for
-        // rules to build Setters and for AvaloniaPropertyNaming's reflection lookup, but it never registers a
-        // class handler, so setting it directly does nothing. EmbeddableSource is the only place the actual
-        // ghost-property workaround (https://github.com/AvaloniaUI/Avalonia/discussions/14340) lives — it's
-        // what a consuming project's generated code compiles and runs. This compiles that text for real (the
-        // same way CodeGenTests compiles emitted styles) and proves it still applies to a real Grid.
+        // The real (non-embedded) GridDefinitions now registers the same class handlers in its own static
+        // constructor (see GridCols_AtRuntime_Applies...), for the runtime path. EmbeddableSource is still what a
+        // consuming project's generated code compiles and runs — the build-time path must stay standalone — so
+        // this compiles that text for real (the same way CodeGenTests compiles emitted styles) and proves it
+        // still applies to a real Grid.
         var source = $$"""
             namespace GridDefinitionsEmbedProbe;
 
@@ -95,6 +95,56 @@ public class GridRuleTests
         Assert.Equal(GridDefinitions.RowDefinitionsProperty, setter.Property);
         var rows = Assert.IsType<RowDefinitions>(setter.Value);
         Assert.Equal(2, rows.Count);
+    }
+
+    /// <summary>
+    /// The runtime path: <see cref="AtomicGenerator{TTheme}.Generate"/> resolves the ghost property, and
+    /// <see cref="GridDefinitions"/>'s own static constructor registers the class handler that syncs it into
+    /// <see cref="Grid.ColumnDefinitions"/>/<see cref="Grid.RowDefinitions"/>. Before that static constructor
+    /// existed only the embedded copy did the sync, so the resolved style silently did nothing.
+    /// </summary>
+    [AvaloniaFact]
+    public void GridColsAndRows_AtRuntime_ApplyToAShownGrid()
+    {
+        var (_, generator) = TestHelpers.CreateMiniGenerator();
+        var utils = generator.Generate("grid-cols-3 grid-rows-2", new AtomicGenerator<MiniTheme>.Options());
+        var grid = new Grid { Classes = { "grid-cols-3", "grid-rows-2" } };
+
+        var window = utils.ShowWithStyles(grid);
+        try
+        {
+            Assert.Equal(3, grid.ColumnDefinitions.Count);
+            Assert.All(grid.ColumnDefinitions, column => Assert.Equal(GridLength.Star, column.Width));
+            Assert.Equal(2, grid.RowDefinitions.Count);
+            Assert.All(grid.RowDefinitions, row => Assert.Equal(GridLength.Star, row.Height));
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    /// <summary><c>col-span-*</c>/<c>row-*</c> are ordinary attached properties on the grid *child* and work at runtime already — this pins that the grid test above didn't change them.</summary>
+    [AvaloniaFact]
+    public void GridCell_AtRuntime_AppliesToAGridChild()
+    {
+        var (_, generator) = TestHelpers.CreateMiniGenerator();
+        var utils = generator.Generate("grid-cols-3 col-span-2 row-1", new AtomicGenerator<MiniTheme>.Options());
+        var grid = new Grid { Classes = { "grid-cols-3" } };
+        var child = new Border { Classes = { "col-span-2", "row-1" } };
+        grid.Children.Add(child);
+
+        var window = utils.ShowWithStyles(grid);
+        try
+        {
+            Assert.Equal(3, grid.ColumnDefinitions.Count);
+            Assert.Equal(2, Grid.GetColumnSpan(child));
+            Assert.Equal(1, Grid.GetRow(child));
+        }
+        finally
+        {
+            window.Close();
+        }
     }
 
     [AvaloniaTheory]
