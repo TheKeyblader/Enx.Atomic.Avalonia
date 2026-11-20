@@ -15,9 +15,12 @@ namespace Enx.Atomic.Avalonia;
 /// found, embeds the marked class's own <c>EmbeddableSource</c> once into the generated file instead of
 /// referencing the original type.
 ///
-/// The marked class must expose a <c>public const string EmbeddableSource</c> holding a complete,
+/// The marked class must either expose a <c>public const string EmbeddableSource</c> holding a complete,
 /// self-contained C# class declaration — no namespace, and every type referenced via a <c>global::</c>-qualified
-/// name, so the embedded copy needs no <c>using</c> directives contributed by the rest of the file. Its own
+/// name, so the embedded copy needs no <c>using</c> directives contributed by the rest of the file — or a
+/// <c>Descriptor</c> static member of type <see cref="Composites.CompositePropertyDescriptor"/>, in which case
+/// the copy is generated from that descriptor instead of being maintained by hand (preferred for anything
+/// following the four-sides pattern; see <see cref="Composites.MarginSides"/>). Either way the copy's own
 /// simple name (as text) must exactly match the marked class's <see cref="Type.Name"/>, and its property
 /// fields must be named exactly like the marked class's own fields — the emitter reuses the original type's
 /// field-name lookup (see <c>AvaloniaPropertyNaming</c>) and just swaps which type name prefixes it.

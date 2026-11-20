@@ -28,6 +28,7 @@ public static class StyleEmitter
         var values = new ValueEmitterRegistry(valueEmitters);
         var namespaces = new HashSet<string> { "Avalonia.Styling" };
         var embeddedTypes = new Dictionary<string, string>();
+        var requiresCompositeHelper = false;
         var body = new StringBuilder();
 
         for (var i = 0; i < utils.Count; i++)
@@ -44,15 +45,16 @@ public static class StyleEmitter
                     continue;
 
                 var declaringType = setter.Property.OwnerType;
-                var embeddableSource = EmittableGhostPropertyEmitter.TryGetEmbeddableSource(declaringType);
+                var embeddableHost = EmittableGhostPropertyEmitter.TryGetHostSource(declaringType);
 
                 string propertyText;
-                if (embeddableSource is not null)
+                if (embeddableHost is { } host)
                 {
                     // The declaring type's own assembly may not be a dependency of the project this file
                     // compiles into (see EmittableGhostPropertyHostAttribute) — embed a self-contained copy
                     // once instead of referencing the original.
-                    embeddedTypes[declaringType.Name] = embeddableSource;
+                    embeddedTypes[declaringType.Name] = host.Source;
+                    requiresCompositeHelper |= host.RequiresCompositeHelper;
                     propertyText =
                         $"{declaringType.Name}.{AvaloniaPropertyNaming.GetFieldName(setter.Property, declaringType)}";
                 }
@@ -108,6 +110,14 @@ public static class StyleEmitter
         file.Append(body);
         file.AppendLine("    }");
         file.AppendLine("}");
+
+        if (requiresCompositeHelper)
+        {
+            // One shared recompose/set-then-dispose implementation for every embedded composite host, emitted
+            // once per file (file-local, so it can't collide with a real type in the consuming project).
+            file.AppendLine();
+            file.AppendLine(CompositeHostSourceEmitter.HelperSource);
+        }
 
         foreach (var source in embeddedTypes.OrderBy(kv => kv.Key, StringComparer.Ordinal).Select(kv => kv.Value))
         {
