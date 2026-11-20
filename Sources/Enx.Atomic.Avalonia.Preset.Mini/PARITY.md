@@ -35,9 +35,10 @@ So the `Examples` column is not illustrative prose: it is executable. When you p
 the C# type to `Here`, flip the status, add one or two tokens that the test can resolve, and remove
 the row from [Next to port](#next-to-port) below.
 
-Some examples resolve but are **codegen-only** (`grid-*`, `col-*`, `row-*`, and any resource-backed
-color): `AtomicGenerator.Generate` returns the styles, but only the CLI emits them.
-`ARCHITECTURE.md#runtime-resolution` explains why that is deliberate, not a bug.
+Resource-backed colors (`bg-*`, `text-*`, `border-*`) are **codegen-only**: `AtomicGenerator.Generate`
+returns the style, but only the CLI builds the `ResourceDictionary` its `DynamicResource` lookup resolves
+against. `ARCHITECTURE.md#runtime-resolution` explains why that is deliberate, not a bug. Grid utilities
+work on both paths.
 
 ## Rules
 
@@ -202,7 +203,7 @@ upstream's order.
 
 | Upstream | Status | Here | Examples | Notes |
 |---|---|---|---|---|
-| `shadow-*`, `shadow-inset`, `shadow-opacity-*` | ⏳ todo | — | | `DropShadowEffect` exists but is single-layer and has no inset form; needs design. |
+| `shadow-*` (size) | 🟡 partial | `Dynamic/ShadowRules.cs` (`ShadowRule<TTheme>`) | `shadow-md`, `shadow-inner` | `Border.BoxShadowProperty` + `ContentPresenter.BoxShadowProperty` (`BoxShadows`, multi-layer, inset). Sizes only: shadow colors (`shadow-red-500`), the `shadow-inset` modifier, `shadow-opacity-*` and arbitrary values are not ported — the color is part of each theme entry. A Fluent `Button` template does not forward `BoxShadow`, so the effect shows on a `Border`/`ContentPresenter`. |
 
 ### `size.ts`
 
@@ -211,10 +212,10 @@ upstream's order.
 | `w-{n}` / `h-{n}` | ✅ ported | `Dynamic/SizeRules.cs` (`SizeRule<TTheme>`) | `w-4`, `h-4`, `w-[123px]` | `Layoutable.WidthProperty`/`HeightProperty`; reads the `Sizes` scale, then bare rem. |
 | `min-w-*` / `max-w-*` / `min-h-*` / `max-h-*` | ✅ ported | `Dynamic/SizeRules.cs` (`SizeRule<TTheme>`) | `min-w-4`, `max-h-4` | Respective `Layoutable` properties. |
 | `size-{n}`, `size-min-*`, `size-max-*` | ⏳ todo | — | | Sets width *and* height (two to four properties); not registered. |
-| `w-full` / `h-full` | ⏳ todo | — | | Needs design: `Layoutable.Width` is an absolute `double`, so 100% isn't representable directly. The closest idiom is `HorizontalAlignment=Stretch` / `VerticalAlignment=Stretch` (plus clearing `Width`/`Height`), which only fills the space the parent panel offers — decide whether that approximation is acceptable under the upstream name. |
+| `w-full` / `h-full` | 🟡 partial | `Dynamic/SizeRules.cs` (`SizeRule<TTheme>`) | `w-full`, `h-full` | No percentage lengths in Avalonia: clears `Width`/`Height` (`double.NaN`) and sets `HorizontalAlignment`/`VerticalAlignment` to `Stretch`. Fills the space the parent offers (a Grid cell, a DockPanel, a StackPanel's cross axis) but cannot express "100%" on a StackPanel's main axis. Ranks above a concrete size, so it wins over `w-4` in either source order. |
 | `w-screen` / `h-screen`, `w-{a/b}` fractions | ❌ dropped | — | | Viewport units and percentages aren't representable: `Layoutable.Width` is an absolute `double`. |
 | `w-min` / `w-max` / `w-fit` | ❌ dropped | — | | No content-based (`min-content`/`fit-content`) sizing. |
-| `w-auto` / `h-auto` | ⏳ todo | — | | `double.NaN` means "unset/auto"; trivial. |
+| `w-auto` / `h-auto` | ✅ ported | `Dynamic/SizeRules.cs` (`SizeRule<TTheme>`) | `w-auto`, `h-auto` | Clears `Width`/`Height` to `double.NaN` (auto sizing) and leaves the alignment untouched. Ranks below a concrete size, so `w-4` still wins. |
 | `block-*` / `inline-*` (logical sizes) | ❌ dropped | — | | `Width`/`Height` are physical only. |
 | `w-screen-{breakpoint}` / `h-screen-{breakpoint}` | ❌ dropped | — | | No viewport units. |
 | `aspect-*` (`aspect-ratio`) | ❌ dropped | — | | No aspect-ratio property; `Viewbox` approximates but is a different control. |
@@ -473,7 +474,7 @@ whether the corresponding utilities can read it — and its examples are tokens 
 | `spacing` | 🟡 partial | `Extensions/DefaultTheme.cs` (`Spacing`) | `m-4`, `gap-4`, `p-4` | This port ships the numeric Tailwind scale (`0`–`96` at 4 px/step, plus `px`) instead of upstream's named scale (`DEFAULT`/`none`/`xs`/.../`9xl`); `m-4` resolves to 16 px either way (upstream via rem, here by key), but `m-xs`/`m-DEFAULT` don't resolve here. |
 | `duration` | ⏳ todo | — | | Avalonia transitions can use durations; no scale or utility yet. |
 | `borderRadius` | ✅ ported | `Extensions/DefaultTheme.cs` (`Radii`) | `rounded-md`, `rounded-full` | rem converted to px at 16/rem. |
-| `boxShadow` | ⏳ todo | — | | Needs the `shadow-*` design; `DropShadowEffect` is single-layer. |
+| `boxShadow` | 🟡 partial | `Extensions/DefaultTheme.cs` (`BoxShadows`) + `Dynamic/ShadowRules.cs` | `shadow-md`, `shadow-inner` | Ported as `BoxShadows` values (DEFAULT, none, sm, md, lg, xl, 2xl, inner) with the `var(--un-shadow-inset)` placeholder dropped; shadow colors and opacity are not ported. |
 | `ringWidth` | ⏳ todo | — | | Needs the `ring-*` design. |
 | `zIndex` | ⏳ todo | — | | Only `auto` upstream; `Visual.ZIndex` takes an `int`, so no scale is needed — just the `z-*` rule. |
 | `media` | ❌ dropped | — | | No media queries. |
@@ -489,7 +490,7 @@ whether the corresponding utilities can read it — and its examples are tokens 
 | Upstream | Status | Here | Examples | Notes |
 |---|---|---|---|---|
 | `baseSize` | 🟡 partial | `Extensions/DefaultTheme.cs` (`Sizes`) | `w-xs`, `h-md` | rem converted to px; `prose` (`65ch`) dropped — no character-based unit. |
-| `width` / `height` / `maxWidth` / `maxHeight` / `minWidth` / `minHeight` | 🟡 partial | `Extensions/DefaultTheme.cs` (`Sizes`) + `Dynamic/SizeRules.cs` | `w-4`, `max-w-4` | Same `baseSize` keys shared by all size properties (upstream adds `auto`/`screen`/`none`/`full`/fractions); no percentages or viewport units, and `auto`/`none` are expressible but not registered. |
+| `width` / `height` / `maxWidth` / `maxHeight` / `minWidth` / `minHeight` | 🟡 partial | `Extensions/DefaultTheme.cs` (`Sizes`) + `Dynamic/SizeRules.cs` | `w-4`, `max-w-4` | Same `baseSize` keys shared by all size properties. Upstream's `auto`/`full` are mapped outside the scale (`w-auto`, `w-full`); `none`, `screen` and fractions are not registered — no percentages or viewport units. |
 | `inlineSize` / `blockSize` / `maxInlineSize` / `maxBlockSize` / `minInlineSize` / `minBlockSize` | ❌ dropped | — | | Logical sizes have no physical Avalonia counterpart. |
 | `containers` | ⏳ todo | — | | Only needed once the `@container` variant lands. |
 
@@ -504,10 +505,10 @@ whether the corresponding utilities can read it — and its examples are tokens 
 
 | Section | ✅ ported | 🟡 partial | ❌ dropped | ⏳ todo | Total |
 |---|---|---|---|---|---|
-| Rules | 33 | 10 | 71 | 48 | 162 |
+| Rules | 34 | 12 | 71 | 45 | 162 |
 | Variants | 3 | 1 | 19 | 7 | 30 |
-| Theme scales | 3 | 6 | 6 | 14 | 29 |
-| **Total** | **39** | **17** | **96** | **69** | **221** |
+| Theme scales | 3 | 7 | 6 | 13 | 29 |
+| **Total** | **40** | **20** | **96** | **65** | **221** |
 
 > Counts are asserted by `ParityMatrixTests.Counts_MatchSummary` — update this table when rows change.
 
@@ -531,9 +532,6 @@ above.
    mono are already spelled out upstream).
 9. **`top/right/bottom/left-*` + `inset-*`** — `Canvas.Left/Top/Right/Bottom`; only meaningful in a
    `Canvas`, but that is the Avalonia idiom for absolute placement.
-10. **`shadow-*`** — highest-value ⏳ that needs design rather than a mapping: `DropShadowEffect`
-    covers single-layer shadows, but the scale has multi-layer and `inset` entries with no
-    equivalent, so it needs a deliberate "closest honest subset" decision.
 
 Trivial aliases (`text-truncate`, `decoration-none`, `gap-col-*`, `text-size-*`, `b-*`/`rd-*`,
 `text-align-*`, ...) are deliberately *not* in this list: they add surface without new capability.

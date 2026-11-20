@@ -18,8 +18,9 @@ namespace Enx.Atomic.Avalonia.Composites;
 ///   <item>declaring four public <c>AttachedProperty&lt;double&gt;</c> fields, in the kind's slot order, whose
 ///   registered names are unique (the shipped ones prefix them with <c>Enx</c>);</item>
 ///   <item>describing them with <see cref="Create"/> (or this constructor, for non-standard field names);</item>
-///   <item>registering a class handler that recomposes the real property from the four sides — the shipped
-///   hosts do this through the engine's shared runtime implementation, so a new host only needs wiring;</item>
+///   <item>calling <see cref="CompositeProperty.Register"/> from the host's explicit static constructor, which
+///   registers the class handler that recomposes the real property from the four sides (the compose function is
+///   picked from <see cref="Kind"/>, so a new host only needs wiring);</item>
 ///   <item>marking the class <see cref="EmittableGhostPropertyHostAttribute"/> so the build-time code
 ///   generator embeds an equivalent, self-contained copy of it into the generated file (the consuming
 ///   project's references may not include the host's assembly at all).</item>
@@ -29,6 +30,11 @@ namespace Enx.Atomic.Avalonia.Composites;
 /// A side is <see cref="double.NaN"/> when it is unset. Unset sides compose as <c>0</c>; when all four are
 /// unset the host withdraws its contribution entirely, so the real property falls back to its theme/default
 /// value instead of being pinned to a zeroed struct.
+/// </para>
+/// <para>
+/// <see cref="CompositeProperty.Register"/> is the runtime half: a descendant declares the sides and the
+/// descriptor, and that call validates the real property's CLR type against <see cref="Kind"/> and registers the
+/// recomposition. The internal handler implementation stays an implementation detail.
 /// </para>
 /// </summary>
 public sealed class CompositePropertyDescriptor

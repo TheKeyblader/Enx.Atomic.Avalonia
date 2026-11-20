@@ -33,6 +33,7 @@ public class EmittedCodeSnapshotTests
         w-4 h-8 min-w-0 max-w-xl gap-2 gap-x-1
         m-1 mx-2 ml-4 -mt-2 p-1 px-2 pt-3
         border border-2 border-t-4 rounded-md rounded-tl-lg
+        shadow-md shadow-inner
         grid-cols-3 grid-rows-2 col-span-2 row-span-2
         hover:w-8 w-4 sm:flex-col max-sm:w-4 dark:bg-slate-800 dark:hover:bg-red-600
         """;

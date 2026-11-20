@@ -56,13 +56,12 @@ public static class PaddingSides
             "Padding"
         );
 
-    static PaddingSides()
-    {
-        new CompositePropertyHandler<Thickness>(
+    static PaddingSides() =>
+        CompositeProperty.Register(
             Descriptor,
-            Decorator.PaddingProperty,
-            [PaddingLeftProperty, PaddingTopProperty, PaddingRightProperty, PaddingBottomProperty],
-            static (left, top, right, bottom) => new Thickness(left, top, right, bottom)
-        ).RegisterClassHandlers();
-    }
+            PaddingLeftProperty,
+            PaddingTopProperty,
+            PaddingRightProperty,
+            PaddingBottomProperty
+        );
 }

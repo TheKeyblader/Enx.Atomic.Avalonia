@@ -49,18 +49,12 @@ public static class BorderThicknessSides
             "BorderThickness"
         );
 
-    static BorderThicknessSides()
-    {
-        new CompositePropertyHandler<Thickness>(
+    static BorderThicknessSides() =>
+        CompositeProperty.Register(
             Descriptor,
-            Border.BorderThicknessProperty,
-            [
-                BorderThicknessLeftProperty,
-                BorderThicknessTopProperty,
-                BorderThicknessRightProperty,
-                BorderThicknessBottomProperty,
-            ],
-            static (left, top, right, bottom) => new Thickness(left, top, right, bottom)
-        ).RegisterClassHandlers();
-    }
+            BorderThicknessLeftProperty,
+            BorderThicknessTopProperty,
+            BorderThicknessRightProperty,
+            BorderThicknessBottomProperty
+        );
 }

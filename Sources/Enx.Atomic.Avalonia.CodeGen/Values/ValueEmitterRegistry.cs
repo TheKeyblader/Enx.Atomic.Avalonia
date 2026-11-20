@@ -9,6 +9,7 @@ public sealed class ValueEmitterRegistry(IEnumerable<IValueEmitter>? emitters = 
         new EnumValueEmitter(),
         new ThicknessValueEmitter(),
         new CornerRadiusValueEmitter(),
+        new BoxShadowsValueEmitter(),
         new BrushValueEmitter(),
         new CursorValueEmitter(),
         new TextDecorationsValueEmitter(),

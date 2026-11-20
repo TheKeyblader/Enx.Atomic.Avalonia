@@ -60,13 +60,12 @@ public static class MarginSides
             "Margin"
         );
 
-    static MarginSides()
-    {
-        new CompositePropertyHandler<Thickness>(
+    static MarginSides() =>
+        CompositeProperty.Register(
             Descriptor,
-            Layoutable.MarginProperty,
-            [MarginLeftProperty, MarginTopProperty, MarginRightProperty, MarginBottomProperty],
-            static (left, top, right, bottom) => new Thickness(left, top, right, bottom)
-        ).RegisterClassHandlers();
-    }
+            MarginLeftProperty,
+            MarginTopProperty,
+            MarginRightProperty,
+            MarginBottomProperty
+        );
 }

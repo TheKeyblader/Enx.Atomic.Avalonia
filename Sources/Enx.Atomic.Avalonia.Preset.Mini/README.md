@@ -119,6 +119,8 @@ Theme-driven — the value after the prefix is resolved against a scale (see
 | `rounded-t/b/l/r-{radius}` | `CornerRadiusSides`, two adjacent corners | [Radii](#radii) |
 | `rounded-tl/tr/br/bl-{radius}` | `CornerRadiusSides`, one corner | [Radii](#radii) |
 | `w-{size}` / `h-{size}` | `Layoutable.WidthProperty` / `HeightProperty` | [Sizes](#sizes) |
+| `w-full` / `h-full` | `Layoutable.WidthProperty` / `HeightProperty` = `double.NaN` **and** the matching alignment = `Stretch` | *(structural)* |
+| `w-auto` / `h-auto` | `Layoutable.WidthProperty` / `HeightProperty` = `double.NaN` | *(structural)* |
 | `min-w-{size}` / `max-w-{size}` | `Layoutable.MinWidthProperty` / `MaxWidthProperty` | [Sizes](#sizes) |
 | `min-h-{size}` / `max-h-{size}` | `Layoutable.MinHeightProperty` / `MaxHeightProperty` | [Sizes](#sizes) |
 | `m-{n}` | `MarginSides` (four sides), recomposed into `Layoutable.MarginProperty` | [Spacing](#spacing) |
@@ -128,6 +130,7 @@ Theme-driven — the value after the prefix is resolved against a scale (see
 | `p-{n}` | `PaddingSides` (four sides), recomposed into `Decorator.PaddingProperty` | [Spacing](#spacing) |
 | `px-{n}` / `py-{n}` | `PaddingSides`, left+right / top+bottom | [Spacing](#spacing) |
 | `pt-{n}` / `pr-{n}` / `pb-{n}` / `pl-{n}` | `PaddingSides`, one side | [Spacing](#spacing) |
+| `shadow` / `shadow-{size}` | `Border.BoxShadowProperty` **and** `ContentPresenter.BoxShadowProperty` (two styles) | [BoxShadows](#boxshadows) |
 | `gap-{n}` | `Spacing`/`ColumnSpacing`/`RowSpacing` on `StackPanel`, `Grid`, `UniformGrid` | [Spacing](#spacing) |
 | `gap-x-{n}` | `ColumnSpacing` on `Grid` and `UniformGrid` only | [Spacing](#spacing) |
 | `gap-y-{n}` | `RowSpacing` on `Grid` and `UniformGrid` only | [Spacing](#spacing) |
@@ -144,8 +147,8 @@ Notes:
 - **`grid-cols-*`/`grid-rows-*` are structural, not theme-scaled** — `n` is parsed directly as a plain
   integer, not looked up in a scale. `Grid.ColumnDefinitions`/`RowDefinitions` aren't real
   `AvaloniaProperty`s (Avalonia limitation), so these go through a ghost `AttachedProperty` plus a class
-  handler that syncs the real collection — see `GridDefinitions` in `Dynamic/GridRules.cs`. Only wired
-  up for the build-time code-gen path today, not runtime resolution.
+  handler that syncs the real collection — see `GridDefinitions` in `Dynamic/GridRules.cs`. Both paths
+  work: the real class registers the handlers in its static constructor, and the codegen copy has its own.
 - **`col-*`/`row-*`/`col-span-*`/`row-span-*` target the grid child, not the `Grid`** — they're
   `AttachedProperty`s meant to be set on whatever control sits inside the grid (e.g.
   `<Border Classes="col-span-2">`), not on the `Grid` element itself.
@@ -172,13 +175,24 @@ Notes:
   `DEFAULT`).
 - **Arbitrary values** (`bg-[#ff0000]`, `w-[123px]`, `m-[10px]`, `rounded-[6px]`, `border-[3px]`,
   `text-[18px]`) bypass the theme scale entirely — see [Arbitrary values](#arbitrary-values) below.
+- **`w-full`/`h-full` stretch, they are not "100%".** Avalonia has no percentage lengths: the tokens
+  clear the length and set `HorizontalAlignment`/`VerticalAlignment` to `Stretch`, so they fill what the
+  parent offers (a `Grid` cell, a `DockPanel`, a `StackPanel`'s cross axis) but cannot fill a
+  `StackPanel`'s main axis. `w-auto`/`h-auto` only clear the length. Ordering within the family is
+  fixed by the rule's rank — `auto` < a concrete size < `full` — so `w-4 w-full` and `w-full w-4` both
+  fill, and `w-auto w-4` stays 16px.
+- **`shadow-{size}` is size-only.** The values come from the [BoxShadows](#boxshadows) scale and set
+  `BoxShadows` on `Border` and `ContentPresenter`; a Fluent `Button` template does not forward
+  `BoxShadow`, so the effect isn't visible on a `Button` itself. Shadow colors (`shadow-red-500`), the
+  `shadow-inset` modifier, `shadow-opacity-*` and arbitrary values are not implemented.
 - **`w-*`/`h-*` use the small named [Sizes](#sizes) scale, not [Spacing](#spacing)** — this differs
   from Tailwind, where `w-*` shares the spacing scale. A bare number here (e.g. `w-64`) that isn't a
   named `Sizes` key falls back to being read as **rem** (`64rem × 16 = 1024px`), not the spacing
   scale's `64 → 256px`.
-- Every scale below also accepts a bare number with no unit as a fallback when the key isn't found
-  by name — treated as **rem** (`× RemToPxFactor`, default 16) everywhere *except*
+- Every numeric scale below also accepts a bare number with no unit as a fallback when the key
+  isn't found by name — treated as **rem** (`× RemToPxFactor`, default 16) everywhere *except*
   [LineWidths](#linewidths), which treats it as raw **px** (matching UnoCSS's `lineWidth` scale).
+  [BoxShadows](#boxshadows) is not numeric and has no bare-number fallback.
 
 ### Arbitrary values
 
@@ -259,6 +273,23 @@ this differs from [Spacing](#spacing).
 |---|---|
 | `none` | 0 |
 | `DEFAULT` | 1 |
+
+### BoxShadows
+
+Used by `shadow` (the `DEFAULT` key) and `shadow-{key}`. Each entry is one or two Avalonia
+`BoxShadows` layers; `none` is the empty value. `inner` is the only inset entry. Lengths are px;
+the colour is `rgb(0 0 0 / α)` with α in ARGB.
+
+| Key | Layers (`offsetX offsetY blur spread alpha`) |
+|---|---|
+| `none` | *(no shadow)* |
+| `sm` | `0 1 2 0` α 0.05 |
+| `DEFAULT` | `0 1 3 0` α 0.1; `0 1 2 -1` α 0.1 |
+| `md` | `0 4 6 -1` α 0.1; `0 2 4 -2` α 0.1 |
+| `lg` | `0 10 15 -3` α 0.1; `0 4 6 -4` α 0.1 |
+| `xl` | `0 20 25 -5` α 0.1; `0 8 10 -6` α 0.1 |
+| `2xl` | `0 25 50 -12` α 0.25 |
+| `inner` | `0 2 4 0` α 0.05, inset |
 
 ### FontSizes
 

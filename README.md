@@ -46,12 +46,12 @@ real gap (see below):
   [ARCHITECTURE.md](ARCHITECTURE.md#build-time-c-code-generation) for the full setup.
 - **At runtime** — call `AtomicGenerator<TTheme>.Generate(...)` yourself and add the
   resulting styles to your `Application.Styles`. See `Sandbox/Program.cs`. Grid
-  utilities (`grid-cols-*`, `col-span-*`, ...) and resource-based theming
-  (`bg-*`/`text-*`/`border-*`) are **codegen-only today** — at runtime they silently
-  resolve to nothing, since each needs machinery only the build-time pipeline assembles
-  (the embedded `GridDefinitions` class handler, a built `ResourceDictionary`). Full
-  runtime parity would need a connector watching for newly-used classes across
-  loaded components and emitting/resolving them live — see the Roadmap's v3.
+  utilities (`grid-cols-*`, `col-span-*`, ...) work here too; only resource-based theming
+  (`bg-*`/`text-*`/`border-*` colors) is **codegen-only today** — at runtime the style's
+  `DynamicResource` lookup finds no entry, since only the build-time pipeline builds the
+  `ResourceDictionary`. Closing that last gap would need a connector watching for
+  newly-used classes across loaded components and resolving them live — see the
+  Roadmap's v3.
 
 ## Testing
 
@@ -95,21 +95,14 @@ token/rule vocabulary and lays down infrastructure the later milestones need, v1
 ready to build a real app on — every manual mechanism an app needs is there, just not
 the tooling/automation on top of it yet (an editor extension, auto-discovering a
 safelist from referenced packages) — v2 is where that tooling/automation, plus
-deeper architectural bets, land — and v3 brings runtime resolution up to parity
-with build-time codegen. Alpha (stabilizing what
+deeper architectural bets, land — and v3 closes the remaining runtime gap
+(resource-based theming) so runtime resolution matches build-time codegen. Alpha (stabilizing what
 already shipped, including a tested MSBuild build system and a grid vocabulary —
 `grid-cols-*`/`grid-rows-*`, `col-*`/`row-*`, `col-span-*`/`row-span-*`) has nothing
 outstanding right now.
 
 ### Beta — extend the vocabulary, lay down infrastructure
 
-- **Finish the user-extensible composite registry.** A preset or app author can
-  already declare their own four-sided host (`CompositePropertyDescriptor`/
-  `CompositeKind`, one of `Thickness`/`CornerRadius` today) and have codegen embed it,
-  but recomposing the real property still needs the engine's `internal` class handler,
-  so a third-party host has to reimplement that part. Making the recomposition
-  implementation (or a host's own handler) reachable from outside the engine is what's
-  left.
 - **More presets.** Only `Preset.Mini` exists so far — the engine itself
   (`Sources/Enx.Atomic.Avalonia`) doesn't assume any particular rule set.
 
@@ -156,12 +149,11 @@ outstanding right now.
 
 ### v3 — runtime parity
 
-- **A runtime connector for codegen-only features.** A connector that detects
+- **A runtime connector for resource-based theming.** A connector that detects
   newly-used classes across loaded components as they appear and resolves/emits
-  what they need live — the embedded class handler grid utilities depend on and the
-  resource dictionary entries `bg-*`/`text-*`/`border-*` resolve against — bringing
-  both to the runtime path (`AtomicGenerator<TTheme>.Generate(...)`), not just
-  build-time codegen.
+  what they need live — chiefly the resource dictionary entries
+  `bg-*`/`text-*`/`border-*` resolve against — bringing that last codegen-only feature
+  to the runtime path (`AtomicGenerator<TTheme>.Generate(...)`).
 
 Have an opinion on any of these, or a different priority? Open an issue.
 

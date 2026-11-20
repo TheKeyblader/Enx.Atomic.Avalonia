@@ -10,15 +10,17 @@ public class MiniTheme
         IColorPart,
         IFontSizePart,
         ILineWidthPart,
+        IBoxShadowPart,
         IBreakpointPart,
         IRemToPxPart
 {
-    public Dictionary<string, float> Spacing { get; set; } = [];
-    public Dictionary<string, float> Sizes { get; set; } = [];
-    public Dictionary<string, float> Radii { get; set; } = [];
+    public Dictionary<string, double> Spacing { get; set; } = [];
+    public Dictionary<string, double> Sizes { get; set; } = [];
+    public Dictionary<string, double> Radii { get; set; } = [];
     public Dictionary<string, Themed<IBrush>> Colors { get; set; } = [];
     public Dictionary<string, double> FontSizes { get; set; } = [];
-    public Dictionary<string, float> LineWidths { get; set; } = [];
+    public Dictionary<string, double> LineWidths { get; set; } = [];
+    public Dictionary<string, BoxShadows> BoxShadows { get; set; } = [];
     public Dictionary<string, double> Breakpoints { get; set; } = [];
-    public float RemToPxFactor { get; set; }
+    public double RemToPxFactor { get; set; }
 }

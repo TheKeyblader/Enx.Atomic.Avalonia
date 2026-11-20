@@ -7,8 +7,31 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- `w-full`/`h-full` and `w-auto`/`h-auto`. Avalonia has no percentage lengths, so
+  `w-full`/`h-full` clear `Width`/`Height` to `double.NaN` and set the matching
+  alignment to `Stretch` (filling the space the parent offers), while
+  `w-auto`/`h-auto` only clear the length. `SizeRule` ranks `auto` below a concrete
+  size and `full` above it, so the outcome is deterministic whatever the source order.
+- `shadow`, `shadow-{size}` (`sm`, `md`, `lg`, `xl`, `2xl`), `shadow-inner` and
+  `shadow-none`: UnoCSS's `boxShadow` scale ported to Avalonia `BoxShadows`
+  (multi-layer, inset for `inner`, empty for `none`) and applied to
+  `Border.BoxShadowProperty` and `ContentPresenter.BoxShadowProperty`. Shadow colors,
+  the `shadow-inset` modifier, `shadow-opacity-*` and arbitrary values are not ported.
+  New `IBoxShadowPart.BoxShadows` theme part and public `BoxShadowsValueEmitter`.
+- `CompositeProperty.Register(descriptor, sides)`: the public runtime entry point for a
+  third-party composite host. It validates the descriptor's real property against
+  `CompositeKind` (`StyledProperty<Thickness>`/`StyledProperty<CornerRadius>`), picks
+  the compose function and registers the class handlers — `CompositePropertyHandler`
+  itself stays internal. The four shipped hosts now use it.
+
 ### Fixed
 
+- Grid utilities (`grid-cols-*`, `grid-rows-*`, `col-*`/`row-*`, `col-span-*`/
+  `row-span-*`) now work through runtime resolution: `GridDefinitions` has an explicit
+  static constructor that registers the class handlers cloning its ghost definitions
+  into `Grid.ColumnDefinitions`/`RowDefinitions`, mirroring the codegen copy.
 - A cyclic `MultiPass` variant looped forever instead of throwing:
   `AtomicGenerator.MatchVariants`' 500-handler guard read a count captured before its
   matching loop and never tripped.
@@ -18,6 +41,13 @@ All notable changes to this project are documented here. The format follows
 
 ### Changed
 
+- **Breaking:** theme scales are `double` instead of `float` —
+  `ISpacingPart.Spacing`, `ISizePart.Sizes`, `IRadiusPart.Radii`,
+  `ILineWidthPart.LineWidths`, `IRemToPxPart.RemToPxFactor`, `MiniTheme`,
+  `DefaultTheme` and `ThemeScale.TryResolve`/`TryResolvePx` all changed type. Numeric
+  values are now the same type as Avalonia's length properties, removing the widening
+  step (and float precision artifacts) at every rule. Custom themes implementing these
+  parts need to update their scale types.
 - CI builds and tests on `windows-latest` as well as `ubuntu-latest`. Verify snapshots
   are checked out with LF endings on every OS (`.gitattributes`).
 - The release workflow uses `actions/checkout`/`actions/setup-dotnet` v5 and has job
