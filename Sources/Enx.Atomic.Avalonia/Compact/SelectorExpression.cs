@@ -2,6 +2,7 @@
 using System.Reflection;
 using Avalonia;
 using Avalonia.Styling;
+using Enx.Atomic.Avalonia.Internal;
 
 namespace Enx.Atomic.Avalonia.Compact;
 
@@ -36,14 +37,13 @@ public abstract record SelectorExpression
 
         static PropertyEquals()
         {
-            CallInfo =
-                typeof(Selectors).GetMethod(
-                    nameof(Selectors.PropertyEquals),
-                    [typeof(Selector), typeof(AvaloniaProperty), typeof(object)]
-                )
-                ?? throw new InvalidOperationException(
-                    "Could not find Selectors.PropertyEquals(Selector, AvaloniaProperty, object); Avalonia's public API no longer matches what SelectorExpression.PropertyEquals expects."
-                );
+            CallInfo = ReflectedApi.RequireStaticMethod(
+                typeof(Selectors),
+                nameof(Selectors.PropertyEquals),
+                typeof(Selector),
+                typeof(AvaloniaProperty),
+                typeof(object)
+            );
         }
 
         /// <summary>The property to compare.</summary>
@@ -108,11 +108,12 @@ public abstract record SelectorExpression
 
         static Class()
         {
-            CallInfo =
-                typeof(Selectors).GetMethod(nameof(Selectors.Class), [typeof(Selector), typeof(string)])
-                ?? throw new InvalidOperationException(
-                    "Could not find Selectors.Class(Selector, string); Avalonia's public API no longer matches what SelectorExpression.Class expects."
-                );
+            CallInfo = ReflectedApi.RequireStaticMethod(
+                typeof(Selectors),
+                nameof(Selectors.Class),
+                typeof(Selector),
+                typeof(string)
+            );
         }
 
         /// <summary>The style class name to match.</summary>
