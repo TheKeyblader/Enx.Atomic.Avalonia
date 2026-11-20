@@ -624,6 +624,92 @@ public abstract class CompositeScenarioTests
         }
     }
 
+    /// <summary>
+    /// Scenario 12 — pins a <b>known limitation</b>, not a desired behavior: an unset side composes as <c>0</c>,
+    /// so a partial token zeroes the sides it doesn't set instead of keeping the theme's value (CSS's
+    /// <c>padding-left</c>/<c>padding-right</c> would leave top/bottom alone). <c>px-4</c> on a control whose
+    /// <see cref="ControlTheme"/> sets <c>Padding = 1,2,3,4</c> (Fluent's Button: <c>8,5,8,6</c>) composes
+    /// <c>16,0,16,0</c>. Removing the class still gives the theme value back. See ARCHITECTURE.md's composite
+    /// section for why keeping the underlying value isn't feasible: when the class is present at load, Avalonia
+    /// raises the side's change before it has applied the theme value, in the same styling pass. If this test starts
+    /// failing because the vertical sides survive, the limitation was lifted: update the docs and flip it.
+    /// </summary>
+    [AvaloniaFact]
+    public void Scenario12_PartialToken_ZeroesTheUnsetSides_KnownLimitation()
+    {
+        Assert.True(EnsureInitialized());
+        var padding = Padding;
+
+        var button = new Button
+        {
+            Classes = { "px-4" },
+            Theme = new ControlTheme(typeof(Button))
+            {
+                Setters = { new Setter(TemplatedControl.PaddingProperty, new Thickness(1, 2, 3, 4)) },
+            },
+        };
+        var window = new Window
+        {
+            Content = button,
+            Styles = { SideStyle("px-4", padding.Slot0, 16), SideStyle("px-4", padding.Slot2, 16) },
+        };
+
+        window.Show();
+        try
+        {
+            Assert.Equal(new Thickness(16, 0, 16, 0), button.Padding);
+
+            button.Classes.Remove("px-4");
+            Assert.Equal(new Thickness(1, 2, 3, 4), button.Padding);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    /// <summary>
+    /// Scenario 13: detaching a control from the tree (as a recycled container is) unapplies its styles, so the
+    /// sides go back to unset and the contribution is withdrawn — nothing lingers while it is detached, and a
+    /// class removed while detached is not resurrected on re-attach.
+    /// </summary>
+    [AvaloniaFact]
+    public void Scenario13_DetachedControl_DropsItsContribution_AndReattachingRecomposesFromItsCurrentClasses()
+    {
+        Assert.True(EnsureInitialized());
+        var margin = Margin;
+
+        var border = new Border { Classes = { "ml-4" } };
+        var panel = new StackPanel { Children = { border } };
+        var window = new Window { Content = panel, Styles = { SideStyle("ml-4", margin.Slot0, 16) } };
+
+        window.Show();
+        try
+        {
+            Assert.Equal(new Thickness(16, 0, 0, 0), border.Margin);
+
+            panel.Children.Remove(border);
+            Dispatcher.UIThread.RunJobs();
+            Assert.Equal(default(Thickness), border.Margin);
+            Assert.False(border.IsSet(Layoutable.MarginProperty));
+
+            panel.Children.Add(border);
+            Dispatcher.UIThread.RunJobs();
+            Assert.Equal(new Thickness(16, 0, 0, 0), border.Margin);
+
+            panel.Children.Remove(border);
+            border.Classes.Remove("ml-4");
+            panel.Children.Add(border);
+            Dispatcher.UIThread.RunJobs();
+            Assert.Equal(default(Thickness), border.Margin);
+            Assert.False(border.IsSet(Layoutable.MarginProperty));
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
     private static Style SideStyle(
         string className,
         AttachedProperty<double> property,

@@ -257,8 +257,18 @@ The engine decomposes each of those properties into four independent `double` si
 Known limitation: **an unset side composes as `0`**, not "leave it unchanged". A lone
 `px-4` on a control whose theme gives `Padding` a non-zero vertical value therefore
 zeroes the vertical sides, because the composed struct is built from the four sides
-alone. Falling back per slot to the current effective value would mean reading the
-property being written, re-entering its own change notification.
+alone. Keeping the underlying value per slot was tried and doesn't work. It would mean
+reading the value the contribution replaces when the contribution starts. In the normal
+case, though, the class is already present when the control is styled, and Avalonia
+then applies the theme and the utility styles in **one** styling pass:
+`ValueStore.ReevaluateEffectiveValues` walks frames from the highest priority down and
+raises each change immediately, so the side's change (a `StyleTrigger` class style)
+fires before the theme's or a plain style's `Padding` has been applied, and the value
+read is the default. With that approach, only a class added after styling saw the theme value.
+Deferring a re-read (`Dispatcher.Post`) or moving to a coercion-based design are the
+remaining options, both judged not worth it. `CompositeScenarioTests` scenario 12 pins
+the current behavior, and detaching/recycling a control is covered by scenario 13 (its
+styles unapply, the sides go back to `NaN`, the contribution is withdrawn).
 
 `CompositePropertyDescriptor` and `CompositeKind` are public for the same reason as the
 hosts: a preset or app can declare its own four-sided host — a public static class with
