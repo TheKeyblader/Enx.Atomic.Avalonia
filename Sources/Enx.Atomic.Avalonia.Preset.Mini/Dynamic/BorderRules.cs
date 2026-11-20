@@ -1,4 +1,4 @@
-using System.Collections.Immutable;
+﻿using System.Collections.Immutable;
 using System.Text.RegularExpressions;
 using Avalonia;
 using Avalonia.Controls;
@@ -44,22 +44,19 @@ public partial class BorderWidthRule<TTheme> : IOrderRankedDynamicRule<TTheme>
         if (!context.Theme.LineWidths.TryResolvePx(key, out var value))
             return [];
 
-        // The side properties are AttachedProperty<double>; the line-width scale is float, so convert explicitly —
-        // a boxed float fails the setter's type check once Avalonia applies it.
-        var pixels = (double)value;
 
         return match.Groups["side"].Value switch
         {
-            "t" => [BorderThicknessSides.BorderThicknessTopProperty.ToLiteral(pixels, typeof(Control))],
-            "r" => [BorderThicknessSides.BorderThicknessRightProperty.ToLiteral(pixels, typeof(Control))],
-            "b" => [BorderThicknessSides.BorderThicknessBottomProperty.ToLiteral(pixels, typeof(Control))],
-            "l" => [BorderThicknessSides.BorderThicknessLeftProperty.ToLiteral(pixels, typeof(Control))],
+            "t" => [BorderThicknessSides.BorderThicknessTopProperty.ToLiteral(value, typeof(Control))],
+            "r" => [BorderThicknessSides.BorderThicknessRightProperty.ToLiteral(value, typeof(Control))],
+            "b" => [BorderThicknessSides.BorderThicknessBottomProperty.ToLiteral(value, typeof(Control))],
+            "l" => [BorderThicknessSides.BorderThicknessLeftProperty.ToLiteral(value, typeof(Control))],
             _ =>
             [
-                BorderThicknessSides.BorderThicknessLeftProperty.ToLiteral(pixels, typeof(Control)),
-                BorderThicknessSides.BorderThicknessTopProperty.ToLiteral(pixels, typeof(Control)),
-                BorderThicknessSides.BorderThicknessRightProperty.ToLiteral(pixels, typeof(Control)),
-                BorderThicknessSides.BorderThicknessBottomProperty.ToLiteral(pixels, typeof(Control)),
+                BorderThicknessSides.BorderThicknessLeftProperty.ToLiteral(value, typeof(Control)),
+                BorderThicknessSides.BorderThicknessTopProperty.ToLiteral(value, typeof(Control)),
+                BorderThicknessSides.BorderThicknessRightProperty.ToLiteral(value, typeof(Control)),
+                BorderThicknessSides.BorderThicknessBottomProperty.ToLiteral(value, typeof(Control)),
             ],
         };
     }

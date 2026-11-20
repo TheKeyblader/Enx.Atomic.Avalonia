@@ -1,4 +1,4 @@
-using System.Collections.Immutable;
+﻿using System.Collections.Immutable;
 using System.Text.RegularExpressions;
 using Avalonia;
 using Avalonia.Controls;
@@ -40,42 +40,39 @@ public partial class RoundedRule<TTheme> : IOrderRankedDynamicRule<TTheme>
         if (!context.Theme.Radii.TryResolve(match.Groups["value"].Value, context.Theme.RemToPxFactor, out var value))
             return [];
 
-        // The side properties are AttachedProperty<double>; the radius scale is float, so convert explicitly —
-        // a boxed float fails the setter's type check once Avalonia applies it.
-        var pixels = (double)value;
 
         return match.Groups["side"].Value switch
         {
             "t" =>
             [
-                CornerRadiusSides.CornerRadiusTopLeftProperty.ToLiteral(pixels, typeof(Control)),
-                CornerRadiusSides.CornerRadiusTopRightProperty.ToLiteral(pixels, typeof(Control)),
+                CornerRadiusSides.CornerRadiusTopLeftProperty.ToLiteral(value, typeof(Control)),
+                CornerRadiusSides.CornerRadiusTopRightProperty.ToLiteral(value, typeof(Control)),
             ],
             "b" =>
             [
-                CornerRadiusSides.CornerRadiusBottomRightProperty.ToLiteral(pixels, typeof(Control)),
-                CornerRadiusSides.CornerRadiusBottomLeftProperty.ToLiteral(pixels, typeof(Control)),
+                CornerRadiusSides.CornerRadiusBottomRightProperty.ToLiteral(value, typeof(Control)),
+                CornerRadiusSides.CornerRadiusBottomLeftProperty.ToLiteral(value, typeof(Control)),
             ],
             "l" =>
             [
-                CornerRadiusSides.CornerRadiusTopLeftProperty.ToLiteral(pixels, typeof(Control)),
-                CornerRadiusSides.CornerRadiusBottomLeftProperty.ToLiteral(pixels, typeof(Control)),
+                CornerRadiusSides.CornerRadiusTopLeftProperty.ToLiteral(value, typeof(Control)),
+                CornerRadiusSides.CornerRadiusBottomLeftProperty.ToLiteral(value, typeof(Control)),
             ],
             "r" =>
             [
-                CornerRadiusSides.CornerRadiusTopRightProperty.ToLiteral(pixels, typeof(Control)),
-                CornerRadiusSides.CornerRadiusBottomRightProperty.ToLiteral(pixels, typeof(Control)),
+                CornerRadiusSides.CornerRadiusTopRightProperty.ToLiteral(value, typeof(Control)),
+                CornerRadiusSides.CornerRadiusBottomRightProperty.ToLiteral(value, typeof(Control)),
             ],
-            "tl" => [CornerRadiusSides.CornerRadiusTopLeftProperty.ToLiteral(pixels, typeof(Control))],
-            "tr" => [CornerRadiusSides.CornerRadiusTopRightProperty.ToLiteral(pixels, typeof(Control))],
-            "br" => [CornerRadiusSides.CornerRadiusBottomRightProperty.ToLiteral(pixels, typeof(Control))],
-            "bl" => [CornerRadiusSides.CornerRadiusBottomLeftProperty.ToLiteral(pixels, typeof(Control))],
+            "tl" => [CornerRadiusSides.CornerRadiusTopLeftProperty.ToLiteral(value, typeof(Control))],
+            "tr" => [CornerRadiusSides.CornerRadiusTopRightProperty.ToLiteral(value, typeof(Control))],
+            "br" => [CornerRadiusSides.CornerRadiusBottomRightProperty.ToLiteral(value, typeof(Control))],
+            "bl" => [CornerRadiusSides.CornerRadiusBottomLeftProperty.ToLiteral(value, typeof(Control))],
             _ =>
             [
-                CornerRadiusSides.CornerRadiusTopLeftProperty.ToLiteral(pixels, typeof(Control)),
-                CornerRadiusSides.CornerRadiusTopRightProperty.ToLiteral(pixels, typeof(Control)),
-                CornerRadiusSides.CornerRadiusBottomRightProperty.ToLiteral(pixels, typeof(Control)),
-                CornerRadiusSides.CornerRadiusBottomLeftProperty.ToLiteral(pixels, typeof(Control)),
+                CornerRadiusSides.CornerRadiusTopLeftProperty.ToLiteral(value, typeof(Control)),
+                CornerRadiusSides.CornerRadiusTopRightProperty.ToLiteral(value, typeof(Control)),
+                CornerRadiusSides.CornerRadiusBottomRightProperty.ToLiteral(value, typeof(Control)),
+                CornerRadiusSides.CornerRadiusBottomLeftProperty.ToLiteral(value, typeof(Control)),
             ],
         };
     }

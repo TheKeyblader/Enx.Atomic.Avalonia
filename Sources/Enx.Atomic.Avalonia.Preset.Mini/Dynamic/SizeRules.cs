@@ -1,4 +1,4 @@
-using System.Collections.Immutable;
+﻿using System.Collections.Immutable;
 using System.Text.RegularExpressions;
 using Avalonia.Layout;
 
@@ -19,7 +19,6 @@ public partial class SizeRule<TTheme> : IDynamicRule<TTheme>
         if (!context.Theme.Sizes.TryResolve(match.Groups["value"].Value, context.Theme.RemToPxFactor, out var value))
             return [];
 
-        var v = (double)value;
         var property = (match.Groups["bound"].Value, match.Groups["axis"].Value) switch
         {
             ("min-", "w") => Layoutable.MinWidthProperty,
@@ -30,7 +29,7 @@ public partial class SizeRule<TTheme> : IDynamicRule<TTheme>
             _ => Layoutable.HeightProperty,
         };
 
-        return [property.ToLiteral(v)];
+        return [property.ToLiteral(value)];
     }
 
     [GeneratedRegex("^(?<bound>min-|max-)?(?<axis>w|h)-(?<value>.+)$")]

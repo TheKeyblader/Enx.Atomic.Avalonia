@@ -1,4 +1,4 @@
-using System.Collections.Immutable;
+﻿using System.Collections.Immutable;
 using System.Text.RegularExpressions;
 using Avalonia;
 using Avalonia.Controls;
@@ -44,32 +44,29 @@ public partial class MarginRule<TTheme> : IOrderRankedDynamicRule<TTheme>
         if (match.Groups["neg"].Success)
             value = -value;
 
-        // The side properties are AttachedProperty<double>; the spacing scale is float, so convert explicitly —
-        // a boxed float fails the setter's type check once Avalonia applies it.
-        var pixels = (double)value;
 
         return match.Groups["side"].Value switch
         {
             "x" =>
             [
-                MarginSides.MarginLeftProperty.ToLiteral(pixels, typeof(Control)),
-                MarginSides.MarginRightProperty.ToLiteral(pixels, typeof(Control)),
+                MarginSides.MarginLeftProperty.ToLiteral(value, typeof(Control)),
+                MarginSides.MarginRightProperty.ToLiteral(value, typeof(Control)),
             ],
             "y" =>
             [
-                MarginSides.MarginTopProperty.ToLiteral(pixels, typeof(Control)),
-                MarginSides.MarginBottomProperty.ToLiteral(pixels, typeof(Control)),
+                MarginSides.MarginTopProperty.ToLiteral(value, typeof(Control)),
+                MarginSides.MarginBottomProperty.ToLiteral(value, typeof(Control)),
             ],
-            "t" => [MarginSides.MarginTopProperty.ToLiteral(pixels, typeof(Control))],
-            "r" => [MarginSides.MarginRightProperty.ToLiteral(pixels, typeof(Control))],
-            "b" => [MarginSides.MarginBottomProperty.ToLiteral(pixels, typeof(Control))],
-            "l" => [MarginSides.MarginLeftProperty.ToLiteral(pixels, typeof(Control))],
+            "t" => [MarginSides.MarginTopProperty.ToLiteral(value, typeof(Control))],
+            "r" => [MarginSides.MarginRightProperty.ToLiteral(value, typeof(Control))],
+            "b" => [MarginSides.MarginBottomProperty.ToLiteral(value, typeof(Control))],
+            "l" => [MarginSides.MarginLeftProperty.ToLiteral(value, typeof(Control))],
             _ =>
             [
-                MarginSides.MarginLeftProperty.ToLiteral(pixels, typeof(Control)),
-                MarginSides.MarginTopProperty.ToLiteral(pixels, typeof(Control)),
-                MarginSides.MarginRightProperty.ToLiteral(pixels, typeof(Control)),
-                MarginSides.MarginBottomProperty.ToLiteral(pixels, typeof(Control)),
+                MarginSides.MarginLeftProperty.ToLiteral(value, typeof(Control)),
+                MarginSides.MarginTopProperty.ToLiteral(value, typeof(Control)),
+                MarginSides.MarginRightProperty.ToLiteral(value, typeof(Control)),
+                MarginSides.MarginBottomProperty.ToLiteral(value, typeof(Control)),
             ],
         };
     }
@@ -122,32 +119,29 @@ public partial class PaddingRule<TTheme> : IOrderRankedDynamicRule<TTheme>
         if (!context.Theme.Spacing.TryResolve(match.Groups["value"].Value, context.Theme.RemToPxFactor, out var value))
             return [];
 
-        // The side properties are AttachedProperty<double>; the spacing scale is float, so convert explicitly —
-        // a boxed float fails the setter's type check once Avalonia applies it.
-        var pixels = (double)value;
 
         return match.Groups["side"].Value switch
         {
             "x" =>
             [
-                PaddingSides.PaddingLeftProperty.ToLiteral(pixels, typeof(Control)),
-                PaddingSides.PaddingRightProperty.ToLiteral(pixels, typeof(Control)),
+                PaddingSides.PaddingLeftProperty.ToLiteral(value, typeof(Control)),
+                PaddingSides.PaddingRightProperty.ToLiteral(value, typeof(Control)),
             ],
             "y" =>
             [
-                PaddingSides.PaddingTopProperty.ToLiteral(pixels, typeof(Control)),
-                PaddingSides.PaddingBottomProperty.ToLiteral(pixels, typeof(Control)),
+                PaddingSides.PaddingTopProperty.ToLiteral(value, typeof(Control)),
+                PaddingSides.PaddingBottomProperty.ToLiteral(value, typeof(Control)),
             ],
-            "t" => [PaddingSides.PaddingTopProperty.ToLiteral(pixels, typeof(Control))],
-            "r" => [PaddingSides.PaddingRightProperty.ToLiteral(pixels, typeof(Control))],
-            "b" => [PaddingSides.PaddingBottomProperty.ToLiteral(pixels, typeof(Control))],
-            "l" => [PaddingSides.PaddingLeftProperty.ToLiteral(pixels, typeof(Control))],
+            "t" => [PaddingSides.PaddingTopProperty.ToLiteral(value, typeof(Control))],
+            "r" => [PaddingSides.PaddingRightProperty.ToLiteral(value, typeof(Control))],
+            "b" => [PaddingSides.PaddingBottomProperty.ToLiteral(value, typeof(Control))],
+            "l" => [PaddingSides.PaddingLeftProperty.ToLiteral(value, typeof(Control))],
             _ =>
             [
-                PaddingSides.PaddingLeftProperty.ToLiteral(pixels, typeof(Control)),
-                PaddingSides.PaddingTopProperty.ToLiteral(pixels, typeof(Control)),
-                PaddingSides.PaddingRightProperty.ToLiteral(pixels, typeof(Control)),
-                PaddingSides.PaddingBottomProperty.ToLiteral(pixels, typeof(Control)),
+                PaddingSides.PaddingLeftProperty.ToLiteral(value, typeof(Control)),
+                PaddingSides.PaddingTopProperty.ToLiteral(value, typeof(Control)),
+                PaddingSides.PaddingRightProperty.ToLiteral(value, typeof(Control)),
+                PaddingSides.PaddingBottomProperty.ToLiteral(value, typeof(Control)),
             ],
         };
     }
@@ -181,19 +175,17 @@ public partial class GapRule<TTheme> : IDynamicRule<TTheme>
         if (!context.Theme.Spacing.TryResolve(match.Groups["value"].Value, context.Theme.RemToPxFactor, out var value))
             return [];
 
-        var v = (double)value;
-
         return match.Groups["axis"].Value switch
         {
-            "x" => [Grid.ColumnSpacingProperty.ToLiteral(v), UniformGrid.ColumnSpacingProperty.ToLiteral(v)],
-            "y" => [Grid.RowSpacingProperty.ToLiteral(v), UniformGrid.RowSpacingProperty.ToLiteral(v)],
+            "x" => [Grid.ColumnSpacingProperty.ToLiteral(value), UniformGrid.ColumnSpacingProperty.ToLiteral(value)],
+            "y" => [Grid.RowSpacingProperty.ToLiteral(value), UniformGrid.RowSpacingProperty.ToLiteral(value)],
             _ =>
             [
-                StackPanel.SpacingProperty.ToLiteral(v),
-                Grid.ColumnSpacingProperty.ToLiteral(v),
-                Grid.RowSpacingProperty.ToLiteral(v),
-                UniformGrid.ColumnSpacingProperty.ToLiteral(v),
-                UniformGrid.RowSpacingProperty.ToLiteral(v),
+                StackPanel.SpacingProperty.ToLiteral(value),
+                Grid.ColumnSpacingProperty.ToLiteral(value),
+                Grid.RowSpacingProperty.ToLiteral(value),
+                UniformGrid.ColumnSpacingProperty.ToLiteral(value),
+                UniformGrid.RowSpacingProperty.ToLiteral(value),
             ],
         };
     }

@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Text;
 
 namespace Enx.Atomic.Avalonia.Tests;
@@ -154,7 +154,7 @@ public sealed class MSBuildIntegrationTests : IDisposable
             var builder = ThemeBuilder<MiniTheme>.Create();
             var configuration = new AtomicConfiguration<MiniTheme> { Theme = builder.Theme };
             builder.AddMiniTheme(configuration);
-            builder.Theme.Spacing["4"] = 999f;
+            builder.Theme.Spacing["4"] = 999d;
 
             return AtomicCli.Run(args, configuration);
             """

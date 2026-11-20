@@ -1,4 +1,4 @@
-namespace Enx.Atomic.Avalonia.Preset.Mini;
+﻿namespace Enx.Atomic.Avalonia.Preset.Mini;
 
 /// <summary>
 /// Default scale values for each theme part, ported from UnoCSS's <c>preset-mini</c> default theme
@@ -8,7 +8,7 @@ namespace Enx.Atomic.Avalonia.Preset.Mini;
 internal static class DefaultTheme
 {
     /// <summary>The Tailwind/UnoCSS spacing scale (0 to 96, plus <c>px</c>), at 4px per step.</summary>
-    public static readonly Dictionary<string, float> Spacing = new()
+    public static readonly Dictionary<string, double> Spacing = new()
     {
         ["px"] = 1,
         ["0"] = 0,
@@ -48,7 +48,7 @@ internal static class DefaultTheme
     };
 
     /// <summary>UnoCSS's <c>baseSize</c> scale (rem converted to px), for <c>w-*</c>/<c>h-*</c> and friends.</summary>
-    public static readonly Dictionary<string, float> Sizes = new()
+    public static readonly Dictionary<string, double> Sizes = new()
     {
         ["xs"] = 320,
         ["sm"] = 384,
@@ -64,7 +64,7 @@ internal static class DefaultTheme
     };
 
     /// <summary>UnoCSS's <c>borderRadius</c> scale.</summary>
-    public static readonly Dictionary<string, float> Radii = new()
+    public static readonly Dictionary<string, double> Radii = new()
     {
         ["DEFAULT"] = 4,
         ["none"] = 0,
@@ -78,7 +78,7 @@ internal static class DefaultTheme
     };
 
     /// <summary>UnoCSS's <c>lineWidth</c> scale (border/ring/outline thickness).</summary>
-    public static readonly Dictionary<string, float> LineWidths = new() { ["DEFAULT"] = 1, ["none"] = 0 };
+    public static readonly Dictionary<string, double> LineWidths = new() { ["DEFAULT"] = 1, ["none"] = 0 };
 
     /// <summary>UnoCSS's <c>fontSize</c> scale (size only, its paired line-height isn't ported).</summary>
     public static readonly Dictionary<string, double> FontSizes = new()

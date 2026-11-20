@@ -1,4 +1,4 @@
-using Avalonia.Media;
+﻿using Avalonia.Media;
 using Enx.Atomic.Avalonia.Preset.Mini.Dynamic;
 using Enx.Atomic.Avalonia.Preset.Mini.Variants;
 
@@ -213,7 +213,7 @@ public static class ThemeBuilderExtensions
         return builder;
     }
 
-    public static ThemeBuilder<TTheme> AddRemToPxFactor<TTheme>(this ThemeBuilder<TTheme> builder, float factor = 16f)
+    public static ThemeBuilder<TTheme> AddRemToPxFactor<TTheme>(this ThemeBuilder<TTheme> builder, double factor = 16d)
         where TTheme : class, IRemToPxPart, new()
     {
         builder.Theme.RemToPxFactor = factor;
