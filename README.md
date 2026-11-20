@@ -3,6 +3,9 @@
 [![CI](https://github.com/TheKeyblader/Enx.Atomic.Avalonia/actions/workflows/ci.yml/badge.svg)](https://github.com/TheKeyblader/Enx.Atomic.Avalonia/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/TheKeyblader/Enx.Atomic.Avalonia/graph/badge.svg)](https://codecov.io/gh/TheKeyblader/Enx.Atomic.Avalonia)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Enx.Atomic.Avalonia on NuGet](https://img.shields.io/nuget/v/Enx.Atomic.Avalonia?label=Enx.Atomic.Avalonia&logo=nuget)](https://www.nuget.org/packages/Enx.Atomic.Avalonia)
+[![Enx.Atomic.Avalonia.Preset.Mini on NuGet](https://img.shields.io/nuget/v/Enx.Atomic.Avalonia.Preset.Mini?label=Preset.Mini&logo=nuget)](https://www.nuget.org/packages/Enx.Atomic.Avalonia.Preset.Mini)
+[![Enx.Atomic.Avalonia.CodeGen on NuGet](https://img.shields.io/nuget/v/Enx.Atomic.Avalonia.CodeGen?label=CodeGen&logo=nuget)](https://www.nuget.org/packages/Enx.Atomic.Avalonia.CodeGen)
 
 An atomic utility-class engine for [Avalonia](https://avaloniaui.net/), inspired by
 [UnoCSS](https://unocss.dev/): resolve Tailwind/UnoCSS-style tokens
