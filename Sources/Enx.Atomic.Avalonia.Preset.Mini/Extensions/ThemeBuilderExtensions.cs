@@ -186,6 +186,17 @@ public static class ThemeBuilderExtensions
         return builder;
     }
 
+    /// <summary>Registers <see cref="OpacityRule{TTheme}"/>. Not tied to any theme part — a bare token is a percentage and an arbitrary value is taken literally.</summary>
+    public static ThemeBuilder<TTheme> AddOpacityRules<TTheme>(
+        this ThemeBuilder<TTheme> builder,
+        AtomicConfiguration<TTheme> configuration
+    )
+        where TTheme : class, new()
+    {
+        configuration.AddRuleOnce(new OpacityRule<TTheme>());
+        return builder;
+    }
+
     /// <summary>Registers <see cref="DarkVariant{TTheme}"/> onto <see cref="AtomicConfiguration{TTheme}.Variants"/>. Not tied to any theme part.</summary>
     public static ThemeBuilder<TTheme> AddDarkVariant<TTheme>(
         this ThemeBuilder<TTheme> builder,
@@ -246,6 +257,7 @@ public static class ThemeBuilderExtensions
             .AddStaticRules(configuration)
             .AddSpacingRules(configuration)
             .AddSizeRules(configuration)
+            .AddOpacityRules(configuration)
             .AddRadiusRules(configuration)
             .AddLineWidthRules(configuration)
             .AddBoxShadowRules(configuration)

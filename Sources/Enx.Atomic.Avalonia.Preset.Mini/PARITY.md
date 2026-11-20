@@ -93,7 +93,7 @@ upstream's order.
 | `bg-[url(...)]`, `bg-[...gradient(...)]`, `bg-[image:...]` | ⏳ todo | — | | `ImageBrush` and gradient brushes exist; parsing CSS `url()`/gradient syntax is a separate design. |
 | `bg-[length:...]`, `bg-[position:...]` | ⏳ todo | — | | `ImageBrush.SourceRect`/`DestinationRect`/`Stretch`/`TileMode` are the closest model; mapping CSS `background-size`/`position` needs design. |
 | `bg-opacity-*` | ❌ dropped | — | | No separate per-color opacity variable; bake alpha into the brush (`bg-[#80ff0000]`). |
-| `opacity-*` / `op-*` | ⏳ todo | — | | `Visual.OpacityProperty` is the direct equivalent (`50` = 50% → `0.5`). |
+| `opacity-*` / `op-*` | ✅ ported | `Dynamic/OpacityRules.cs` (`OpacityRule<TTheme>`) | `opacity-50`, `op-25`, `opacity-[0.35]` | `Visual.OpacityProperty`; a bare token is a percentage (0–1, so `opacity-0.5` is 0.005), an arbitrary value is taken as written (`[0.35]` fraction, `[50%]` percentage). |
 | `color-scheme-*` | ❌ dropped | — | | A web form-control hint; Avalonia uses `ThemeVariant` (see `dark:`). |
 
 ### `container.ts`
@@ -505,10 +505,10 @@ whether the corresponding utilities can read it — and its examples are tokens 
 
 | Section | ✅ ported | 🟡 partial | ❌ dropped | ⏳ todo | Total |
 |---|---|---|---|---|---|
-| Rules | 36 | 12 | 71 | 43 | 162 |
+| Rules | 37 | 12 | 71 | 42 | 162 |
 | Variants | 3 | 1 | 19 | 7 | 30 |
 | Theme scales | 3 | 7 | 6 | 13 | 29 |
-| **Total** | **42** | **20** | **96** | **63** | **221** |
+| **Total** | **43** | **20** | **96** | **62** | **221** |
 
 > Counts are asserted by `ParityMatrixTests.Counts_MatchSummary` — update this table when rows change.
 
@@ -520,7 +520,6 @@ above.
 1. **`size-*`** — sets `Width` + `Height` (and their `min`/`max` forms) from the existing `Sizes`
    scale; the only new part is emitting two to four properties per token.
 2. **`w-auto` / `h-auto`** — `double.NaN` is exactly "auto"; trivial, and completes the size family.
-3. **`opacity-*`** — `Visual.OpacityProperty` is a direct 1:1 (`50` → `0.5`); no theme scale needed.
 4. **`z-*`** — `Visual.ZIndexProperty`; accepts an integer directly (plus upstream's `auto`).
 5. **`leading-*` / `lh-*` / `line-height-*`** — `TextBlock.LineHeightProperty` plus the (small)
    `lineHeight` scale; very common in typography-heavy UIs.
