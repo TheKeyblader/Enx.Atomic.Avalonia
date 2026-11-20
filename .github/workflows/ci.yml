@@ -8,10 +8,12 @@ on:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+    # A green run takes ~1-2 min; anything near this limit is a hang, not a slow test.
+    timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v5
         with:
           dotnet-version: "10.0.x"
 
@@ -26,13 +28,29 @@ jobs:
       - name: Build
         run: dotnet build Enx.Atomic.Avalonia.slnx --no-restore --configuration Release
 
+      # --blame-hang-timeout kills a stuck test host and reports which test was running (plus a dump),
+      # instead of the job silently hanging until it's cancelled; the console logger lists each test as it
+      # completes so the log shows how far the run got.
       - name: Test with coverage
+        timeout-minutes: 12
         run: >
           dotnet test Tests/Enx.Atomic.Avalonia.Tests/Enx.Atomic.Avalonia.Tests.csproj
           --no-build --configuration Release
+          --logger "console;verbosity=normal"
+          --blame-hang-timeout 8m
+          --blame-hang-dump-type mini
+          --results-directory TestResults
           /p:CollectCoverage=true
           /p:CoverletOutputFormat=cobertura
           /p:CoverletOutput=../../coverage/
+
+      - name: Upload test diagnostics
+        if: failure() || cancelled()
+        uses: actions/upload-artifact@v5
+        with:
+          name: test-results
+          path: TestResults/
+          if-no-files-found: ignore
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
