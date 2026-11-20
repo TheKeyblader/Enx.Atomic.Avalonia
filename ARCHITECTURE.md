@@ -102,8 +102,10 @@ A string like `hover:bg-red-500` goes through four steps:
 
 - **`Parts/`** — one interface per theme scale (`ISpacingPart.Spacing`,
   `IColorPart.Colors`, `IRadiusPart.Radii`, `ISizePart.Sizes`,
-  `ILineWidthPart.LineWidths`, `IFontSizePart.FontSizes`,
-  `IBreakpointPart.Breakpoints`, `IRemToPxPart.RemToPxFactor`). Each dynamic rule
+  `ILineWidthPart.LineWidths`, `IFontSizePart.FontSizes`, `IBoxShadowPart.BoxShadows`,
+  `IBreakpointPart.Breakpoints`, `IRemToPxPart.RemToPxFactor`). Numeric scales and the
+  rem factor are `double` — the CLR type of every Avalonia length property — so a
+  resolved value can be boxed into a `Setter` without a widening step. Each dynamic rule
   requires, via `where TTheme : ...`, only the parts it actually needs — a user theme
   can implement any subset of them.
 - **`Static/`** — static rules, independent of any theme (`hidden`, `cursor-pointer`,
@@ -209,8 +211,9 @@ The engine decomposes each of those properties into four independent `double` si
   `BorderThicknessSides` and `CornerRadiusSides` each declare four
   `AttachedProperty<double>` fields on `Control` (`NaN` meaning "this side is unset"), a
   `CompositePropertyDescriptor` describing them, and a static constructor that
-  registers the class handler. Targeting `Control` is deliberate: it is the widest
-  honest target, since `Padding`/`BorderThickness`/`CornerRadius` are `AddOwner`'ed by
+  registers the class handler through `CompositeProperty.Register`. Targeting `Control`
+  is deliberate: it is the widest honest target, since `Padding`/`BorderThickness`/
+  `CornerRadius` are `AddOwner`'ed by
   `TemplatedControl` (and `ContentPresenter`; `TextBlock` too for `Padding`), so a
   `Button` receives them — while a control such as `Canvas` never registers `Padding` at
   all. The explicit static constructor is load-bearing: it makes the type not
@@ -255,11 +258,14 @@ property being written, re-entering its own change notification.
 `CompositePropertyDescriptor` and `CompositeKind` are public for the same reason as the
 hosts: a preset or app can declare its own four-sided host — a public static class with
 four `AttachedProperty<double>` fields in the kind's slot order (`Thickness` or
-`CornerRadius` today), a `Descriptor`, a class handler recomposing the real property, and
-`[EmittableGhostPropertyHost]` — and have CodeGen embed it. What is still missing is
-public access to the recomposition implementation: `CompositePropertyHandler` is
-internal, so a third-party host has to reimplement it. That gap is what the root README's
-Roadmap bullet for a user-extensible registry still tracks.
+`CornerRadius` today), a `Descriptor`, a call to `CompositeProperty.Register` from its
+explicit static constructor, and `[EmittableGhostPropertyHost]` — and have CodeGen embed
+it. `CompositeProperty.Register(descriptor, sides)` is the single public runtime entry
+point: it validates that `descriptor.RealProperty` is a `StyledProperty<Thickness>` /
+`StyledProperty<CornerRadius>` matching the kind (otherwise `ArgumentException`), picks
+the matching compose function, and registers the class handlers. The shared
+`CompositePropertyHandler<TValue>` stays internal — a third-party host only supplies the
+declaration and the wiring.
 
 ## Runtime resolution
 
@@ -268,17 +274,17 @@ transforms the source text, extracts tokens, resolves them, orders them
 (`StyleOrdering`), compiles the `Expression<Func<Selector, Selector>>`, and produces
 `StringifiedUtil`s ready to become `Avalonia.Styling.Style`s. `Sandbox/Program.cs`
 demonstrates this. The composite side utilities (`m-*`, `p-*`, `border-*` width,
-`rounded-*`) work on this path too, because their hosts are ordinary compiled code in
-this assembly: the side properties are real `AvaloniaProperty`s and the class handler
-is registered by the host's static constructor.
+`rounded-*`) and the grid utilities (`grid-cols-*`, `grid-rows-*`, `col-*`/`row-*`,
+`col-span-*`/`row-span-*`) work on this path too, because everything they need is
+ordinary compiled code in this assembly: the side properties are real
+`AvaloniaProperty`s, and both the composite hosts and `GridDefinitions` register their
+class handlers from an explicit static constructor.
 
-Grid utilities and resource-based theming only work through
-`Enx.Atomic.Avalonia.CodeGen` (see below and each feature's own section); reached
-through this path instead, they resolve to nothing. Each needs something only the
-build-time pipeline assembles: grid definitions need the embedded `GridDefinitions`
-class handler compiled into the app, and a resource needs the `ResourceDictionary`
-`ResourceDictionaryEmitter` builds. See the root README's Roadmap, v3, for the runtime
-connector that would cover them.
+Resource-based theming (`bg-*`, `text-*`, `border-*` colors) is the one feature that
+only works through `Enx.Atomic.Avalonia.CodeGen` (see below): the style resolves to a
+`DynamicResource` lookup, but nothing builds the `ResourceDictionary`
+`ResourceDictionaryEmitter` emits, so at runtime the lookup finds no entry. See the root
+README's Roadmap, v3, for the runtime connector that would cover it.
 
 ## Build-time C# code generation (`Sources/Enx.Atomic.Avalonia.CodeGen`)
 
@@ -305,8 +311,10 @@ each `Style` and its `Setter`s directly. It works entirely off data:
   `TextDecorations.*` constants), `TextTrimmingValueEmitter` (the named
   `TextTrimming.*` instances `truncate`/`text-clip`/`text-ellipsis` set — `TextTrimming`
   is a class, not an enum, so `EnumValueEmitter` can't handle it),
-  `ThemeVariantValueEmitter`, `GridDefinitionsValueEmitter`
-  (see grid utilities), and `DynamicResourceValueEmitter` — a `StyleValue.Resource`'s
+  `ThemeVariantValueEmitter`, `BoxShadowsValueEmitter` (explicit `BoxShadow` layers and
+  `Color.FromArgb`, never a culture-sensitive `BoxShadows.Parse` string),
+  `GridDefinitionsValueEmitter` (see grid utilities), and `DynamicResourceValueEmitter` — a
+  `StyleValue.Resource`'s
   `UntypedValue` is a `DynamicResourceExtension`; this emitter only needs its `Key`
   text (`new DynamicResourceExtension("Colors[red-500]")`), never the value the key
   resolves to — that's `ResourceDictionaryEmitter`'s job, described below.
@@ -319,8 +327,9 @@ each `Style` and its `Setter`s directly. It works entirely off data:
   per used host: a composite host is generated by `CompositeHostSourceEmitter` from its
   `Descriptor` (plus one shared `CompositeSideRecomposition` helper per file), while any
   other host supplies a hand-maintained `EmbeddableSource` const — today only
-  `GridDefinitions`. `AvaloniaPropertyNaming` then rewrites the property reference to
-  the embedded type's own field name.
+  `GridDefinitions`, whose real static constructor registers the same class handlers so
+  the grid utilities also work on the runtime path. `AvaloniaPropertyNaming` then
+  rewrites the property reference to the embedded type's own field name.
 
 Verified by `Tests/.../CodeGenTests.cs`, which actually **compiles** the emitted text
 with Roslyn (`Microsoft.CodeAnalysis.CSharp`) and asserts no errors, and by

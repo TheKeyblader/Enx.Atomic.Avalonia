@@ -10,12 +10,13 @@ the core engine, the `Preset.Mini` rule/variant set (`@unocss/preset-mini` porte
 concepts), and the codegen tooling.
 
 **Runtime resolution (`AtomicGenerator<TTheme>.Generate(...)`) is a sandbox/demo path, not a
-fully-supported alternative** — grid utilities and resource-based theming only work through
-codegen and silently resolve to nothing at runtime (deliberate, not a bug — see
+fully-supported alternative** — resource-based theming (`bg-*`/`text-*`/`border-*` colors) only
+works through codegen and silently resolves to nothing at runtime (deliberate, not a bug — see
 `ARCHITECTURE.md#runtime-resolution` and the root README's Roadmap, v3, which is where real
 runtime parity — a connector detecting newly-used classes live, not a one-shot source scan —
-would eventually land, deliberately last). Don't "fix" this gap by adding ad hoc runtime support
-for one feature; it needs the connector or nothing.
+would eventually land, deliberately last). Grid utilities and composite side properties work on
+both paths. Don't "fix" the remaining gap by adding ad hoc runtime support for it; it needs the
+connector or nothing.
 
 **This is not a typical business-rules backend** — none of the usual application
 architectures (VSA / Clean Architecture / DDD / Modular Monolith) apply. It's closer to a small
@@ -74,7 +75,8 @@ Each of these has already cost a debugging session. Details in `ARCHITECTURE.md`
   `Thickness`/`CornerRadius` at `BindingPriority.Style`; writing the real property from
   two styles would let the later one replace the whole struct. Pass `typeof(Control)` as
   the target type (the property's `OwnerType` is the static host, i.e. a meaningless
-  `<MarginSides>` selector) and convert the value to `double` (the scales are `float`).
+  `<MarginSides>` selector). The scales are `double`, the side properties' type, so the resolved
+  value boxes correctly as-is.
   UnoCSS's direction order (uniform < axis/edge < side/corner) comes from
   `IOrderRankedDynamicRule.GetOrderRank`, not from registration order.
 - **Emission order is the cascade.** A class selector is an activator, so Avalonia frames
@@ -89,7 +91,9 @@ Each of these has already cost a debugging session. Details in `ARCHITECTURE.md`
   given it explicitly (see `StyleValue.TargetType`, `DarkVariant`).
 - **Boxed numeric types must match exactly.** `Setter.Value` is `object?`: a `float` or `int`
   for a `double` property compiles in emitted code and only fails when Avalonia applies it.
-  `CodeGenTests` exists to catch this; extend it rather than relying on a source-text check.
+  The Mini theme scales are `double` (the property type), so scale values need no conversion —
+  but a rule that computes its own value must still box the exact type. `CodeGenTests` exists
+  to catch this; extend it rather than relying on a source-text check.
 - **Arbitrary values (`[...]`) are always `StyleValue.Literal`, never `Resource`**, always pixels,
   never rem-converted; the bare-number fallback *is* rem (`TryResolve`) except line widths
   (`TryResolvePx`).
@@ -97,8 +101,9 @@ Each of these has already cost a debugging session. Details in `ARCHITECTURE.md`
   Avalonia types; a config project or test touching `AddMiniTheme` must bootstrap headless first
   (tests use `[AvaloniaFact]`, not `[Fact]`).
 - **`CodeGen` never references `Preset.Mini`** — generated code must compile standalone.
-- **Grid utilities and resource theming are codegen-only** (see Project Context) — a runtime-path
-  test for them asserting "nothing resolves" is correct, not a bug.
+- **Resource theming is codegen-only** (see Project Context) — a runtime-path test for a
+  `bg-*`/`text-*`/`border-*` color asserting "nothing resolves" is correct, not a bug. Grid
+  utilities work on both paths (`GridDefinitions` registers its handlers in a static constructor).
 - **`GeneratedStyles/` is output**, regenerated on every build (edits are denied in
   `opencode.jsonc`). Fix the rule or the emitter, never the `.g.cs`.
 
