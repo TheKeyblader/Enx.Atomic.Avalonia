@@ -7,7 +7,12 @@ on:
 
 jobs:
   build-and-test:
-    runs-on: ubuntu-latest
+    strategy:
+      # Let each OS report on its own: a Windows-only failure shouldn't hide the Linux result (or vice versa).
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
     # A green run takes ~1-2 min; anything near this limit is a hang, not a slow test.
     timeout-minutes: 20
     steps:
@@ -20,7 +25,9 @@ jobs:
       - name: Restore
         run: dotnet restore Enx.Atomic.Avalonia.slnx
 
+      # OS-independent, and Windows' checkout converts line endings: checked once, on Linux.
       - name: Check formatting (CSharpier)
+        if: runner.os == 'Linux'
         run: |
           dotnet tool restore
           dotnet csharpier check .
@@ -48,11 +55,13 @@ jobs:
         if: failure() || cancelled()
         uses: actions/upload-artifact@v5
         with:
-          name: test-results
+          name: test-results-${{ matrix.os }}
           path: TestResults/
           if-no-files-found: ignore
 
+      # Coverage is uploaded from one OS only, so Codecov compares like with like across commits.
       - name: Upload coverage to Codecov
+        if: runner.os == 'Linux'
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
