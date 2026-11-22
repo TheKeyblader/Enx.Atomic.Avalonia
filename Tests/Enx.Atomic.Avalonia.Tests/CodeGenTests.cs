@@ -19,7 +19,7 @@ namespace Enx.Atomic.Avalonia.Tests;
 /// <c>Setter</c>'s value parameter is <c>object?</c>, so an emitted numeric literal with the wrong C# type
 /// (e.g. <c>448</c>, inferred as <c>int</c>, for a property whose declared type is <c>double</c>) compiles
 /// fine — the mismatch only surfaces as a runtime cast failure once Avalonia tries to apply the boxed value.
-/// The preset-wide test covers every rule registration. The targeted fixture covers a mix deliberately chosen
+/// <see cref="EveryRegisteredMiniRule_ProducesCorrectlyTypedValuesBeforeAndAfterEmission"/> covers every rule registration. The targeted fixture covers a mix deliberately chosen
 /// to exercise selector and host emission — a single-owner static rule, a
 /// multi-owner one (grouping), a color/brush value, a null value (<c>no-underline</c>), a pseudo-class
 /// variant (selector chaining), a breakpoint variant (container query), the composite side hosts
