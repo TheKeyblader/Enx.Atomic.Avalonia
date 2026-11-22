@@ -2,3 +2,8 @@
 # containing \r, and Git on Windows (core.autocrlf=true) would otherwise convert them to CRLF.
 *.verified.cs text eol=lf
 *.verified.txt text eol=lf
+
+# C# sources too: a multi-line string literal takes the file's line endings, so a CRLF checkout changes
+# the value of consts such as GridDefinitions.EmbeddableSource — the source embedded into generated code,
+# and the value recorded in PublicAPI.Shipped.txt (RS0016/RS0017 on Windows otherwise).
+*.cs text eol=lf

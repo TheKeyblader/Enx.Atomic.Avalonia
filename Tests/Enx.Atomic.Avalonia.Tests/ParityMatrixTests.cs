@@ -47,6 +47,9 @@ public partial class ParityMatrixTests
     /// <summary>Parsed once per test run — the markdown is small and the theory data is built from it.</summary>
     private static readonly Lazy<IReadOnlyList<ParityRow>> ParsedRows = new(ParseMatrix);
 
+    internal static IEnumerable<string> PortedRuleExampleTokens =>
+        ParsedRows.Value.Where(row => row.IsPorted && row.Section == "Rules").SelectMany(row => row.Examples);
+
     /// <summary>One theory case per (row, token), so a broken token fails alone with its row in the test name.</summary>
     public static TheoryData<string, string> PortedExampleTokens
     {

@@ -7,6 +7,24 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Changed
+
+- The public API of the three packages is now tracked with
+  `Microsoft.CodeAnalysis.PublicApiAnalyzers`. Each project carries a `PublicAPI.Shipped.txt`
+  baseline (the v0.0.8 surface) and a `PublicAPI.Unshipped.txt`, and RS0016/RS0017 are build
+  errors, so a public member can't be added, changed or removed without being declared. The
+  analyzer is a private build-time dependency and doesn't flow to consumers.
+
+### Removed
+
+- `AtomicCliSettings` and `ProbeSettings` are now internal. They are the options of the CLI's
+  `generate` and `probe` commands, which were already internal. The CLI's flags and `--json`
+  output are unchanged.
+- `BreakpointVariantHandler`, `DarkVariantHandler` and `PseudoClassVariantHandler` are now
+  internal: only their variants (`BreakpointVariant`, `DarkVariant`, `PseudoClassVariant`)
+  create them. The variants themselves stay public, and a custom variant still derives from
+  `VariantHandlerBase`.
+
 ## [0.0.8] - 2026-11-20
 
 ### Added

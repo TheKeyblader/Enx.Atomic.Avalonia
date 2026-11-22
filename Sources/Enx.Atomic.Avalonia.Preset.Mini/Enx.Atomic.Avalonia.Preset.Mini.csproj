@@ -23,4 +23,8 @@
         <Folder Include="Static\" />
         <Folder Include="Variants\" />
     </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" PrivateAssets="all" />
+    </ItemGroup>
 </Project>

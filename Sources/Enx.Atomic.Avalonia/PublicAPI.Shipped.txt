@@ -1,0 +1,634 @@
+#nullable enable
+Enx.Atomic.Avalonia.AtomicConfiguration<TTheme>
+Enx.Atomic.Avalonia.AtomicConfiguration<TTheme>.AtomicConfiguration() -> void
+Enx.Atomic.Avalonia.AtomicConfiguration<TTheme>.ContainerName.get -> string!
+Enx.Atomic.Avalonia.AtomicConfiguration<TTheme>.ContainerName.set -> void
+Enx.Atomic.Avalonia.AtomicConfiguration<TTheme>.Extractors.get -> System.Collections.Generic.List<Enx.Atomic.Avalonia.Extractor!>!
+Enx.Atomic.Avalonia.AtomicConfiguration<TTheme>.Extractors.set -> void
+Enx.Atomic.Avalonia.AtomicConfiguration<TTheme>.PreProcessors.get -> System.Collections.Generic.List<Enx.Atomic.Avalonia.IPreProcessor!>!
+Enx.Atomic.Avalonia.AtomicConfiguration<TTheme>.PreProcessors.set -> void
+Enx.Atomic.Avalonia.AtomicConfiguration<TTheme>.Rules.get -> System.Collections.Generic.List<Enx.Atomic.Avalonia.IRule!>!
+Enx.Atomic.Avalonia.AtomicConfiguration<TTheme>.Rules.set -> void
+Enx.Atomic.Avalonia.AtomicConfiguration<TTheme>.Safelist.get -> System.Collections.Generic.List<string!>!
+Enx.Atomic.Avalonia.AtomicConfiguration<TTheme>.Safelist.set -> void
+Enx.Atomic.Avalonia.AtomicConfiguration<TTheme>.Shortcuts.get -> System.Collections.Generic.List<Enx.Atomic.Avalonia.IShortcut<TTheme!>!>!
+Enx.Atomic.Avalonia.AtomicConfiguration<TTheme>.Shortcuts.set -> void
+Enx.Atomic.Avalonia.AtomicConfiguration<TTheme>.Theme.get -> TTheme!
+Enx.Atomic.Avalonia.AtomicConfiguration<TTheme>.Theme.set -> void
+Enx.Atomic.Avalonia.AtomicConfiguration<TTheme>.Transformers.get -> System.Collections.Generic.List<Enx.Atomic.Avalonia.ISourceTransformer<TTheme!>!>!
+Enx.Atomic.Avalonia.AtomicConfiguration<TTheme>.Transformers.set -> void
+Enx.Atomic.Avalonia.AtomicConfiguration<TTheme>.Variants.get -> System.Collections.Generic.List<Enx.Atomic.Avalonia.VariantBase<TTheme!>!>!
+Enx.Atomic.Avalonia.AtomicConfiguration<TTheme>.Variants.set -> void
+Enx.Atomic.Avalonia.AtomicGenerator<TTheme>
+Enx.Atomic.Avalonia.AtomicGenerator<TTheme>.AddUtil(Enx.Atomic.Avalonia.StringifiedUtil! util) -> void
+Enx.Atomic.Avalonia.AtomicGenerator<TTheme>.ApplyExtractors(string! code, string? id = null, System.Collections.Generic.HashSet<string!>? extracted = null) -> System.Collections.Generic.HashSet<string!>!
+Enx.Atomic.Avalonia.AtomicGenerator<TTheme>.ApplyTransformers(string! code, string? id = null) -> string!
+Enx.Atomic.Avalonia.AtomicGenerator<TTheme>.AtomicGenerator(Enx.Atomic.Avalonia.AtomicConfiguration<TTheme!>! configuration) -> void
+Enx.Atomic.Avalonia.AtomicGenerator<TTheme>.Configuration.get -> Enx.Atomic.Avalonia.AtomicConfiguration<TTheme!>!
+Enx.Atomic.Avalonia.AtomicGenerator<TTheme>.Diagnostics.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Enx.Atomic.Avalonia.AtomicGenerator<TTheme>.GetShortcutExpansion(string! raw) -> System.Collections.Generic.IReadOnlyList<string!>?
+Enx.Atomic.Avalonia.AtomicGenerator<TTheme>.MakeContext(string! raw, Enx.Atomic.Avalonia.VariantMatchedResult<TTheme!>! applied) -> Enx.Atomic.Avalonia.RuleContext<TTheme!>!
+Enx.Atomic.Avalonia.AtomicGenerator<TTheme>.MatchVariants(Enx.Atomic.Avalonia.VariantMatchedResult<TTheme!>! result, Enx.Atomic.Avalonia.VariantContext<TTheme!>! context) -> Enx.Atomic.Avalonia.VariantMatchedResult<TTheme!>![]!
+Enx.Atomic.Avalonia.AtomicGenerator<TTheme>.MatchVariants(string! raw, string? current = null) -> Enx.Atomic.Avalonia.VariantMatchedResult<TTheme!>![]!
+Enx.Atomic.Avalonia.AtomicGenerator<TTheme>.Options
+Enx.Atomic.Avalonia.AtomicGenerator<TTheme>.Options.Id.get -> string?
+Enx.Atomic.Avalonia.AtomicGenerator<TTheme>.Options.Id.init -> void
+Enx.Atomic.Avalonia.AtomicGenerator<TTheme>.Options.IncludeSafelist.get -> bool
+Enx.Atomic.Avalonia.AtomicGenerator<TTheme>.Options.IncludeSafelist.init -> void
+Enx.Atomic.Avalonia.AtomicGenerator<TTheme>.Options.Options() -> void
+Enx.Atomic.Avalonia.AtomicGenerator<TTheme>.Options.Safelist.get -> System.Collections.Generic.IEnumerable<string!>?
+Enx.Atomic.Avalonia.AtomicGenerator<TTheme>.Options.Safelist.init -> void
+Enx.Atomic.Avalonia.AtomicGenerator<TTheme>.ParseToken(string! raw) -> Enx.Atomic.Avalonia.StringifiedUtil![]!
+Enx.Atomic.Avalonia.AtomicGenerator<TTheme>.PendingUtils.get -> System.Collections.Generic.IReadOnlyList<Enx.Atomic.Avalonia.StringifiedUtil!>!
+Enx.Atomic.Avalonia.AtomicGenerator<TTheme>.ResolvedResources.get -> System.Collections.Generic.IReadOnlyDictionary<string!, Enx.Atomic.Avalonia.StyleValue.Resource!>!
+Enx.Atomic.Avalonia.AvaloniaExtensions
+Enx.Atomic.Avalonia.ClassesAttributeExtractor
+Enx.Atomic.Avalonia.ClassesAttributeExtractor.ClassesAttributeExtractor() -> void
+Enx.Atomic.Avalonia.Compact.SelectorExpression
+Enx.Atomic.Avalonia.Compact.SelectorExpression.Class
+Enx.Atomic.Avalonia.Compact.SelectorExpression.Class.Class(Enx.Atomic.Avalonia.Compact.SelectorExpression.Class! original) -> void
+Enx.Atomic.Avalonia.Compact.SelectorExpression.Class.Class(Enx.Atomic.Avalonia.Compact.SelectorExpression? previous, string! name) -> void
+Enx.Atomic.Avalonia.Compact.SelectorExpression.Class.Name.get -> string?
+Enx.Atomic.Avalonia.Compact.SelectorExpression.Class.Name.set -> void
+Enx.Atomic.Avalonia.Compact.SelectorExpression.Is
+Enx.Atomic.Avalonia.Compact.SelectorExpression.Is.Is(Enx.Atomic.Avalonia.Compact.SelectorExpression.Is! original) -> void
+Enx.Atomic.Avalonia.Compact.SelectorExpression.Is.Is(Enx.Atomic.Avalonia.Compact.SelectorExpression? previous, System.Type! targetType) -> void
+Enx.Atomic.Avalonia.Compact.SelectorExpression.Is.TargetType.get -> System.Type!
+Enx.Atomic.Avalonia.Compact.SelectorExpression.Is.TargetType.set -> void
+Enx.Atomic.Avalonia.Compact.SelectorExpression.OfType
+Enx.Atomic.Avalonia.Compact.SelectorExpression.OfType.OfType(Enx.Atomic.Avalonia.Compact.SelectorExpression.OfType! original) -> void
+Enx.Atomic.Avalonia.Compact.SelectorExpression.OfType.OfType(Enx.Atomic.Avalonia.Compact.SelectorExpression? previous, System.Type! targetType) -> void
+Enx.Atomic.Avalonia.Compact.SelectorExpression.OfType.TargetType.get -> System.Type!
+Enx.Atomic.Avalonia.Compact.SelectorExpression.OfType.TargetType.set -> void
+Enx.Atomic.Avalonia.Compact.SelectorExpression.Previous.get -> Enx.Atomic.Avalonia.Compact.SelectorExpression?
+Enx.Atomic.Avalonia.Compact.SelectorExpression.Previous.set -> void
+Enx.Atomic.Avalonia.Compact.SelectorExpression.PropertyEquals
+Enx.Atomic.Avalonia.Compact.SelectorExpression.PropertyEquals.DeclaringType.get -> System.Type?
+Enx.Atomic.Avalonia.Compact.SelectorExpression.PropertyEquals.DeclaringType.set -> void
+Enx.Atomic.Avalonia.Compact.SelectorExpression.PropertyEquals.Property.get -> Avalonia.AvaloniaProperty!
+Enx.Atomic.Avalonia.Compact.SelectorExpression.PropertyEquals.Property.set -> void
+Enx.Atomic.Avalonia.Compact.SelectorExpression.PropertyEquals.PropertyEquals(Enx.Atomic.Avalonia.Compact.SelectorExpression.PropertyEquals! original) -> void
+Enx.Atomic.Avalonia.Compact.SelectorExpression.PropertyEquals.PropertyEquals(Enx.Atomic.Avalonia.Compact.SelectorExpression? previous, Avalonia.AvaloniaProperty! property, object? value, System.Type? declaringType = null) -> void
+Enx.Atomic.Avalonia.Compact.SelectorExpression.PropertyEquals.Value.get -> object?
+Enx.Atomic.Avalonia.Compact.SelectorExpression.PropertyEquals.Value.set -> void
+Enx.Atomic.Avalonia.Compact.SelectorExpression.SelectorExpression() -> void
+Enx.Atomic.Avalonia.Compact.SelectorExpression.SelectorExpression(Enx.Atomic.Avalonia.Compact.SelectorExpression! original) -> void
+Enx.Atomic.Avalonia.Compact.SelectorExpression.ToExpression(System.Linq.Expressions.Expression! parameter) -> System.Linq.Expressions.Expression!
+Enx.Atomic.Avalonia.Compact.SelectorsExpression
+Enx.Atomic.Avalonia.Compact.StyleQueriesExtensions
+Enx.Atomic.Avalonia.Compact.StyleQueryExpression
+Enx.Atomic.Avalonia.Compact.StyleQueryExpression.And
+Enx.Atomic.Avalonia.Compact.StyleQueryExpression.And.And(Enx.Atomic.Avalonia.Compact.StyleQueryExpression.And! original) -> void
+Enx.Atomic.Avalonia.Compact.StyleQueryExpression.And.And(Enx.Atomic.Avalonia.Compact.StyleQueryExpression? previous, Enx.Atomic.Avalonia.Compact.StyleQueryExpression![]! queries) -> void
+Enx.Atomic.Avalonia.Compact.StyleQueryExpression.And.Queries.get -> Enx.Atomic.Avalonia.Compact.StyleQueryExpression![]!
+Enx.Atomic.Avalonia.Compact.StyleQueryExpression.And.Queries.set -> void
+Enx.Atomic.Avalonia.Compact.StyleQueryExpression.Height
+Enx.Atomic.Avalonia.Compact.StyleQueryExpression.Height.Height(Enx.Atomic.Avalonia.Compact.StyleQueryExpression.Height! original) -> void
+Enx.Atomic.Avalonia.Compact.StyleQueryExpression.Height.Height(Enx.Atomic.Avalonia.Compact.StyleQueryExpression? previous, Avalonia.Styling.StyleQueryComparisonOperator operator, double value) -> void
+Enx.Atomic.Avalonia.Compact.StyleQueryExpression.Height.Operator.get -> Avalonia.Styling.StyleQueryComparisonOperator
+Enx.Atomic.Avalonia.Compact.StyleQueryExpression.Height.Operator.set -> void
+Enx.Atomic.Avalonia.Compact.StyleQueryExpression.Height.Value.get -> double
+Enx.Atomic.Avalonia.Compact.StyleQueryExpression.Height.Value.set -> void
+Enx.Atomic.Avalonia.Compact.StyleQueryExpression.Or
+Enx.Atomic.Avalonia.Compact.StyleQueryExpression.Or.Or(Enx.Atomic.Avalonia.Compact.StyleQueryExpression.Or! original) -> void
+Enx.Atomic.Avalonia.Compact.StyleQueryExpression.Or.Or(Enx.Atomic.Avalonia.Compact.StyleQueryExpression? previous, Enx.Atomic.Avalonia.Compact.StyleQueryExpression![]! queries) -> void
+Enx.Atomic.Avalonia.Compact.StyleQueryExpression.Or.Queries.get -> Enx.Atomic.Avalonia.Compact.StyleQueryExpression![]!
+Enx.Atomic.Avalonia.Compact.StyleQueryExpression.Or.Queries.set -> void
+Enx.Atomic.Avalonia.Compact.StyleQueryExpression.Previous.get -> Enx.Atomic.Avalonia.Compact.StyleQueryExpression?
+Enx.Atomic.Avalonia.Compact.StyleQueryExpression.Previous.set -> void
+Enx.Atomic.Avalonia.Compact.StyleQueryExpression.StyleQueryExpression() -> void
+Enx.Atomic.Avalonia.Compact.StyleQueryExpression.StyleQueryExpression(Enx.Atomic.Avalonia.Compact.StyleQueryExpression! original) -> void
+Enx.Atomic.Avalonia.Compact.StyleQueryExpression.ToExpression(System.Linq.Expressions.Expression! parameter) -> System.Linq.Expressions.Expression!
+Enx.Atomic.Avalonia.Compact.StyleQueryExpression.Width
+Enx.Atomic.Avalonia.Compact.StyleQueryExpression.Width.Operator.get -> Avalonia.Styling.StyleQueryComparisonOperator
+Enx.Atomic.Avalonia.Compact.StyleQueryExpression.Width.Operator.set -> void
+Enx.Atomic.Avalonia.Compact.StyleQueryExpression.Width.Value.get -> double
+Enx.Atomic.Avalonia.Compact.StyleQueryExpression.Width.Value.set -> void
+Enx.Atomic.Avalonia.Compact.StyleQueryExpression.Width.Width(Enx.Atomic.Avalonia.Compact.StyleQueryExpression.Width! original) -> void
+Enx.Atomic.Avalonia.Compact.StyleQueryExpression.Width.Width(Enx.Atomic.Avalonia.Compact.StyleQueryExpression? previous, Avalonia.Styling.StyleQueryComparisonOperator operator, double value) -> void
+Enx.Atomic.Avalonia.Composites.BorderThicknessSides
+Enx.Atomic.Avalonia.Composites.CompositeKind
+Enx.Atomic.Avalonia.Composites.CompositeKind.CornerRadius = 1 -> Enx.Atomic.Avalonia.Composites.CompositeKind
+Enx.Atomic.Avalonia.Composites.CompositeKind.Thickness = 0 -> Enx.Atomic.Avalonia.Composites.CompositeKind
+Enx.Atomic.Avalonia.Composites.CompositeProperty
+Enx.Atomic.Avalonia.Composites.CompositePropertyDescriptor
+Enx.Atomic.Avalonia.Composites.CompositePropertyDescriptor.AttachedPropertyNames.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Enx.Atomic.Avalonia.Composites.CompositePropertyDescriptor.CompositePropertyDescriptor(Avalonia.AvaloniaProperty! realProperty, Enx.Atomic.Avalonia.Composites.CompositeKind kind, string! hostTypeName, System.Collections.Generic.IReadOnlyList<string!>! sideFields, System.Collections.Generic.IReadOnlyList<string!>! attachedPropertyNames) -> void
+Enx.Atomic.Avalonia.Composites.CompositePropertyDescriptor.HostTypeName.get -> string!
+Enx.Atomic.Avalonia.Composites.CompositePropertyDescriptor.Kind.get -> Enx.Atomic.Avalonia.Composites.CompositeKind
+Enx.Atomic.Avalonia.Composites.CompositePropertyDescriptor.RealProperty.get -> Avalonia.AvaloniaProperty!
+Enx.Atomic.Avalonia.Composites.CompositePropertyDescriptor.SideFields.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Enx.Atomic.Avalonia.Composites.CornerRadiusSides
+Enx.Atomic.Avalonia.Composites.MarginSides
+Enx.Atomic.Avalonia.Composites.PaddingSides
+Enx.Atomic.Avalonia.DynamicMatcher<TTheme>
+Enx.Atomic.Avalonia.EmittableGhostPropertyHostAttribute
+Enx.Atomic.Avalonia.EmittableGhostPropertyHostAttribute.EmittableGhostPropertyHostAttribute() -> void
+Enx.Atomic.Avalonia.Extractor
+Enx.Atomic.Avalonia.Extractor.Extractor() -> void
+Enx.Atomic.Avalonia.Extractor.Order.get -> int
+Enx.Atomic.Avalonia.Extractor.Order.set -> void
+Enx.Atomic.Avalonia.ExtractorContext
+Enx.Atomic.Avalonia.ExtractorContext.Code.get -> string!
+Enx.Atomic.Avalonia.ExtractorContext.Code.set -> void
+Enx.Atomic.Avalonia.ExtractorContext.Extracted.get -> System.Collections.Generic.HashSet<string!>!
+Enx.Atomic.Avalonia.ExtractorContext.Extracted.init -> void
+Enx.Atomic.Avalonia.ExtractorContext.ExtractorContext() -> void
+Enx.Atomic.Avalonia.ExtractorContext.Id.get -> string?
+Enx.Atomic.Avalonia.ExtractorContext.Id.set -> void
+Enx.Atomic.Avalonia.ExtractorContext.RawCode.get -> string!
+Enx.Atomic.Avalonia.ExtractorContext.RawCode.init -> void
+Enx.Atomic.Avalonia.IDynamicRule<TTheme>
+Enx.Atomic.Avalonia.IDynamicRule<TTheme>.Match(System.Text.RegularExpressions.Match! match, Enx.Atomic.Avalonia.RuleContext<TTheme!>! context) -> System.Collections.Immutable.ImmutableArray<Enx.Atomic.Avalonia.StyleValue!>
+Enx.Atomic.Avalonia.IDynamicRule<TTheme>.Regex.get -> System.Text.RegularExpressions.Regex!
+Enx.Atomic.Avalonia.IDynamicShortcut<TTheme>
+Enx.Atomic.Avalonia.IDynamicShortcut<TTheme>.Match(System.Text.RegularExpressions.Match! match, Enx.Atomic.Avalonia.RuleContext<TTheme!>! context) -> System.Collections.Generic.IReadOnlyList<string!>?
+Enx.Atomic.Avalonia.IDynamicShortcut<TTheme>.Regex.get -> System.Text.RegularExpressions.Regex!
+Enx.Atomic.Avalonia.IOrderRankedDynamicRule<TTheme>
+Enx.Atomic.Avalonia.IOrderRankedDynamicRule<TTheme>.GetOrderRank(System.Text.RegularExpressions.Match! match) -> int
+Enx.Atomic.Avalonia.IPreProcessor
+Enx.Atomic.Avalonia.IPreProcessor.Process(string! matcher) -> string?
+Enx.Atomic.Avalonia.IRule
+Enx.Atomic.Avalonia.IRule.Metadata.get -> Enx.Atomic.Avalonia.RuleMetadata!
+Enx.Atomic.Avalonia.IShortcut<TTheme>
+Enx.Atomic.Avalonia.ISourceTransformer<TTheme>
+Enx.Atomic.Avalonia.ISourceTransformer<TTheme>.CodeFilter.get -> System.Func<string!, string?, bool>?
+Enx.Atomic.Avalonia.ISourceTransformer<TTheme>.Enforce.get -> Enx.Atomic.Avalonia.SourceTransformerEnforce
+Enx.Atomic.Avalonia.ISourceTransformer<TTheme>.IdFilter.get -> System.Func<string!, bool>?
+Enx.Atomic.Avalonia.ISourceTransformer<TTheme>.Name.get -> string!
+Enx.Atomic.Avalonia.ISourceTransformer<TTheme>.Transform(string! code, string? id, Enx.Atomic.Avalonia.AtomicGenerator<TTheme!>! generator) -> string!
+Enx.Atomic.Avalonia.IStaticRule
+Enx.Atomic.Avalonia.IStaticRule.Name.get -> string!
+Enx.Atomic.Avalonia.IStaticRule.Styles.get -> System.Collections.Immutable.ImmutableArray<Enx.Atomic.Avalonia.StyleValue!>
+Enx.Atomic.Avalonia.IStaticShortcut
+Enx.Atomic.Avalonia.IStaticShortcut.Expansion.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Enx.Atomic.Avalonia.IStaticShortcut.Name.get -> string!
+Enx.Atomic.Avalonia.IThemedValue
+Enx.Atomic.Avalonia.IThemedValue.DarkValue.get -> object?
+Enx.Atomic.Avalonia.IThemedValue.IsThemed.get -> bool
+Enx.Atomic.Avalonia.IThemedValue.LightValue.get -> object?
+Enx.Atomic.Avalonia.Rule
+Enx.Atomic.Avalonia.Rule.Dynamic<TTheme>
+Enx.Atomic.Avalonia.Rule.Dynamic<TTheme>.Deconstruct(out System.Text.RegularExpressions.Regex! Regex, out Enx.Atomic.Avalonia.DynamicMatcher<TTheme!>! Matcher) -> void
+Enx.Atomic.Avalonia.Rule.Dynamic<TTheme>.Dynamic(System.Text.RegularExpressions.Regex! Regex, Enx.Atomic.Avalonia.DynamicMatcher<TTheme!>! Matcher) -> void
+Enx.Atomic.Avalonia.Rule.Dynamic<TTheme>.Match(System.Text.RegularExpressions.Match! match, Enx.Atomic.Avalonia.RuleContext<TTheme!>! context) -> System.Collections.Immutable.ImmutableArray<Enx.Atomic.Avalonia.StyleValue!>
+Enx.Atomic.Avalonia.Rule.Dynamic<TTheme>.Matcher.get -> Enx.Atomic.Avalonia.DynamicMatcher<TTheme!>!
+Enx.Atomic.Avalonia.Rule.Dynamic<TTheme>.Matcher.init -> void
+Enx.Atomic.Avalonia.Rule.Dynamic<TTheme>.Regex.get -> System.Text.RegularExpressions.Regex!
+Enx.Atomic.Avalonia.Rule.Dynamic<TTheme>.Regex.init -> void
+Enx.Atomic.Avalonia.Rule.Metadata.get -> Enx.Atomic.Avalonia.RuleMetadata!
+Enx.Atomic.Avalonia.Rule.Metadata.init -> void
+Enx.Atomic.Avalonia.Rule.Rule() -> void
+Enx.Atomic.Avalonia.Rule.Rule(Enx.Atomic.Avalonia.Rule! original) -> void
+Enx.Atomic.Avalonia.Rule.Static
+Enx.Atomic.Avalonia.Rule.Static.Deconstruct(out string! Name, out System.Collections.Immutable.ImmutableArray<Enx.Atomic.Avalonia.StyleValue!> Styles) -> void
+Enx.Atomic.Avalonia.Rule.Static.Name.get -> string!
+Enx.Atomic.Avalonia.Rule.Static.Name.init -> void
+Enx.Atomic.Avalonia.Rule.Static.Static(Enx.Atomic.Avalonia.Rule.Static! original) -> void
+Enx.Atomic.Avalonia.Rule.Static.Static(string! Name, System.Collections.Immutable.ImmutableArray<Enx.Atomic.Avalonia.StyleValue!> Styles) -> void
+Enx.Atomic.Avalonia.Rule.Static.Styles.get -> System.Collections.Immutable.ImmutableArray<Enx.Atomic.Avalonia.StyleValue!>
+Enx.Atomic.Avalonia.Rule.Static.Styles.init -> void
+Enx.Atomic.Avalonia.RuleContext<TTheme>
+Enx.Atomic.Avalonia.RuleContext<TTheme>.CurrentSelector.get -> string!
+Enx.Atomic.Avalonia.RuleContext<TTheme>.CurrentSelector.init -> void
+Enx.Atomic.Avalonia.RuleContext<TTheme>.Generator.get -> Enx.Atomic.Avalonia.AtomicGenerator<TTheme!>!
+Enx.Atomic.Avalonia.RuleContext<TTheme>.Generator.init -> void
+Enx.Atomic.Avalonia.RuleContext<TTheme>.Handlers.get -> Enx.Atomic.Avalonia.VariantHandlerBase![]!
+Enx.Atomic.Avalonia.RuleContext<TTheme>.Handlers.init -> void
+Enx.Atomic.Avalonia.RuleContext<TTheme>.Match.get -> Enx.Atomic.Avalonia.VariantMatchedResult<TTheme!>!
+Enx.Atomic.Avalonia.RuleContext<TTheme>.Match.init -> void
+Enx.Atomic.Avalonia.RuleContext<TTheme>.RawSelector.get -> string!
+Enx.Atomic.Avalonia.RuleContext<TTheme>.RawSelector.init -> void
+Enx.Atomic.Avalonia.RuleContext<TTheme>.RuleContext() -> void
+Enx.Atomic.Avalonia.RuleContext<TTheme>.Theme.get -> TTheme!
+Enx.Atomic.Avalonia.RuleContext<TTheme>.Theme.init -> void
+Enx.Atomic.Avalonia.RuleMetadata
+Enx.Atomic.Avalonia.RuleMetadata.RuleMetadata() -> void
+Enx.Atomic.Avalonia.Shortcut
+Enx.Atomic.Avalonia.ShortcutCollectionMatcher<TTheme>
+Enx.Atomic.Avalonia.ShortcutMatcher<TTheme>
+Enx.Atomic.Avalonia.SourceTransformerEnforce
+Enx.Atomic.Avalonia.SourceTransformerEnforce.Default = 1 -> Enx.Atomic.Avalonia.SourceTransformerEnforce
+Enx.Atomic.Avalonia.SourceTransformerEnforce.Post = 2 -> Enx.Atomic.Avalonia.SourceTransformerEnforce
+Enx.Atomic.Avalonia.SourceTransformerEnforce.Pre = 0 -> Enx.Atomic.Avalonia.SourceTransformerEnforce
+Enx.Atomic.Avalonia.SplitExtractor
+Enx.Atomic.Avalonia.SplitExtractor.SplitExtractor() -> void
+Enx.Atomic.Avalonia.StringifiedUtil
+Enx.Atomic.Avalonia.StringifiedUtil.Body.get -> Avalonia.Styling.Setter![]!
+Enx.Atomic.Avalonia.StringifiedUtil.Body.init -> void
+Enx.Atomic.Avalonia.StringifiedUtil.ContainerQuery.get -> System.Linq.Expressions.Expression<System.Func<Avalonia.Styling.StyleQuery!, Avalonia.Styling.StyleQuery!>!>?
+Enx.Atomic.Avalonia.StringifiedUtil.ContainerQuery.set -> void
+Enx.Atomic.Avalonia.StringifiedUtil.ContainerQueryData.get -> Enx.Atomic.Avalonia.Compact.StyleQueryExpression?
+Enx.Atomic.Avalonia.StringifiedUtil.ContainerQueryData.set -> void
+Enx.Atomic.Avalonia.StringifiedUtil.Index.get -> int
+Enx.Atomic.Avalonia.StringifiedUtil.Index.init -> void
+Enx.Atomic.Avalonia.StringifiedUtil.Layer.get -> int
+Enx.Atomic.Avalonia.StringifiedUtil.Layer.init -> void
+Enx.Atomic.Avalonia.StringifiedUtil.Metadata.get -> Enx.Atomic.Avalonia.RuleMetadata!
+Enx.Atomic.Avalonia.StringifiedUtil.Metadata.init -> void
+Enx.Atomic.Avalonia.StringifiedUtil.Rank.get -> int
+Enx.Atomic.Avalonia.StringifiedUtil.Rank.init -> void
+Enx.Atomic.Avalonia.StringifiedUtil.Selector.get -> System.Linq.Expressions.Expression<System.Func<Avalonia.Styling.Selector!, Avalonia.Styling.Selector!>!>!
+Enx.Atomic.Avalonia.StringifiedUtil.Selector.set -> void
+Enx.Atomic.Avalonia.StringifiedUtil.SelectorData.get -> Enx.Atomic.Avalonia.Compact.SelectorExpression!
+Enx.Atomic.Avalonia.StringifiedUtil.SelectorData.set -> void
+Enx.Atomic.Avalonia.StringifiedUtil.Sort.get -> int
+Enx.Atomic.Avalonia.StringifiedUtil.Sort.init -> void
+Enx.Atomic.Avalonia.StringifiedUtil.StringifiedUtil() -> void
+Enx.Atomic.Avalonia.StringifiedUtil.StringifiedUtil(Enx.Atomic.Avalonia.StringifiedUtil! original) -> void
+Enx.Atomic.Avalonia.StyleLayer
+Enx.Atomic.Avalonia.StyleOrdering
+Enx.Atomic.Avalonia.StyleOrdering.SortKey
+Enx.Atomic.Avalonia.StyleOrdering.SortKey.ClassCount.get -> int
+Enx.Atomic.Avalonia.StyleOrdering.SortKey.ClassCount.init -> void
+Enx.Atomic.Avalonia.StyleOrdering.SortKey.ContainerGroup.get -> int
+Enx.Atomic.Avalonia.StyleOrdering.SortKey.ContainerGroup.init -> void
+Enx.Atomic.Avalonia.StyleOrdering.SortKey.ContainerOrder.get -> double
+Enx.Atomic.Avalonia.StyleOrdering.SortKey.ContainerOrder.init -> void
+Enx.Atomic.Avalonia.StyleOrdering.SortKey.Equals(Enx.Atomic.Avalonia.StyleOrdering.SortKey other) -> bool
+Enx.Atomic.Avalonia.StyleOrdering.SortKey.Layer.get -> int
+Enx.Atomic.Avalonia.StyleOrdering.SortKey.Layer.init -> void
+Enx.Atomic.Avalonia.StyleOrdering.SortKey.Rank.get -> int
+Enx.Atomic.Avalonia.StyleOrdering.SortKey.Rank.init -> void
+Enx.Atomic.Avalonia.StyleOrdering.SortKey.RuleIndex.get -> int
+Enx.Atomic.Avalonia.StyleOrdering.SortKey.RuleIndex.init -> void
+Enx.Atomic.Avalonia.StyleOrdering.SortKey.Sort.get -> int
+Enx.Atomic.Avalonia.StyleOrdering.SortKey.Sort.init -> void
+Enx.Atomic.Avalonia.StyleOrdering.SortKey.SortKey() -> void
+Enx.Atomic.Avalonia.StyleOrdering.SortKey.Text.get -> string!
+Enx.Atomic.Avalonia.StyleOrdering.SortKey.Text.init -> void
+Enx.Atomic.Avalonia.StyleOrdering.SortKey.TypeCount.get -> int
+Enx.Atomic.Avalonia.StyleOrdering.SortKey.TypeCount.init -> void
+Enx.Atomic.Avalonia.StyleValue
+Enx.Atomic.Avalonia.StyleValue.Literal<TValue>
+Enx.Atomic.Avalonia.StyleValue.Literal<TValue>.Literal(Avalonia.AvaloniaProperty<TValue>! property, TValue value, System.Type? targetType = null) -> void
+Enx.Atomic.Avalonia.StyleValue.Literal<TValue>.Literal(Enx.Atomic.Avalonia.StyleValue.Literal<TValue>! original) -> void
+Enx.Atomic.Avalonia.StyleValue.Literal<TValue>.Property.get -> Avalonia.AvaloniaProperty<TValue>!
+Enx.Atomic.Avalonia.StyleValue.Literal<TValue>.Value.get -> TValue
+Enx.Atomic.Avalonia.StyleValue.Resource
+Enx.Atomic.Avalonia.StyleValue.Resource.Key.get -> string!
+Enx.Atomic.Avalonia.StyleValue.Resource.Resource(Avalonia.AvaloniaProperty! property, System.Linq.Expressions.LambdaExpression! themeAccess, System.Type? targetType = null) -> void
+Enx.Atomic.Avalonia.StyleValue.Resource.Resource(Enx.Atomic.Avalonia.StyleValue.Resource! original) -> void
+Enx.Atomic.Avalonia.StyleValue.Resource.ThemeAccess.get -> System.Linq.Expressions.LambdaExpression!
+Enx.Atomic.Avalonia.StyleValue.StyleValue() -> void
+Enx.Atomic.Avalonia.StyleValue.StyleValue(Enx.Atomic.Avalonia.StyleValue! original) -> void
+Enx.Atomic.Avalonia.ThemeBuilder<TTheme>
+Enx.Atomic.Avalonia.ThemeBuilder<TTheme>.Build() -> TTheme!
+Enx.Atomic.Avalonia.ThemeBuilder<TTheme>.Theme.get -> TTheme!
+Enx.Atomic.Avalonia.ThemeBuilder<TTheme>.ThemeBuilder() -> void
+Enx.Atomic.Avalonia.Themed<T>
+Enx.Atomic.Avalonia.Themed<T>.Dark.get -> T
+Enx.Atomic.Avalonia.Themed<T>.Equals(Enx.Atomic.Avalonia.Themed<T> other) -> bool
+Enx.Atomic.Avalonia.Themed<T>.IsThemed.get -> bool
+Enx.Atomic.Avalonia.Themed<T>.Light.get -> T
+Enx.Atomic.Avalonia.Themed<T>.Themed() -> void
+Enx.Atomic.Avalonia.Themed<T>.Themed(T light, T dark) -> void
+Enx.Atomic.Avalonia.VariantBase<TTheme>
+Enx.Atomic.Avalonia.VariantBase<TTheme>.MultiPass.get -> bool
+Enx.Atomic.Avalonia.VariantBase<TTheme>.MultiPass.set -> void
+Enx.Atomic.Avalonia.VariantBase<TTheme>.Order.get -> int
+Enx.Atomic.Avalonia.VariantBase<TTheme>.Order.set -> void
+Enx.Atomic.Avalonia.VariantBase<TTheme>.VariantBase() -> void
+Enx.Atomic.Avalonia.VariantContext<TTheme>
+Enx.Atomic.Avalonia.VariantContext<TTheme>.Generator.get -> Enx.Atomic.Avalonia.AtomicGenerator<TTheme!>!
+Enx.Atomic.Avalonia.VariantContext<TTheme>.Generator.init -> void
+Enx.Atomic.Avalonia.VariantContext<TTheme>.RawSelector.get -> string!
+Enx.Atomic.Avalonia.VariantContext<TTheme>.RawSelector.init -> void
+Enx.Atomic.Avalonia.VariantContext<TTheme>.Theme.get -> TTheme!
+Enx.Atomic.Avalonia.VariantContext<TTheme>.Theme.set -> void
+Enx.Atomic.Avalonia.VariantContext<TTheme>.VariantContext() -> void
+Enx.Atomic.Avalonia.VariantHandlerBase
+Enx.Atomic.Avalonia.VariantHandlerBase.Matcher.get -> string?
+Enx.Atomic.Avalonia.VariantHandlerBase.Matcher.init -> void
+Enx.Atomic.Avalonia.VariantHandlerBase.Order.get -> int
+Enx.Atomic.Avalonia.VariantHandlerBase.Order.init -> void
+Enx.Atomic.Avalonia.VariantHandlerBase.VariantHandlerBase() -> void
+Enx.Atomic.Avalonia.VariantHandlerBase.VariantHandlerBase(Enx.Atomic.Avalonia.VariantHandlerBase! original) -> void
+Enx.Atomic.Avalonia.VariantHandlerContext
+Enx.Atomic.Avalonia.VariantHandlerContext.ContainerQuery.get -> Enx.Atomic.Avalonia.Compact.StyleQueryExpression?
+Enx.Atomic.Avalonia.VariantHandlerContext.ContainerQuery.set -> void
+Enx.Atomic.Avalonia.VariantHandlerContext.Entries.get -> Enx.Atomic.Avalonia.StyleValue![]!
+Enx.Atomic.Avalonia.VariantHandlerContext.Entries.set -> void
+Enx.Atomic.Avalonia.VariantHandlerContext.Selector.get -> Enx.Atomic.Avalonia.Compact.SelectorExpression!
+Enx.Atomic.Avalonia.VariantHandlerContext.Selector.set -> void
+Enx.Atomic.Avalonia.VariantHandlerContext.Sort.get -> int
+Enx.Atomic.Avalonia.VariantHandlerContext.Sort.set -> void
+Enx.Atomic.Avalonia.VariantHandlerContext.VariantHandlerContext() -> void
+Enx.Atomic.Avalonia.VariantHandlerContext.VariantHandlerContext(Enx.Atomic.Avalonia.VariantHandlerContext! original) -> void
+Enx.Atomic.Avalonia.VariantMatchedResult<TTheme>
+Enx.Atomic.Avalonia.VariantMatchedResult<TTheme>.Current.get -> string!
+Enx.Atomic.Avalonia.VariantMatchedResult<TTheme>.Current.init -> void
+Enx.Atomic.Avalonia.VariantMatchedResult<TTheme>.Handlers.get -> Enx.Atomic.Avalonia.VariantHandlerBase![]!
+Enx.Atomic.Avalonia.VariantMatchedResult<TTheme>.Handlers.init -> void
+Enx.Atomic.Avalonia.VariantMatchedResult<TTheme>.Raw.get -> string!
+Enx.Atomic.Avalonia.VariantMatchedResult<TTheme>.Raw.init -> void
+Enx.Atomic.Avalonia.VariantMatchedResult<TTheme>.VariantMatchedResult() -> void
+Enx.Atomic.Avalonia.VariantMatchedResult<TTheme>.Variants.get -> System.Collections.Generic.HashSet<Enx.Atomic.Avalonia.VariantBase<TTheme!>!>!
+Enx.Atomic.Avalonia.VariantMatchedResult<TTheme>.Variants.init -> void
+abstract Enx.Atomic.Avalonia.Compact.SelectorExpression.<Clone>$() -> Enx.Atomic.Avalonia.Compact.SelectorExpression!
+abstract Enx.Atomic.Avalonia.Compact.SelectorExpression.ToExpressionCore(System.Linq.Expressions.Expression! parameter) -> System.Linq.Expressions.Expression!
+abstract Enx.Atomic.Avalonia.Compact.StyleQueryExpression.<Clone>$() -> Enx.Atomic.Avalonia.Compact.StyleQueryExpression!
+abstract Enx.Atomic.Avalonia.Compact.StyleQueryExpression.ToExpressionCore(System.Linq.Expressions.Expression! parameter) -> System.Linq.Expressions.Expression!
+abstract Enx.Atomic.Avalonia.Extractor.Extract(Enx.Atomic.Avalonia.ExtractorContext! context) -> void
+abstract Enx.Atomic.Avalonia.Rule.<Clone>$() -> Enx.Atomic.Avalonia.Rule!
+abstract Enx.Atomic.Avalonia.StyleValue.<Clone>$() -> Enx.Atomic.Avalonia.StyleValue!
+abstract Enx.Atomic.Avalonia.StyleValue.TargetType.get -> System.Type!
+abstract Enx.Atomic.Avalonia.StyleValue.UntypedProperty.get -> Avalonia.AvaloniaProperty!
+abstract Enx.Atomic.Avalonia.StyleValue.UntypedValue.get -> object?
+abstract Enx.Atomic.Avalonia.VariantBase<TTheme>.Match(string! matcher, Enx.Atomic.Avalonia.VariantContext<TTheme!>! context) -> Enx.Atomic.Avalonia.VariantHandlerBase![]!
+abstract Enx.Atomic.Avalonia.VariantHandlerBase.<Clone>$() -> Enx.Atomic.Avalonia.VariantHandlerBase!
+abstract Enx.Atomic.Avalonia.VariantHandlerBase.Handle(Enx.Atomic.Avalonia.VariantHandlerContext! input, System.Func<Enx.Atomic.Avalonia.VariantHandlerContext!, Enx.Atomic.Avalonia.VariantHandlerContext!>! next) -> Enx.Atomic.Avalonia.VariantHandlerContext!
+const Enx.Atomic.Avalonia.StyleLayer.Default = 1 -> int
+const Enx.Atomic.Avalonia.StyleLayer.Shortcuts = 0 -> int
+override Enx.Atomic.Avalonia.ClassesAttributeExtractor.Extract(Enx.Atomic.Avalonia.ExtractorContext! context) -> void
+override Enx.Atomic.Avalonia.Compact.SelectorExpression.Class.<Clone>$() -> Enx.Atomic.Avalonia.Compact.SelectorExpression.Class!
+override Enx.Atomic.Avalonia.Compact.SelectorExpression.Class.EqualityContract.get -> System.Type!
+override Enx.Atomic.Avalonia.Compact.SelectorExpression.Class.Equals(object? obj) -> bool
+override Enx.Atomic.Avalonia.Compact.SelectorExpression.Class.GetHashCode() -> int
+override Enx.Atomic.Avalonia.Compact.SelectorExpression.Class.PrintMembers(System.Text.StringBuilder! builder) -> bool
+override Enx.Atomic.Avalonia.Compact.SelectorExpression.Class.ToExpressionCore(System.Linq.Expressions.Expression! parameter) -> System.Linq.Expressions.Expression!
+override Enx.Atomic.Avalonia.Compact.SelectorExpression.Class.ToString() -> string!
+override Enx.Atomic.Avalonia.Compact.SelectorExpression.Equals(object? obj) -> bool
+override Enx.Atomic.Avalonia.Compact.SelectorExpression.GetHashCode() -> int
+override Enx.Atomic.Avalonia.Compact.SelectorExpression.Is.<Clone>$() -> Enx.Atomic.Avalonia.Compact.SelectorExpression.Is!
+override Enx.Atomic.Avalonia.Compact.SelectorExpression.Is.EqualityContract.get -> System.Type!
+override Enx.Atomic.Avalonia.Compact.SelectorExpression.Is.Equals(object? obj) -> bool
+override Enx.Atomic.Avalonia.Compact.SelectorExpression.Is.GetHashCode() -> int
+override Enx.Atomic.Avalonia.Compact.SelectorExpression.Is.PrintMembers(System.Text.StringBuilder! builder) -> bool
+override Enx.Atomic.Avalonia.Compact.SelectorExpression.Is.ToExpressionCore(System.Linq.Expressions.Expression! parameter) -> System.Linq.Expressions.Expression!
+override Enx.Atomic.Avalonia.Compact.SelectorExpression.Is.ToString() -> string!
+override Enx.Atomic.Avalonia.Compact.SelectorExpression.OfType.<Clone>$() -> Enx.Atomic.Avalonia.Compact.SelectorExpression.OfType!
+override Enx.Atomic.Avalonia.Compact.SelectorExpression.OfType.EqualityContract.get -> System.Type!
+override Enx.Atomic.Avalonia.Compact.SelectorExpression.OfType.Equals(object? obj) -> bool
+override Enx.Atomic.Avalonia.Compact.SelectorExpression.OfType.GetHashCode() -> int
+override Enx.Atomic.Avalonia.Compact.SelectorExpression.OfType.PrintMembers(System.Text.StringBuilder! builder) -> bool
+override Enx.Atomic.Avalonia.Compact.SelectorExpression.OfType.ToExpressionCore(System.Linq.Expressions.Expression! parameter) -> System.Linq.Expressions.Expression!
+override Enx.Atomic.Avalonia.Compact.SelectorExpression.OfType.ToString() -> string!
+override Enx.Atomic.Avalonia.Compact.SelectorExpression.PropertyEquals.<Clone>$() -> Enx.Atomic.Avalonia.Compact.SelectorExpression.PropertyEquals!
+override Enx.Atomic.Avalonia.Compact.SelectorExpression.PropertyEquals.EqualityContract.get -> System.Type!
+override Enx.Atomic.Avalonia.Compact.SelectorExpression.PropertyEquals.Equals(object? obj) -> bool
+override Enx.Atomic.Avalonia.Compact.SelectorExpression.PropertyEquals.GetHashCode() -> int
+override Enx.Atomic.Avalonia.Compact.SelectorExpression.PropertyEquals.PrintMembers(System.Text.StringBuilder! builder) -> bool
+override Enx.Atomic.Avalonia.Compact.SelectorExpression.PropertyEquals.ToExpressionCore(System.Linq.Expressions.Expression! parameter) -> System.Linq.Expressions.Expression!
+override Enx.Atomic.Avalonia.Compact.SelectorExpression.PropertyEquals.ToString() -> string!
+override Enx.Atomic.Avalonia.Compact.SelectorExpression.ToString() -> string!
+override Enx.Atomic.Avalonia.Compact.StyleQueryExpression.And.<Clone>$() -> Enx.Atomic.Avalonia.Compact.StyleQueryExpression.And!
+override Enx.Atomic.Avalonia.Compact.StyleQueryExpression.And.EqualityContract.get -> System.Type!
+override Enx.Atomic.Avalonia.Compact.StyleQueryExpression.And.Equals(object? obj) -> bool
+override Enx.Atomic.Avalonia.Compact.StyleQueryExpression.And.GetHashCode() -> int
+override Enx.Atomic.Avalonia.Compact.StyleQueryExpression.And.PrintMembers(System.Text.StringBuilder! builder) -> bool
+override Enx.Atomic.Avalonia.Compact.StyleQueryExpression.And.ToExpressionCore(System.Linq.Expressions.Expression! parameter) -> System.Linq.Expressions.Expression!
+override Enx.Atomic.Avalonia.Compact.StyleQueryExpression.And.ToString() -> string!
+override Enx.Atomic.Avalonia.Compact.StyleQueryExpression.Equals(object? obj) -> bool
+override Enx.Atomic.Avalonia.Compact.StyleQueryExpression.GetHashCode() -> int
+override Enx.Atomic.Avalonia.Compact.StyleQueryExpression.Height.<Clone>$() -> Enx.Atomic.Avalonia.Compact.StyleQueryExpression.Height!
+override Enx.Atomic.Avalonia.Compact.StyleQueryExpression.Height.EqualityContract.get -> System.Type!
+override Enx.Atomic.Avalonia.Compact.StyleQueryExpression.Height.Equals(object? obj) -> bool
+override Enx.Atomic.Avalonia.Compact.StyleQueryExpression.Height.GetHashCode() -> int
+override Enx.Atomic.Avalonia.Compact.StyleQueryExpression.Height.PrintMembers(System.Text.StringBuilder! builder) -> bool
+override Enx.Atomic.Avalonia.Compact.StyleQueryExpression.Height.ToExpressionCore(System.Linq.Expressions.Expression! parameter) -> System.Linq.Expressions.Expression!
+override Enx.Atomic.Avalonia.Compact.StyleQueryExpression.Height.ToString() -> string!
+override Enx.Atomic.Avalonia.Compact.StyleQueryExpression.Or.<Clone>$() -> Enx.Atomic.Avalonia.Compact.StyleQueryExpression.Or!
+override Enx.Atomic.Avalonia.Compact.StyleQueryExpression.Or.EqualityContract.get -> System.Type!
+override Enx.Atomic.Avalonia.Compact.StyleQueryExpression.Or.Equals(object? obj) -> bool
+override Enx.Atomic.Avalonia.Compact.StyleQueryExpression.Or.GetHashCode() -> int
+override Enx.Atomic.Avalonia.Compact.StyleQueryExpression.Or.PrintMembers(System.Text.StringBuilder! builder) -> bool
+override Enx.Atomic.Avalonia.Compact.StyleQueryExpression.Or.ToExpressionCore(System.Linq.Expressions.Expression! parameter) -> System.Linq.Expressions.Expression!
+override Enx.Atomic.Avalonia.Compact.StyleQueryExpression.Or.ToString() -> string!
+override Enx.Atomic.Avalonia.Compact.StyleQueryExpression.ToString() -> string!
+override Enx.Atomic.Avalonia.Compact.StyleQueryExpression.Width.<Clone>$() -> Enx.Atomic.Avalonia.Compact.StyleQueryExpression.Width!
+override Enx.Atomic.Avalonia.Compact.StyleQueryExpression.Width.EqualityContract.get -> System.Type!
+override Enx.Atomic.Avalonia.Compact.StyleQueryExpression.Width.Equals(object? obj) -> bool
+override Enx.Atomic.Avalonia.Compact.StyleQueryExpression.Width.GetHashCode() -> int
+override Enx.Atomic.Avalonia.Compact.StyleQueryExpression.Width.PrintMembers(System.Text.StringBuilder! builder) -> bool
+override Enx.Atomic.Avalonia.Compact.StyleQueryExpression.Width.ToExpressionCore(System.Linq.Expressions.Expression! parameter) -> System.Linq.Expressions.Expression!
+override Enx.Atomic.Avalonia.Compact.StyleQueryExpression.Width.ToString() -> string!
+override Enx.Atomic.Avalonia.Rule.Dynamic<TTheme>.EqualityContract.get -> System.Type!
+override Enx.Atomic.Avalonia.Rule.Dynamic<TTheme>.Equals(object? obj) -> bool
+override Enx.Atomic.Avalonia.Rule.Dynamic<TTheme>.GetHashCode() -> int
+override Enx.Atomic.Avalonia.Rule.Dynamic<TTheme>.PrintMembers(System.Text.StringBuilder! builder) -> bool
+override Enx.Atomic.Avalonia.Rule.Dynamic<TTheme>.ToString() -> string!
+override Enx.Atomic.Avalonia.Rule.Equals(object? obj) -> bool
+override Enx.Atomic.Avalonia.Rule.GetHashCode() -> int
+override Enx.Atomic.Avalonia.Rule.Static.<Clone>$() -> Enx.Atomic.Avalonia.Rule.Static!
+override Enx.Atomic.Avalonia.Rule.Static.EqualityContract.get -> System.Type!
+override Enx.Atomic.Avalonia.Rule.Static.Equals(object? obj) -> bool
+override Enx.Atomic.Avalonia.Rule.Static.GetHashCode() -> int
+override Enx.Atomic.Avalonia.Rule.Static.PrintMembers(System.Text.StringBuilder! builder) -> bool
+override Enx.Atomic.Avalonia.Rule.Static.ToString() -> string!
+override Enx.Atomic.Avalonia.Rule.ToString() -> string!
+override Enx.Atomic.Avalonia.RuleContext<TTheme>.Equals(object? obj) -> bool
+override Enx.Atomic.Avalonia.RuleContext<TTheme>.GetHashCode() -> int
+override Enx.Atomic.Avalonia.RuleContext<TTheme>.ToString() -> string!
+override Enx.Atomic.Avalonia.SplitExtractor.Extract(Enx.Atomic.Avalonia.ExtractorContext! context) -> void
+override Enx.Atomic.Avalonia.StringifiedUtil.Equals(object? obj) -> bool
+override Enx.Atomic.Avalonia.StringifiedUtil.GetHashCode() -> int
+override Enx.Atomic.Avalonia.StringifiedUtil.ToString() -> string!
+override Enx.Atomic.Avalonia.StyleOrdering.SortKey.GetHashCode() -> int
+override Enx.Atomic.Avalonia.StyleValue.Equals(object? obj) -> bool
+override Enx.Atomic.Avalonia.StyleValue.GetHashCode() -> int
+override Enx.Atomic.Avalonia.StyleValue.Literal<TValue>.<Clone>$() -> Enx.Atomic.Avalonia.StyleValue.Literal<TValue>!
+override Enx.Atomic.Avalonia.StyleValue.Literal<TValue>.EqualityContract.get -> System.Type!
+override Enx.Atomic.Avalonia.StyleValue.Literal<TValue>.Equals(object? obj) -> bool
+override Enx.Atomic.Avalonia.StyleValue.Literal<TValue>.GetHashCode() -> int
+override Enx.Atomic.Avalonia.StyleValue.Literal<TValue>.PrintMembers(System.Text.StringBuilder! builder) -> bool
+override Enx.Atomic.Avalonia.StyleValue.Literal<TValue>.TargetType.get -> System.Type!
+override Enx.Atomic.Avalonia.StyleValue.Literal<TValue>.ToString() -> string!
+override Enx.Atomic.Avalonia.StyleValue.Literal<TValue>.UntypedProperty.get -> Avalonia.AvaloniaProperty!
+override Enx.Atomic.Avalonia.StyleValue.Literal<TValue>.UntypedValue.get -> object?
+override Enx.Atomic.Avalonia.StyleValue.Resource.<Clone>$() -> Enx.Atomic.Avalonia.StyleValue.Resource!
+override Enx.Atomic.Avalonia.StyleValue.Resource.EqualityContract.get -> System.Type!
+override Enx.Atomic.Avalonia.StyleValue.Resource.Equals(object? obj) -> bool
+override Enx.Atomic.Avalonia.StyleValue.Resource.GetHashCode() -> int
+override Enx.Atomic.Avalonia.StyleValue.Resource.PrintMembers(System.Text.StringBuilder! builder) -> bool
+override Enx.Atomic.Avalonia.StyleValue.Resource.TargetType.get -> System.Type!
+override Enx.Atomic.Avalonia.StyleValue.Resource.ToString() -> string!
+override Enx.Atomic.Avalonia.StyleValue.Resource.UntypedProperty.get -> Avalonia.AvaloniaProperty!
+override Enx.Atomic.Avalonia.StyleValue.Resource.UntypedValue.get -> object?
+override Enx.Atomic.Avalonia.StyleValue.ToString() -> string!
+override Enx.Atomic.Avalonia.Themed<T>.GetHashCode() -> int
+override Enx.Atomic.Avalonia.VariantBase<TTheme>.Equals(object? obj) -> bool
+override Enx.Atomic.Avalonia.VariantBase<TTheme>.GetHashCode() -> int
+override Enx.Atomic.Avalonia.VariantBase<TTheme>.ToString() -> string!
+override Enx.Atomic.Avalonia.VariantContext<TTheme>.Equals(object? obj) -> bool
+override Enx.Atomic.Avalonia.VariantContext<TTheme>.GetHashCode() -> int
+override Enx.Atomic.Avalonia.VariantContext<TTheme>.ToString() -> string!
+override Enx.Atomic.Avalonia.VariantHandlerBase.Equals(object? obj) -> bool
+override Enx.Atomic.Avalonia.VariantHandlerBase.GetHashCode() -> int
+override Enx.Atomic.Avalonia.VariantHandlerBase.ToString() -> string!
+override Enx.Atomic.Avalonia.VariantHandlerContext.Equals(object? obj) -> bool
+override Enx.Atomic.Avalonia.VariantHandlerContext.GetHashCode() -> int
+override Enx.Atomic.Avalonia.VariantHandlerContext.ToString() -> string!
+override Enx.Atomic.Avalonia.VariantMatchedResult<TTheme>.Equals(object? obj) -> bool
+override Enx.Atomic.Avalonia.VariantMatchedResult<TTheme>.GetHashCode() -> int
+override Enx.Atomic.Avalonia.VariantMatchedResult<TTheme>.ToString() -> string!
+override sealed Enx.Atomic.Avalonia.Compact.SelectorExpression.Class.Equals(Enx.Atomic.Avalonia.Compact.SelectorExpression? other) -> bool
+override sealed Enx.Atomic.Avalonia.Compact.SelectorExpression.Is.Equals(Enx.Atomic.Avalonia.Compact.SelectorExpression? other) -> bool
+override sealed Enx.Atomic.Avalonia.Compact.SelectorExpression.OfType.Equals(Enx.Atomic.Avalonia.Compact.SelectorExpression? other) -> bool
+override sealed Enx.Atomic.Avalonia.Compact.SelectorExpression.PropertyEquals.Equals(Enx.Atomic.Avalonia.Compact.SelectorExpression? other) -> bool
+override sealed Enx.Atomic.Avalonia.Compact.StyleQueryExpression.And.Equals(Enx.Atomic.Avalonia.Compact.StyleQueryExpression? other) -> bool
+override sealed Enx.Atomic.Avalonia.Compact.StyleQueryExpression.Height.Equals(Enx.Atomic.Avalonia.Compact.StyleQueryExpression? other) -> bool
+override sealed Enx.Atomic.Avalonia.Compact.StyleQueryExpression.Or.Equals(Enx.Atomic.Avalonia.Compact.StyleQueryExpression? other) -> bool
+override sealed Enx.Atomic.Avalonia.Compact.StyleQueryExpression.Width.Equals(Enx.Atomic.Avalonia.Compact.StyleQueryExpression? other) -> bool
+override sealed Enx.Atomic.Avalonia.Rule.Dynamic<TTheme>.Equals(Enx.Atomic.Avalonia.Rule? other) -> bool
+override sealed Enx.Atomic.Avalonia.Rule.Static.Equals(Enx.Atomic.Avalonia.Rule? other) -> bool
+override sealed Enx.Atomic.Avalonia.StyleValue.Literal<TValue>.Equals(Enx.Atomic.Avalonia.StyleValue? other) -> bool
+override sealed Enx.Atomic.Avalonia.StyleValue.Resource.Equals(Enx.Atomic.Avalonia.StyleValue? other) -> bool
+static Enx.Atomic.Avalonia.AvaloniaExtensions.ToLiteral<TValue>(this Avalonia.AvaloniaProperty<TValue>! property, TValue value, System.Type? targetType = null) -> Enx.Atomic.Avalonia.StyleValue.Literal<TValue>!
+static Enx.Atomic.Avalonia.AvaloniaExtensions.ToResource<TValue, TTheme>(this Avalonia.AvaloniaProperty<TValue>! property, System.Linq.Expressions.Expression<System.Func<TTheme, object!>!>! theme, System.Type? targetType = null) -> Enx.Atomic.Avalonia.StyleValue.Resource!
+static Enx.Atomic.Avalonia.ClassesAttributeExtractor.ClassesAttributeRegex() -> System.Text.RegularExpressions.Regex!
+static Enx.Atomic.Avalonia.Compact.SelectorExpression.Class.operator !=(Enx.Atomic.Avalonia.Compact.SelectorExpression.Class? left, Enx.Atomic.Avalonia.Compact.SelectorExpression.Class? right) -> bool
+static Enx.Atomic.Avalonia.Compact.SelectorExpression.Class.operator ==(Enx.Atomic.Avalonia.Compact.SelectorExpression.Class? left, Enx.Atomic.Avalonia.Compact.SelectorExpression.Class? right) -> bool
+static Enx.Atomic.Avalonia.Compact.SelectorExpression.Is.operator !=(Enx.Atomic.Avalonia.Compact.SelectorExpression.Is? left, Enx.Atomic.Avalonia.Compact.SelectorExpression.Is? right) -> bool
+static Enx.Atomic.Avalonia.Compact.SelectorExpression.Is.operator ==(Enx.Atomic.Avalonia.Compact.SelectorExpression.Is? left, Enx.Atomic.Avalonia.Compact.SelectorExpression.Is? right) -> bool
+static Enx.Atomic.Avalonia.Compact.SelectorExpression.OfType.operator !=(Enx.Atomic.Avalonia.Compact.SelectorExpression.OfType? left, Enx.Atomic.Avalonia.Compact.SelectorExpression.OfType? right) -> bool
+static Enx.Atomic.Avalonia.Compact.SelectorExpression.OfType.operator ==(Enx.Atomic.Avalonia.Compact.SelectorExpression.OfType? left, Enx.Atomic.Avalonia.Compact.SelectorExpression.OfType? right) -> bool
+static Enx.Atomic.Avalonia.Compact.SelectorExpression.PropertyEquals.operator !=(Enx.Atomic.Avalonia.Compact.SelectorExpression.PropertyEquals? left, Enx.Atomic.Avalonia.Compact.SelectorExpression.PropertyEquals? right) -> bool
+static Enx.Atomic.Avalonia.Compact.SelectorExpression.PropertyEquals.operator ==(Enx.Atomic.Avalonia.Compact.SelectorExpression.PropertyEquals? left, Enx.Atomic.Avalonia.Compact.SelectorExpression.PropertyEquals? right) -> bool
+static Enx.Atomic.Avalonia.Compact.SelectorExpression.operator !=(Enx.Atomic.Avalonia.Compact.SelectorExpression? left, Enx.Atomic.Avalonia.Compact.SelectorExpression? right) -> bool
+static Enx.Atomic.Avalonia.Compact.SelectorExpression.operator ==(Enx.Atomic.Avalonia.Compact.SelectorExpression? left, Enx.Atomic.Avalonia.Compact.SelectorExpression? right) -> bool
+static Enx.Atomic.Avalonia.Compact.SelectorsExpression.Class(this Enx.Atomic.Avalonia.Compact.SelectorExpression? previous, string! name) -> Enx.Atomic.Avalonia.Compact.SelectorExpression!
+static Enx.Atomic.Avalonia.Compact.SelectorsExpression.Is(this Enx.Atomic.Avalonia.Compact.SelectorExpression? previous, System.Type! type) -> Enx.Atomic.Avalonia.Compact.SelectorExpression!
+static Enx.Atomic.Avalonia.Compact.SelectorsExpression.Is<T>(this Enx.Atomic.Avalonia.Compact.SelectorExpression? previous) -> Enx.Atomic.Avalonia.Compact.SelectorExpression!
+static Enx.Atomic.Avalonia.Compact.SelectorsExpression.PropertyEquals(this Enx.Atomic.Avalonia.Compact.SelectorExpression? previous, Avalonia.AvaloniaProperty! property, object? value, System.Type? declaringType = null) -> Enx.Atomic.Avalonia.Compact.SelectorExpression!
+static Enx.Atomic.Avalonia.Compact.StyleQueriesExtensions.And(this Enx.Atomic.Avalonia.Compact.StyleQueryExpression? previous, Enx.Atomic.Avalonia.Compact.StyleQueryExpression![]! queries) -> Enx.Atomic.Avalonia.Compact.StyleQueryExpression!
+static Enx.Atomic.Avalonia.Compact.StyleQueriesExtensions.Height(this Enx.Atomic.Avalonia.Compact.StyleQueryExpression? previous, Avalonia.Styling.StyleQueryComparisonOperator operator, double value) -> Enx.Atomic.Avalonia.Compact.StyleQueryExpression!
+static Enx.Atomic.Avalonia.Compact.StyleQueriesExtensions.Or(this Enx.Atomic.Avalonia.Compact.StyleQueryExpression? previous, Enx.Atomic.Avalonia.Compact.StyleQueryExpression![]! queries) -> Enx.Atomic.Avalonia.Compact.StyleQueryExpression!
+static Enx.Atomic.Avalonia.Compact.StyleQueriesExtensions.Width(this Enx.Atomic.Avalonia.Compact.StyleQueryExpression? previous, Avalonia.Styling.StyleQueryComparisonOperator operator, double value) -> Enx.Atomic.Avalonia.Compact.StyleQueryExpression!
+static Enx.Atomic.Avalonia.Compact.StyleQueryExpression.And.operator !=(Enx.Atomic.Avalonia.Compact.StyleQueryExpression.And? left, Enx.Atomic.Avalonia.Compact.StyleQueryExpression.And? right) -> bool
+static Enx.Atomic.Avalonia.Compact.StyleQueryExpression.And.operator ==(Enx.Atomic.Avalonia.Compact.StyleQueryExpression.And? left, Enx.Atomic.Avalonia.Compact.StyleQueryExpression.And? right) -> bool
+static Enx.Atomic.Avalonia.Compact.StyleQueryExpression.Height.operator !=(Enx.Atomic.Avalonia.Compact.StyleQueryExpression.Height? left, Enx.Atomic.Avalonia.Compact.StyleQueryExpression.Height? right) -> bool
+static Enx.Atomic.Avalonia.Compact.StyleQueryExpression.Height.operator ==(Enx.Atomic.Avalonia.Compact.StyleQueryExpression.Height? left, Enx.Atomic.Avalonia.Compact.StyleQueryExpression.Height? right) -> bool
+static Enx.Atomic.Avalonia.Compact.StyleQueryExpression.Or.operator !=(Enx.Atomic.Avalonia.Compact.StyleQueryExpression.Or? left, Enx.Atomic.Avalonia.Compact.StyleQueryExpression.Or? right) -> bool
+static Enx.Atomic.Avalonia.Compact.StyleQueryExpression.Or.operator ==(Enx.Atomic.Avalonia.Compact.StyleQueryExpression.Or? left, Enx.Atomic.Avalonia.Compact.StyleQueryExpression.Or? right) -> bool
+static Enx.Atomic.Avalonia.Compact.StyleQueryExpression.Width.operator !=(Enx.Atomic.Avalonia.Compact.StyleQueryExpression.Width? left, Enx.Atomic.Avalonia.Compact.StyleQueryExpression.Width? right) -> bool
+static Enx.Atomic.Avalonia.Compact.StyleQueryExpression.Width.operator ==(Enx.Atomic.Avalonia.Compact.StyleQueryExpression.Width? left, Enx.Atomic.Avalonia.Compact.StyleQueryExpression.Width? right) -> bool
+static Enx.Atomic.Avalonia.Compact.StyleQueryExpression.operator !=(Enx.Atomic.Avalonia.Compact.StyleQueryExpression? left, Enx.Atomic.Avalonia.Compact.StyleQueryExpression? right) -> bool
+static Enx.Atomic.Avalonia.Compact.StyleQueryExpression.operator ==(Enx.Atomic.Avalonia.Compact.StyleQueryExpression? left, Enx.Atomic.Avalonia.Compact.StyleQueryExpression? right) -> bool
+static Enx.Atomic.Avalonia.Composites.BorderThicknessSides.Descriptor.get -> Enx.Atomic.Avalonia.Composites.CompositePropertyDescriptor!
+static Enx.Atomic.Avalonia.Composites.CompositeProperty.Register(Enx.Atomic.Avalonia.Composites.CompositePropertyDescriptor! descriptor, params Avalonia.AttachedProperty<double>![]! sides) -> void
+static Enx.Atomic.Avalonia.Composites.CompositePropertyDescriptor.Create(Avalonia.AvaloniaProperty! realProperty, Enx.Atomic.Avalonia.Composites.CompositeKind kind, string! hostTypeName, string! sidePrefix) -> Enx.Atomic.Avalonia.Composites.CompositePropertyDescriptor!
+static Enx.Atomic.Avalonia.Composites.CornerRadiusSides.Descriptor.get -> Enx.Atomic.Avalonia.Composites.CompositePropertyDescriptor!
+static Enx.Atomic.Avalonia.Composites.MarginSides.Descriptor.get -> Enx.Atomic.Avalonia.Composites.CompositePropertyDescriptor!
+static Enx.Atomic.Avalonia.Composites.PaddingSides.Descriptor.get -> Enx.Atomic.Avalonia.Composites.CompositePropertyDescriptor!
+static Enx.Atomic.Avalonia.Rule.Static.operator !=(Enx.Atomic.Avalonia.Rule.Static? left, Enx.Atomic.Avalonia.Rule.Static? right) -> bool
+static Enx.Atomic.Avalonia.Rule.Static.operator ==(Enx.Atomic.Avalonia.Rule.Static? left, Enx.Atomic.Avalonia.Rule.Static? right) -> bool
+static Enx.Atomic.Avalonia.Rule.operator !=(Enx.Atomic.Avalonia.Rule? left, Enx.Atomic.Avalonia.Rule? right) -> bool
+static Enx.Atomic.Avalonia.Rule.operator ==(Enx.Atomic.Avalonia.Rule? left, Enx.Atomic.Avalonia.Rule? right) -> bool
+static Enx.Atomic.Avalonia.Shortcut.Dynamic<TTheme>(System.Text.RegularExpressions.Regex! regex, Enx.Atomic.Avalonia.ShortcutCollectionMatcher<TTheme!>! matcher) -> Enx.Atomic.Avalonia.IDynamicShortcut<TTheme!>!
+static Enx.Atomic.Avalonia.Shortcut.Dynamic<TTheme>(System.Text.RegularExpressions.Regex! regex, Enx.Atomic.Avalonia.ShortcutMatcher<TTheme!>! matcher) -> Enx.Atomic.Avalonia.IDynamicShortcut<TTheme!>!
+static Enx.Atomic.Avalonia.Shortcut.Static(string! name, string! expansion) -> Enx.Atomic.Avalonia.IStaticShortcut!
+static Enx.Atomic.Avalonia.SplitExtractor.SplitRegex() -> System.Text.RegularExpressions.Regex!
+static Enx.Atomic.Avalonia.StringifiedUtil.operator !=(Enx.Atomic.Avalonia.StringifiedUtil? left, Enx.Atomic.Avalonia.StringifiedUtil? right) -> bool
+static Enx.Atomic.Avalonia.StringifiedUtil.operator ==(Enx.Atomic.Avalonia.StringifiedUtil? left, Enx.Atomic.Avalonia.StringifiedUtil? right) -> bool
+static Enx.Atomic.Avalonia.StyleOrdering.Distinct(System.Collections.Generic.IEnumerable<Enx.Atomic.Avalonia.StringifiedUtil!>! utils) -> Enx.Atomic.Avalonia.StringifiedUtil![]!
+static Enx.Atomic.Avalonia.StyleOrdering.GetSortKey(Enx.Atomic.Avalonia.StringifiedUtil! util) -> Enx.Atomic.Avalonia.StyleOrdering.SortKey
+static Enx.Atomic.Avalonia.StyleOrdering.Sort(System.Collections.Generic.IEnumerable<Enx.Atomic.Avalonia.StringifiedUtil!>! utils) -> Enx.Atomic.Avalonia.StringifiedUtil![]!
+static Enx.Atomic.Avalonia.StyleOrdering.SortKey.operator !=(Enx.Atomic.Avalonia.StyleOrdering.SortKey left, Enx.Atomic.Avalonia.StyleOrdering.SortKey right) -> bool
+static Enx.Atomic.Avalonia.StyleOrdering.SortKey.operator ==(Enx.Atomic.Avalonia.StyleOrdering.SortKey left, Enx.Atomic.Avalonia.StyleOrdering.SortKey right) -> bool
+static Enx.Atomic.Avalonia.StyleValue.Literal<TValue>.operator !=(Enx.Atomic.Avalonia.StyleValue.Literal<TValue>? left, Enx.Atomic.Avalonia.StyleValue.Literal<TValue>? right) -> bool
+static Enx.Atomic.Avalonia.StyleValue.Literal<TValue>.operator ==(Enx.Atomic.Avalonia.StyleValue.Literal<TValue>? left, Enx.Atomic.Avalonia.StyleValue.Literal<TValue>? right) -> bool
+static Enx.Atomic.Avalonia.StyleValue.Resource.operator !=(Enx.Atomic.Avalonia.StyleValue.Resource? left, Enx.Atomic.Avalonia.StyleValue.Resource? right) -> bool
+static Enx.Atomic.Avalonia.StyleValue.Resource.operator ==(Enx.Atomic.Avalonia.StyleValue.Resource? left, Enx.Atomic.Avalonia.StyleValue.Resource? right) -> bool
+static Enx.Atomic.Avalonia.StyleValue.operator !=(Enx.Atomic.Avalonia.StyleValue? left, Enx.Atomic.Avalonia.StyleValue? right) -> bool
+static Enx.Atomic.Avalonia.StyleValue.operator ==(Enx.Atomic.Avalonia.StyleValue? left, Enx.Atomic.Avalonia.StyleValue? right) -> bool
+static Enx.Atomic.Avalonia.ThemeBuilder<TTheme>.Create() -> Enx.Atomic.Avalonia.ThemeBuilder<TTheme!>!
+static Enx.Atomic.Avalonia.Themed<T>.implicit operator Enx.Atomic.Avalonia.Themed<T>(T value) -> Enx.Atomic.Avalonia.Themed<T>
+static Enx.Atomic.Avalonia.Themed<T>.operator !=(Enx.Atomic.Avalonia.Themed<T> left, Enx.Atomic.Avalonia.Themed<T> right) -> bool
+static Enx.Atomic.Avalonia.Themed<T>.operator ==(Enx.Atomic.Avalonia.Themed<T> left, Enx.Atomic.Avalonia.Themed<T> right) -> bool
+static Enx.Atomic.Avalonia.VariantHandlerBase.operator !=(Enx.Atomic.Avalonia.VariantHandlerBase? left, Enx.Atomic.Avalonia.VariantHandlerBase? right) -> bool
+static Enx.Atomic.Avalonia.VariantHandlerBase.operator ==(Enx.Atomic.Avalonia.VariantHandlerBase? left, Enx.Atomic.Avalonia.VariantHandlerBase? right) -> bool
+static Enx.Atomic.Avalonia.VariantHandlerContext.operator !=(Enx.Atomic.Avalonia.VariantHandlerContext? left, Enx.Atomic.Avalonia.VariantHandlerContext? right) -> bool
+static Enx.Atomic.Avalonia.VariantHandlerContext.operator ==(Enx.Atomic.Avalonia.VariantHandlerContext? left, Enx.Atomic.Avalonia.VariantHandlerContext? right) -> bool
+static readonly Enx.Atomic.Avalonia.Composites.BorderThicknessSides.BorderThicknessBottomProperty -> Avalonia.AttachedProperty<double>!
+static readonly Enx.Atomic.Avalonia.Composites.BorderThicknessSides.BorderThicknessLeftProperty -> Avalonia.AttachedProperty<double>!
+static readonly Enx.Atomic.Avalonia.Composites.BorderThicknessSides.BorderThicknessRightProperty -> Avalonia.AttachedProperty<double>!
+static readonly Enx.Atomic.Avalonia.Composites.BorderThicknessSides.BorderThicknessTopProperty -> Avalonia.AttachedProperty<double>!
+static readonly Enx.Atomic.Avalonia.Composites.CornerRadiusSides.CornerRadiusBottomLeftProperty -> Avalonia.AttachedProperty<double>!
+static readonly Enx.Atomic.Avalonia.Composites.CornerRadiusSides.CornerRadiusBottomRightProperty -> Avalonia.AttachedProperty<double>!
+static readonly Enx.Atomic.Avalonia.Composites.CornerRadiusSides.CornerRadiusTopLeftProperty -> Avalonia.AttachedProperty<double>!
+static readonly Enx.Atomic.Avalonia.Composites.CornerRadiusSides.CornerRadiusTopRightProperty -> Avalonia.AttachedProperty<double>!
+static readonly Enx.Atomic.Avalonia.Composites.MarginSides.MarginBottomProperty -> Avalonia.AttachedProperty<double>!
+static readonly Enx.Atomic.Avalonia.Composites.MarginSides.MarginLeftProperty -> Avalonia.AttachedProperty<double>!
+static readonly Enx.Atomic.Avalonia.Composites.MarginSides.MarginRightProperty -> Avalonia.AttachedProperty<double>!
+static readonly Enx.Atomic.Avalonia.Composites.MarginSides.MarginTopProperty -> Avalonia.AttachedProperty<double>!
+static readonly Enx.Atomic.Avalonia.Composites.PaddingSides.PaddingBottomProperty -> Avalonia.AttachedProperty<double>!
+static readonly Enx.Atomic.Avalonia.Composites.PaddingSides.PaddingLeftProperty -> Avalonia.AttachedProperty<double>!
+static readonly Enx.Atomic.Avalonia.Composites.PaddingSides.PaddingRightProperty -> Avalonia.AttachedProperty<double>!
+static readonly Enx.Atomic.Avalonia.Composites.PaddingSides.PaddingTopProperty -> Avalonia.AttachedProperty<double>!
+virtual Enx.Atomic.Avalonia.Compact.SelectorExpression.Class.Equals(Enx.Atomic.Avalonia.Compact.SelectorExpression.Class? other) -> bool
+virtual Enx.Atomic.Avalonia.Compact.SelectorExpression.EqualityContract.get -> System.Type!
+virtual Enx.Atomic.Avalonia.Compact.SelectorExpression.Equals(Enx.Atomic.Avalonia.Compact.SelectorExpression? other) -> bool
+virtual Enx.Atomic.Avalonia.Compact.SelectorExpression.Is.Equals(Enx.Atomic.Avalonia.Compact.SelectorExpression.Is? other) -> bool
+virtual Enx.Atomic.Avalonia.Compact.SelectorExpression.OfType.Equals(Enx.Atomic.Avalonia.Compact.SelectorExpression.OfType? other) -> bool
+virtual Enx.Atomic.Avalonia.Compact.SelectorExpression.PrintMembers(System.Text.StringBuilder! builder) -> bool
+virtual Enx.Atomic.Avalonia.Compact.SelectorExpression.PropertyEquals.Equals(Enx.Atomic.Avalonia.Compact.SelectorExpression.PropertyEquals? other) -> bool
+virtual Enx.Atomic.Avalonia.Compact.StyleQueryExpression.And.Equals(Enx.Atomic.Avalonia.Compact.StyleQueryExpression.And? other) -> bool
+virtual Enx.Atomic.Avalonia.Compact.StyleQueryExpression.EqualityContract.get -> System.Type!
+virtual Enx.Atomic.Avalonia.Compact.StyleQueryExpression.Equals(Enx.Atomic.Avalonia.Compact.StyleQueryExpression? other) -> bool
+virtual Enx.Atomic.Avalonia.Compact.StyleQueryExpression.Height.Equals(Enx.Atomic.Avalonia.Compact.StyleQueryExpression.Height? other) -> bool
+virtual Enx.Atomic.Avalonia.Compact.StyleQueryExpression.Or.Equals(Enx.Atomic.Avalonia.Compact.StyleQueryExpression.Or? other) -> bool
+virtual Enx.Atomic.Avalonia.Compact.StyleQueryExpression.PrintMembers(System.Text.StringBuilder! builder) -> bool
+virtual Enx.Atomic.Avalonia.Compact.StyleQueryExpression.Width.Equals(Enx.Atomic.Avalonia.Compact.StyleQueryExpression.Width? other) -> bool
+virtual Enx.Atomic.Avalonia.DynamicMatcher<TTheme>.Invoke(System.Text.RegularExpressions.Match! match, Enx.Atomic.Avalonia.RuleContext<TTheme!>! context) -> System.Collections.Immutable.ImmutableArray<Enx.Atomic.Avalonia.StyleValue!>
+virtual Enx.Atomic.Avalonia.Rule.EqualityContract.get -> System.Type!
+virtual Enx.Atomic.Avalonia.Rule.Equals(Enx.Atomic.Avalonia.Rule? other) -> bool
+virtual Enx.Atomic.Avalonia.Rule.PrintMembers(System.Text.StringBuilder! builder) -> bool
+virtual Enx.Atomic.Avalonia.Rule.Static.Equals(Enx.Atomic.Avalonia.Rule.Static? other) -> bool
+virtual Enx.Atomic.Avalonia.RuleContext<TTheme>.EqualityContract.get -> System.Type!
+virtual Enx.Atomic.Avalonia.RuleContext<TTheme>.PrintMembers(System.Text.StringBuilder! builder) -> bool
+virtual Enx.Atomic.Avalonia.ShortcutCollectionMatcher<TTheme>.Invoke(System.Text.RegularExpressions.Match! match, Enx.Atomic.Avalonia.RuleContext<TTheme!>! context) -> System.Collections.Generic.IEnumerable<string!>?
+virtual Enx.Atomic.Avalonia.ShortcutMatcher<TTheme>.Invoke(System.Text.RegularExpressions.Match! match, Enx.Atomic.Avalonia.RuleContext<TTheme!>! context) -> string?
+virtual Enx.Atomic.Avalonia.StringifiedUtil.<Clone>$() -> Enx.Atomic.Avalonia.StringifiedUtil!
+virtual Enx.Atomic.Avalonia.StringifiedUtil.EqualityContract.get -> System.Type!
+virtual Enx.Atomic.Avalonia.StringifiedUtil.Equals(Enx.Atomic.Avalonia.StringifiedUtil? other) -> bool
+virtual Enx.Atomic.Avalonia.StringifiedUtil.PrintMembers(System.Text.StringBuilder! builder) -> bool
+virtual Enx.Atomic.Avalonia.StyleValue.EqualityContract.get -> System.Type!
+virtual Enx.Atomic.Avalonia.StyleValue.Equals(Enx.Atomic.Avalonia.StyleValue? other) -> bool
+virtual Enx.Atomic.Avalonia.StyleValue.Literal<TValue>.Equals(Enx.Atomic.Avalonia.StyleValue.Literal<TValue>? other) -> bool
+virtual Enx.Atomic.Avalonia.StyleValue.PrintMembers(System.Text.StringBuilder! builder) -> bool
+virtual Enx.Atomic.Avalonia.StyleValue.Resource.Equals(Enx.Atomic.Avalonia.StyleValue.Resource? other) -> bool
+virtual Enx.Atomic.Avalonia.VariantBase<TTheme>.EqualityContract.get -> System.Type!
+virtual Enx.Atomic.Avalonia.VariantBase<TTheme>.PrintMembers(System.Text.StringBuilder! builder) -> bool
+virtual Enx.Atomic.Avalonia.VariantContext<TTheme>.EqualityContract.get -> System.Type!
+virtual Enx.Atomic.Avalonia.VariantContext<TTheme>.PrintMembers(System.Text.StringBuilder! builder) -> bool
+virtual Enx.Atomic.Avalonia.VariantHandlerBase.EqualityContract.get -> System.Type!
+virtual Enx.Atomic.Avalonia.VariantHandlerBase.Equals(Enx.Atomic.Avalonia.VariantHandlerBase? other) -> bool
+virtual Enx.Atomic.Avalonia.VariantHandlerBase.PrintMembers(System.Text.StringBuilder! builder) -> bool
+virtual Enx.Atomic.Avalonia.VariantHandlerContext.<Clone>$() -> Enx.Atomic.Avalonia.VariantHandlerContext!
+virtual Enx.Atomic.Avalonia.VariantHandlerContext.EqualityContract.get -> System.Type!
+virtual Enx.Atomic.Avalonia.VariantHandlerContext.Equals(Enx.Atomic.Avalonia.VariantHandlerContext? other) -> bool
+virtual Enx.Atomic.Avalonia.VariantHandlerContext.PrintMembers(System.Text.StringBuilder! builder) -> bool
+virtual Enx.Atomic.Avalonia.VariantMatchedResult<TTheme>.EqualityContract.get -> System.Type!
+virtual Enx.Atomic.Avalonia.VariantMatchedResult<TTheme>.PrintMembers(System.Text.StringBuilder! builder) -> bool
+~Enx.Atomic.Avalonia.AtomicGenerator<TTheme>.Generate(System.Collections.Generic.ISet<string!>! tokens, Enx.Atomic.Avalonia.AtomicGenerator<TTheme>.Options! options) -> Enx.Atomic.Avalonia.StringifiedUtil![]!
+~Enx.Atomic.Avalonia.AtomicGenerator<TTheme>.Generate(string! input, Enx.Atomic.Avalonia.AtomicGenerator<TTheme>.Options! options) -> Enx.Atomic.Avalonia.StringifiedUtil![]!
+~Enx.Atomic.Avalonia.Rule.Dynamic<TTheme>.Dynamic(Enx.Atomic.Avalonia.Rule.Dynamic<TTheme>! original) -> void
+~Enx.Atomic.Avalonia.RuleContext<TTheme>.RuleContext(Enx.Atomic.Avalonia.RuleContext<TTheme>! original) -> void
+~Enx.Atomic.Avalonia.VariantBase<TTheme>.VariantBase(Enx.Atomic.Avalonia.VariantBase<TTheme>! original) -> void
+~Enx.Atomic.Avalonia.VariantContext<TTheme>.VariantContext(Enx.Atomic.Avalonia.VariantContext<TTheme>! original) -> void
+~Enx.Atomic.Avalonia.VariantMatchedResult<TTheme>.VariantMatchedResult(Enx.Atomic.Avalonia.VariantMatchedResult<TTheme>! original) -> void
+~abstract Enx.Atomic.Avalonia.VariantBase<TTheme>.<Clone>$() -> Enx.Atomic.Avalonia.VariantBase<TTheme>!
+~override Enx.Atomic.Avalonia.Rule.Dynamic<TTheme>.<Clone>$() -> Enx.Atomic.Avalonia.Rule.Dynamic<TTheme>!
+~override Enx.Atomic.Avalonia.StyleOrdering.SortKey.Equals(object obj) -> bool
+~override Enx.Atomic.Avalonia.StyleOrdering.SortKey.ToString() -> string
+~override Enx.Atomic.Avalonia.Themed<T>.Equals(object obj) -> bool
+~override Enx.Atomic.Avalonia.Themed<T>.ToString() -> string
+~static Enx.Atomic.Avalonia.Rule.Dynamic<TTheme>.operator !=(Enx.Atomic.Avalonia.Rule.Dynamic<TTheme>? left, Enx.Atomic.Avalonia.Rule.Dynamic<TTheme>? right) -> bool
+~static Enx.Atomic.Avalonia.Rule.Dynamic<TTheme>.operator ==(Enx.Atomic.Avalonia.Rule.Dynamic<TTheme>? left, Enx.Atomic.Avalonia.Rule.Dynamic<TTheme>? right) -> bool
+~static Enx.Atomic.Avalonia.RuleContext<TTheme>.operator !=(Enx.Atomic.Avalonia.RuleContext<TTheme>? left, Enx.Atomic.Avalonia.RuleContext<TTheme>? right) -> bool
+~static Enx.Atomic.Avalonia.RuleContext<TTheme>.operator ==(Enx.Atomic.Avalonia.RuleContext<TTheme>? left, Enx.Atomic.Avalonia.RuleContext<TTheme>? right) -> bool
+~static Enx.Atomic.Avalonia.VariantBase<TTheme>.operator !=(Enx.Atomic.Avalonia.VariantBase<TTheme>? left, Enx.Atomic.Avalonia.VariantBase<TTheme>? right) -> bool
+~static Enx.Atomic.Avalonia.VariantBase<TTheme>.operator ==(Enx.Atomic.Avalonia.VariantBase<TTheme>? left, Enx.Atomic.Avalonia.VariantBase<TTheme>? right) -> bool
+~static Enx.Atomic.Avalonia.VariantContext<TTheme>.operator !=(Enx.Atomic.Avalonia.VariantContext<TTheme>? left, Enx.Atomic.Avalonia.VariantContext<TTheme>? right) -> bool
+~static Enx.Atomic.Avalonia.VariantContext<TTheme>.operator ==(Enx.Atomic.Avalonia.VariantContext<TTheme>? left, Enx.Atomic.Avalonia.VariantContext<TTheme>? right) -> bool
+~static Enx.Atomic.Avalonia.VariantMatchedResult<TTheme>.operator !=(Enx.Atomic.Avalonia.VariantMatchedResult<TTheme>? left, Enx.Atomic.Avalonia.VariantMatchedResult<TTheme>? right) -> bool
+~static Enx.Atomic.Avalonia.VariantMatchedResult<TTheme>.operator ==(Enx.Atomic.Avalonia.VariantMatchedResult<TTheme>? left, Enx.Atomic.Avalonia.VariantMatchedResult<TTheme>? right) -> bool
+~virtual Enx.Atomic.Avalonia.Rule.Dynamic<TTheme>.Equals(Enx.Atomic.Avalonia.Rule.Dynamic<TTheme>? other) -> bool
+~virtual Enx.Atomic.Avalonia.RuleContext<TTheme>.<Clone>$() -> Enx.Atomic.Avalonia.RuleContext<TTheme>!
+~virtual Enx.Atomic.Avalonia.RuleContext<TTheme>.Equals(Enx.Atomic.Avalonia.RuleContext<TTheme>? other) -> bool
+~virtual Enx.Atomic.Avalonia.VariantBase<TTheme>.Equals(Enx.Atomic.Avalonia.VariantBase<TTheme>? other) -> bool
+~virtual Enx.Atomic.Avalonia.VariantContext<TTheme>.<Clone>$() -> Enx.Atomic.Avalonia.VariantContext<TTheme>!
+~virtual Enx.Atomic.Avalonia.VariantContext<TTheme>.Equals(Enx.Atomic.Avalonia.VariantContext<TTheme>? other) -> bool
+~virtual Enx.Atomic.Avalonia.VariantMatchedResult<TTheme>.<Clone>$() -> Enx.Atomic.Avalonia.VariantMatchedResult<TTheme>!
+~virtual Enx.Atomic.Avalonia.VariantMatchedResult<TTheme>.Equals(Enx.Atomic.Avalonia.VariantMatchedResult<TTheme>? other) -> bool

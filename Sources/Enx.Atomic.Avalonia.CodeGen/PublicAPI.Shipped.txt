@@ -1,0 +1,114 @@
+#nullable enable
+Enx.Atomic.Avalonia.CodeGen.AtomicCli
+Enx.Atomic.Avalonia.CodeGen.AtomicCliSettings
+Enx.Atomic.Avalonia.CodeGen.AtomicCliSettings.AtomicCliSettings() -> void
+Enx.Atomic.Avalonia.CodeGen.AtomicCliSettings.ClassName.get -> string!
+Enx.Atomic.Avalonia.CodeGen.AtomicCliSettings.ClassName.init -> void
+Enx.Atomic.Avalonia.CodeGen.AtomicCliSettings.ContainerName.get -> string!
+Enx.Atomic.Avalonia.CodeGen.AtomicCliSettings.ContainerName.init -> void
+Enx.Atomic.Avalonia.CodeGen.AtomicCliSettings.Namespace.get -> string!
+Enx.Atomic.Avalonia.CodeGen.AtomicCliSettings.Namespace.init -> void
+Enx.Atomic.Avalonia.CodeGen.AtomicCliSettings.Output.get -> string!
+Enx.Atomic.Avalonia.CodeGen.AtomicCliSettings.Output.init -> void
+Enx.Atomic.Avalonia.CodeGen.AtomicCliSettings.ResourcesClassName.get -> string!
+Enx.Atomic.Avalonia.CodeGen.AtomicCliSettings.ResourcesClassName.init -> void
+Enx.Atomic.Avalonia.CodeGen.AtomicCliSettings.ResourcesOutput.get -> string?
+Enx.Atomic.Avalonia.CodeGen.AtomicCliSettings.ResourcesOutput.init -> void
+Enx.Atomic.Avalonia.CodeGen.AtomicCliSettings.Safelist.get -> string![]!
+Enx.Atomic.Avalonia.CodeGen.AtomicCliSettings.Safelist.init -> void
+Enx.Atomic.Avalonia.CodeGen.AtomicCliSettings.Sources.get -> string![]!
+Enx.Atomic.Avalonia.CodeGen.AtomicCliSettings.Sources.init -> void
+Enx.Atomic.Avalonia.CodeGen.ProbeSettings
+Enx.Atomic.Avalonia.CodeGen.ProbeSettings.Control.get -> string?
+Enx.Atomic.Avalonia.CodeGen.ProbeSettings.Control.init -> void
+Enx.Atomic.Avalonia.CodeGen.ProbeSettings.Files.get -> string![]!
+Enx.Atomic.Avalonia.CodeGen.ProbeSettings.Files.init -> void
+Enx.Atomic.Avalonia.CodeGen.ProbeSettings.Json.get -> bool
+Enx.Atomic.Avalonia.CodeGen.ProbeSettings.Json.init -> void
+Enx.Atomic.Avalonia.CodeGen.ProbeSettings.ProbeSettings() -> void
+Enx.Atomic.Avalonia.CodeGen.ProbeSettings.PseudoClasses.get -> string![]!
+Enx.Atomic.Avalonia.CodeGen.ProbeSettings.PseudoClasses.init -> void
+Enx.Atomic.Avalonia.CodeGen.ProbeSettings.Text.get -> string?
+Enx.Atomic.Avalonia.CodeGen.ProbeSettings.Text.init -> void
+Enx.Atomic.Avalonia.CodeGen.ProbeSettings.Width.get -> double
+Enx.Atomic.Avalonia.CodeGen.ProbeSettings.Width.init -> void
+Enx.Atomic.Avalonia.CodeGen.ResourceDictionaryEmitter
+Enx.Atomic.Avalonia.CodeGen.StyleEmitter
+Enx.Atomic.Avalonia.CodeGen.Values.BoxShadowsValueEmitter
+Enx.Atomic.Avalonia.CodeGen.Values.BoxShadowsValueEmitter.BoxShadowsValueEmitter() -> void
+Enx.Atomic.Avalonia.CodeGen.Values.BoxShadowsValueEmitter.CanHandle(System.Type! type) -> bool
+Enx.Atomic.Avalonia.CodeGen.Values.BoxShadowsValueEmitter.Emit(object! value) -> string!
+Enx.Atomic.Avalonia.CodeGen.Values.BoxShadowsValueEmitter.GetNamespaces(object! value) -> System.Collections.Generic.IEnumerable<string!>!
+Enx.Atomic.Avalonia.CodeGen.Values.BrushValueEmitter
+Enx.Atomic.Avalonia.CodeGen.Values.BrushValueEmitter.BrushValueEmitter() -> void
+Enx.Atomic.Avalonia.CodeGen.Values.BrushValueEmitter.CanHandle(System.Type! type) -> bool
+Enx.Atomic.Avalonia.CodeGen.Values.BrushValueEmitter.Emit(object! value) -> string!
+Enx.Atomic.Avalonia.CodeGen.Values.BrushValueEmitter.GetNamespaces(object! value) -> System.Collections.Generic.IEnumerable<string!>!
+Enx.Atomic.Avalonia.CodeGen.Values.CornerRadiusValueEmitter
+Enx.Atomic.Avalonia.CodeGen.Values.CornerRadiusValueEmitter.CanHandle(System.Type! type) -> bool
+Enx.Atomic.Avalonia.CodeGen.Values.CornerRadiusValueEmitter.CornerRadiusValueEmitter() -> void
+Enx.Atomic.Avalonia.CodeGen.Values.CornerRadiusValueEmitter.Emit(object! value) -> string!
+Enx.Atomic.Avalonia.CodeGen.Values.CornerRadiusValueEmitter.GetNamespaces(object! value) -> System.Collections.Generic.IEnumerable<string!>!
+Enx.Atomic.Avalonia.CodeGen.Values.CursorValueEmitter
+Enx.Atomic.Avalonia.CodeGen.Values.CursorValueEmitter.CanHandle(System.Type! type) -> bool
+Enx.Atomic.Avalonia.CodeGen.Values.CursorValueEmitter.CursorValueEmitter() -> void
+Enx.Atomic.Avalonia.CodeGen.Values.CursorValueEmitter.Emit(object! value) -> string!
+Enx.Atomic.Avalonia.CodeGen.Values.CursorValueEmitter.GetNamespaces(object! value) -> System.Collections.Generic.IEnumerable<string!>!
+Enx.Atomic.Avalonia.CodeGen.Values.DynamicResourceValueEmitter
+Enx.Atomic.Avalonia.CodeGen.Values.DynamicResourceValueEmitter.CanHandle(System.Type! type) -> bool
+Enx.Atomic.Avalonia.CodeGen.Values.DynamicResourceValueEmitter.DynamicResourceValueEmitter() -> void
+Enx.Atomic.Avalonia.CodeGen.Values.DynamicResourceValueEmitter.Emit(object! value) -> string!
+Enx.Atomic.Avalonia.CodeGen.Values.DynamicResourceValueEmitter.GetNamespaces(object! value) -> System.Collections.Generic.IEnumerable<string!>!
+Enx.Atomic.Avalonia.CodeGen.Values.EnumValueEmitter
+Enx.Atomic.Avalonia.CodeGen.Values.EnumValueEmitter.CanHandle(System.Type! type) -> bool
+Enx.Atomic.Avalonia.CodeGen.Values.EnumValueEmitter.Emit(object! value) -> string!
+Enx.Atomic.Avalonia.CodeGen.Values.EnumValueEmitter.EnumValueEmitter() -> void
+Enx.Atomic.Avalonia.CodeGen.Values.EnumValueEmitter.GetNamespaces(object! value) -> System.Collections.Generic.IEnumerable<string!>!
+Enx.Atomic.Avalonia.CodeGen.Values.FontFamilyValueEmitter
+Enx.Atomic.Avalonia.CodeGen.Values.FontFamilyValueEmitter.CanHandle(System.Type! type) -> bool
+Enx.Atomic.Avalonia.CodeGen.Values.FontFamilyValueEmitter.Emit(object! value) -> string!
+Enx.Atomic.Avalonia.CodeGen.Values.FontFamilyValueEmitter.FontFamilyValueEmitter() -> void
+Enx.Atomic.Avalonia.CodeGen.Values.FontFamilyValueEmitter.GetNamespaces(object! value) -> System.Collections.Generic.IEnumerable<string!>!
+Enx.Atomic.Avalonia.CodeGen.Values.GridDefinitionsValueEmitter
+Enx.Atomic.Avalonia.CodeGen.Values.GridDefinitionsValueEmitter.CanHandle(System.Type! type) -> bool
+Enx.Atomic.Avalonia.CodeGen.Values.GridDefinitionsValueEmitter.Emit(object! value) -> string!
+Enx.Atomic.Avalonia.CodeGen.Values.GridDefinitionsValueEmitter.GetNamespaces(object! value) -> System.Collections.Generic.IEnumerable<string!>!
+Enx.Atomic.Avalonia.CodeGen.Values.GridDefinitionsValueEmitter.GridDefinitionsValueEmitter() -> void
+Enx.Atomic.Avalonia.CodeGen.Values.IValueEmitter
+Enx.Atomic.Avalonia.CodeGen.Values.IValueEmitter.CanHandle(System.Type! type) -> bool
+Enx.Atomic.Avalonia.CodeGen.Values.IValueEmitter.Emit(object! value) -> string!
+Enx.Atomic.Avalonia.CodeGen.Values.IValueEmitter.GetNamespaces(object! value) -> System.Collections.Generic.IEnumerable<string!>!
+Enx.Atomic.Avalonia.CodeGen.Values.PrimitiveValueEmitter
+Enx.Atomic.Avalonia.CodeGen.Values.PrimitiveValueEmitter.CanHandle(System.Type! type) -> bool
+Enx.Atomic.Avalonia.CodeGen.Values.PrimitiveValueEmitter.Emit(object! value) -> string!
+Enx.Atomic.Avalonia.CodeGen.Values.PrimitiveValueEmitter.GetNamespaces(object! value) -> System.Collections.Generic.IEnumerable<string!>!
+Enx.Atomic.Avalonia.CodeGen.Values.PrimitiveValueEmitter.PrimitiveValueEmitter() -> void
+Enx.Atomic.Avalonia.CodeGen.Values.TextDecorationsValueEmitter
+Enx.Atomic.Avalonia.CodeGen.Values.TextDecorationsValueEmitter.CanHandle(System.Type! type) -> bool
+Enx.Atomic.Avalonia.CodeGen.Values.TextDecorationsValueEmitter.Emit(object! value) -> string!
+Enx.Atomic.Avalonia.CodeGen.Values.TextDecorationsValueEmitter.GetNamespaces(object! value) -> System.Collections.Generic.IEnumerable<string!>!
+Enx.Atomic.Avalonia.CodeGen.Values.TextDecorationsValueEmitter.TextDecorationsValueEmitter() -> void
+Enx.Atomic.Avalonia.CodeGen.Values.TextTrimmingValueEmitter
+Enx.Atomic.Avalonia.CodeGen.Values.TextTrimmingValueEmitter.CanHandle(System.Type! type) -> bool
+Enx.Atomic.Avalonia.CodeGen.Values.TextTrimmingValueEmitter.Emit(object! value) -> string!
+Enx.Atomic.Avalonia.CodeGen.Values.TextTrimmingValueEmitter.GetNamespaces(object! value) -> System.Collections.Generic.IEnumerable<string!>!
+Enx.Atomic.Avalonia.CodeGen.Values.TextTrimmingValueEmitter.TextTrimmingValueEmitter() -> void
+Enx.Atomic.Avalonia.CodeGen.Values.ThemeVariantValueEmitter
+Enx.Atomic.Avalonia.CodeGen.Values.ThemeVariantValueEmitter.CanHandle(System.Type! type) -> bool
+Enx.Atomic.Avalonia.CodeGen.Values.ThemeVariantValueEmitter.Emit(object! value) -> string!
+Enx.Atomic.Avalonia.CodeGen.Values.ThemeVariantValueEmitter.GetNamespaces(object! value) -> System.Collections.Generic.IEnumerable<string!>!
+Enx.Atomic.Avalonia.CodeGen.Values.ThemeVariantValueEmitter.ThemeVariantValueEmitter() -> void
+Enx.Atomic.Avalonia.CodeGen.Values.ThicknessValueEmitter
+Enx.Atomic.Avalonia.CodeGen.Values.ThicknessValueEmitter.CanHandle(System.Type! type) -> bool
+Enx.Atomic.Avalonia.CodeGen.Values.ThicknessValueEmitter.Emit(object! value) -> string!
+Enx.Atomic.Avalonia.CodeGen.Values.ThicknessValueEmitter.GetNamespaces(object! value) -> System.Collections.Generic.IEnumerable<string!>!
+Enx.Atomic.Avalonia.CodeGen.Values.ThicknessValueEmitter.ThicknessValueEmitter() -> void
+Enx.Atomic.Avalonia.CodeGen.Values.ValueEmitterRegistry
+Enx.Atomic.Avalonia.CodeGen.Values.ValueEmitterRegistry.Emit(object? value, System.Collections.Generic.ISet<string!>! namespaces) -> string!
+Enx.Atomic.Avalonia.CodeGen.Values.ValueEmitterRegistry.ValueEmitterRegistry(System.Collections.Generic.IEnumerable<Enx.Atomic.Avalonia.CodeGen.Values.IValueEmitter!>? emitters = null) -> void
+override Enx.Atomic.Avalonia.CodeGen.AtomicCliSettings.Validate() -> Spectre.Console.ValidationResult!
+override Enx.Atomic.Avalonia.CodeGen.ProbeSettings.Validate() -> Spectre.Console.ValidationResult!
+static Enx.Atomic.Avalonia.CodeGen.AtomicCli.Run<TTheme>(string![]! args, Enx.Atomic.Avalonia.AtomicConfiguration<TTheme!>! configuration, Spectre.Console.IAnsiConsole? console = null) -> int
+static Enx.Atomic.Avalonia.CodeGen.ResourceDictionaryEmitter.Emit<TTheme>(System.Collections.Generic.IReadOnlyDictionary<string!, Enx.Atomic.Avalonia.StyleValue.Resource!>! resources, TTheme! theme, string! namespaceName, string! className, System.Collections.Generic.IEnumerable<Enx.Atomic.Avalonia.CodeGen.Values.IValueEmitter!>? valueEmitters = null) -> string!
+static Enx.Atomic.Avalonia.CodeGen.StyleEmitter.Emit(System.Collections.Generic.IReadOnlyList<Enx.Atomic.Avalonia.StringifiedUtil!>! utils, string! namespaceName, string! className, string! containerName = "top-level", System.Collections.Generic.IEnumerable<Enx.Atomic.Avalonia.CodeGen.Values.IValueEmitter!>? valueEmitters = null) -> string!
+static readonly Enx.Atomic.Avalonia.CodeGen.Values.ValueEmitterRegistry.Default -> System.Collections.Generic.IReadOnlyList<Enx.Atomic.Avalonia.CodeGen.Values.IValueEmitter!>!

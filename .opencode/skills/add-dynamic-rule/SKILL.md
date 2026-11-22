@@ -55,6 +55,9 @@ public partial class MyRule<TTheme> : IDynamicRule<TTheme>
 }
 ```
 
+Keep implementation-only rule types internal. Record intentional new or changed public
+signatures (including theme part APIs) in the Preset.Mini project's `PublicAPI.Unshipped.txt`.
+
 Value resolution — always go through `ThemeScale` (`Dynamic/ThemeScale.cs`), never parse by hand:
 
 | Helper | Order tried | Bare number means |

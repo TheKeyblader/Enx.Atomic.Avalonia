@@ -51,6 +51,7 @@ public sealed class FooValueEmitter : IValueEmitter
 ## 3. Register
 
 Add `new FooValueEmitter()` to `ValueEmitterRegistry.Default` at the right position.
+Record the new public type and members in the CodeGen project's `PublicAPI.Unshipped.txt`.
 
 ## 4. Tests
 

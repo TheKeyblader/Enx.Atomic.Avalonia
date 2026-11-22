@@ -2,6 +2,7 @@ using System.Reflection;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Data;
+using Avalonia.Markup.Xaml.MarkupExtensions;
 using Avalonia.Media;
 using Avalonia.Styling;
 using Enx.Atomic.Avalonia.CodeGen;
@@ -18,7 +19,8 @@ namespace Enx.Atomic.Avalonia.Tests;
 /// <c>Setter</c>'s value parameter is <c>object?</c>, so an emitted numeric literal with the wrong C# type
 /// (e.g. <c>448</c>, inferred as <c>int</c>, for a property whose declared type is <c>double</c>) compiles
 /// fine — the mismatch only surfaces as a runtime cast failure once Avalonia tries to apply the boxed value.
-/// Covers a mix deliberately chosen to exercise most of the emitter — a single-owner static rule, a
+/// The preset-wide test covers every rule registration. The targeted fixture covers a mix deliberately chosen
+/// to exercise selector and host emission — a single-owner static rule, a
 /// multi-owner one (grouping), a color/brush value, a null value (<c>no-underline</c>), a pseudo-class
 /// variant (selector chaining), a breakpoint variant (container query), the composite side hosts
 /// (<c>ml-1</c>/<c>mr-2</c>, <c>p-2</c>, <c>border-2</c>/<c>border-t-4</c>,
@@ -36,8 +38,132 @@ namespace Enx.Atomic.Avalonia.Tests;
 /// the newer scalar families (<c>size-*</c>, <c>border-x-*</c>, <c>opacity-*</c>, <c>z-*</c>, <c>leading-*</c>,
 /// <c>tracking-*</c>), and a <see cref="Avalonia.Controls.Canvas"/> attached property (<c>top-4</c>).
 /// </summary>
-public class CodeGenTests
+public class CodeGenTests(ITestOutputHelper output)
 {
+    [AvaloniaFact]
+    public void EveryRegisteredMiniRule_ProducesCorrectlyTypedValuesBeforeAndAfterEmission()
+    {
+        var (configuration, generator) = TestHelpers.CreateMiniGenerator();
+
+        // The documented samples exercise plain resources as well as both variants of an explicitly themed key.
+        configuration.Theme.Colors["red-500"] = new Themed<IBrush>(Brushes.Red, Brushes.DarkRed);
+
+        var rules = configuration.Rules;
+        var staticTokens = rules.OfType<IStaticRule>().Select(rule => rule.Name).ToArray();
+        var tokens = staticTokens
+            .Concat(ParityMatrixTests.PortedRuleExampleTokens)
+            .Distinct(StringComparer.Ordinal)
+            .Order(StringComparer.Ordinal);
+        var samples = tokens
+            .SelectMany(token => generator.ParseToken(token).Select(util => (Token: token, Util: util)))
+            .ToArray();
+
+        // Count the actual winning registrations, not regex hits (e.g. text-2 can match a color regex without
+        // reaching that rule). Index also distinguishes each static registration and catches shadowed duplicates.
+        var covered = samples.Select(sample => sample.Util.Index).ToHashSet();
+        var missing = Enumerable
+            .Range(0, rules.Count)
+            .Where(index => !covered.Contains(index))
+            .Select(index => $"#{index} {RuleName(rules[index])}")
+            .ToArray();
+        Assert.True(
+            missing.Length == 0,
+            "No sample matched these Mini rule registrations. Add a resolving PARITY.md rule example for each "
+                + "uncovered dynamic rule, or check for a shadowed registration:\n"
+                + string.Join('\n', missing)
+        );
+
+        var themeValues = generator.ResolvedResources.ToDictionary(
+            entry => entry.Key,
+            entry => entry.Value.ThemeAccess.Compile().DynamicInvoke(configuration.Theme)
+        );
+
+        foreach (var (token, util) in samples)
+        {
+            Assert.NotEmpty(util.Body);
+            var context = $"Resolved token '{token}' ({RuleName(rules[util.Index])})";
+            foreach (var setter in util.Body)
+            {
+                if (setter.Value is DynamicResourceExtension resource)
+                {
+                    var key = Assert.IsType<string>(resource.ResourceKey);
+                    Assert.True(themeValues.TryGetValue(key, out var value), $"{context}: missing theme key '{key}'.");
+                    if (value is IThemedValue themed)
+                    {
+                        AssertValueType(setter, themed.LightValue, $"{context}, resource '{key}' (Light)");
+                        if (themed.IsThemed)
+                            AssertValueType(setter, themed.DarkValue, $"{context}, resource '{key}' (Dark)");
+                    }
+                    else
+                    {
+                        AssertValueType(setter, value, $"{context}, resource '{key}'");
+                    }
+                }
+                else
+                {
+                    AssertValueType(setter, setter.Value, context);
+                }
+            }
+        }
+
+        // Compile the entire sample set once, including the resource dictionary. The emitter adds one root
+        // style (possibly a container wrapper) per input util in order, so failures can still name the token.
+        var styleSource = StyleEmitter.Emit(
+            samples.Select(sample => sample.Util).ToArray(),
+            "GeneratedMini",
+            "Stylesheet"
+        );
+        var resourceSource = ResourceDictionaryEmitter.Emit(
+            generator.ResolvedResources,
+            configuration.Theme,
+            "GeneratedMini",
+            "Resources"
+        );
+        var (assembly, errors) = Compile(styleSource, resourceSource);
+        Assert.True(errors.Length == 0, string.Join('\n', errors.Select(error => error.ToString())));
+
+        var styles = (Styles)Activator.CreateInstance(assembly!.GetType("GeneratedMini.Stylesheet")!)!;
+        var resources = (ResourceDictionary)
+            assembly.GetType("GeneratedMini.Resources")!.GetMethod("Build")!.Invoke(null, null)!;
+        Assert.Equal(samples.Length, styles.Count);
+        for (var index = 0; index < styles.Count; index++)
+        {
+            var (token, util) = samples[index];
+            var context = $"Emitted token '{token}' ({RuleName(rules[util.Index])})";
+            var setters = EnumerateSetters([styles[index]]).ToArray();
+            Assert.True(
+                setters.Length == util.Body.Length,
+                $"{context}: emitted setter count differs from resolution."
+            );
+            foreach (var setter in setters)
+            {
+                if (setter.Value is DynamicResourceExtension resource)
+                {
+                    var key = Assert.IsType<string>(resource.ResourceKey);
+                    foreach (var variant in new[] { ThemeVariant.Light, ThemeVariant.Dark })
+                    {
+                        var resourceContext = $"{context}, resource '{key}' ({variant})";
+                        Assert.True(
+                            resources.TryGetResource(key, variant, out var value),
+                            $"{resourceContext}: missing entry."
+                        );
+                        AssertValueType(setter, value, resourceContext);
+                    }
+                }
+                else
+                {
+                    AssertValueType(setter, setter.Value, context);
+                }
+            }
+        }
+
+        output.WriteLine(
+            $"Checked {covered.Count} rules ({staticTokens.Length} static, {covered.Count - staticTokens.Length} dynamic), "
+                + $"{samples.Select(sample => sample.Token).Distinct(StringComparer.Ordinal).Count()} tokens, "
+                + $"{samples.Sum(sample => sample.Util.Body.Length)} setters per phase, and {themeValues.Count} resource keys."
+        );
+    }
+
     [AvaloniaFact]
     public void EmittedSource_CompilesAndProducesCorrectlyTypedSetters()
     {
@@ -75,19 +201,9 @@ public class CodeGenTests
         foreach (var setter in EnumerateSetters(styles))
         {
             checkedAnySetter = true;
-            var propertyType = setter.Property!.PropertyType;
-            // A resource-based value (dark:bg-red-500 here) is a BindingBase (DynamicResourceExtension),
-            // deliberately *not* an instance of the target property's type — Avalonia only resolves it against
-            // that type once the setter is actually applied to a live control with resources to look up.
-            Assert.True(
-                setter.Value is BindingBase
-                    || (
-                        setter.Value is null
-                            ? propertyType.IsClass || Nullable.GetUnderlyingType(propertyType) != null
-                            : propertyType.IsInstanceOfType(setter.Value)
-                    ),
-                $"Setter for '{setter.Property}' expects '{propertyType}' but got a boxed '{setter.Value?.GetType().ToString() ?? "null"}' ({setter.Value})."
-            );
+            // Resource payloads are checked by EveryRegisteredMiniRule; this fixture emits no dictionary.
+            if (setter.Value is not BindingBase)
+                AssertValueType(setter, setter.Value, "Emitted setter");
         }
 
         Assert.True(checkedAnySetter, "No Setter was found to check — the test source stopped exercising the emitter.");
@@ -190,6 +306,29 @@ public class CodeGenTests
         );
     }
 
+    private static string RuleName(IRule rule) =>
+        rule is IStaticRule staticRule ? staticRule.Name : rule.GetType().Name.Split('`')[0];
+
+    private static void AssertValueType(Setter setter, object? value, string context)
+    {
+        Assert.True(setter.Property is not null, $"{context}: setter has no property.");
+        var property = setter.Property!;
+        var type = property.PropertyType;
+        var underlying = Nullable.GetUnderlyingType(type);
+
+        // Setter.Instance calls IsValidValue, which accepts implicit conversions but doesn't store the converted
+        // value. EffectiveValue<T>.GetValue later casts the original box to T. Nullable<T> boxes as T or null;
+        // reference types (including interfaces, e.g. IBrush) accept assignable instances or null.
+        var compatible = value is null
+            ? !type.IsValueType || underlying is not null
+            : (underlying ?? type).IsInstanceOfType(value);
+        Assert.True(
+            compatible,
+            $"{context}: '{property.OwnerType.Name}.{property.Name}' expects '{type}', "
+                + $"but got '{value?.GetType().ToString() ?? "null"}' ({value})."
+        );
+    }
+
     private static int CountOccurrences(string haystack, string needle)
     {
         var count = 0;
@@ -217,9 +356,11 @@ public class CodeGenTests
         }
     }
 
-    private static (Assembly? Assembly, Diagnostic[] Errors) Compile(string source)
+    private static (Assembly? Assembly, Diagnostic[] Errors) Compile(params string[] sources)
     {
-        var tree = CSharpSyntaxTree.ParseText(source);
+        var trees = sources.Select(
+            (source, index) => CSharpSyntaxTree.ParseText(source, path: $"Generated{index}.g.cs")
+        );
         var references = AppDomain
             .CurrentDomain.GetAssemblies()
             .Where(a => !a.IsDynamic && !string.IsNullOrEmpty(a.Location))
@@ -228,7 +369,7 @@ public class CodeGenTests
 
         var compilation = CSharpCompilation.Create(
             "GeneratedAssembly",
-            [tree],
+            trees,
             references,
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
         );

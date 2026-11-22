@@ -51,7 +51,7 @@ public record BreakpointVariant<TTheme> : VariantBase<TTheme>
 }
 
 /// <summary>Folds a container-width comparison into the resolved style's container query.</summary>
-public record BreakpointVariantHandler : VariantHandlerBase
+internal record BreakpointVariantHandler : VariantHandlerBase
 {
     public required StyleQueryComparisonOperator Operator { get; init; }
     public required double Size { get; init; }
