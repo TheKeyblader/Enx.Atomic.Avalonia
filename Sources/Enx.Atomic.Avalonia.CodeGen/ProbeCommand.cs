@@ -39,7 +39,7 @@ namespace Enx.Atomic.Avalonia.CodeGen;
 /// <c>valueType</c>, <c>resourceKey</c>).
 /// </para>
 /// </summary>
-public sealed class ProbeSettings : CommandSettings
+internal sealed class ProbeSettings : CommandSettings
 {
     [CommandArgument(0, "[TEXT]")]
     [Description("Source text to scan for utility tokens, e.g. 'hover:ml-4 p-4' or 'Classes=\"...\"'.")]

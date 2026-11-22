@@ -132,6 +132,9 @@ Each of these has already cost a debugging session. Details in `ARCHITECTURE.md`
   `AvaloniaPropertyNaming`, `SelectorEmitter`, ...) should be `internal`. A past review
   already caught and fixed a batch of these in `Enx.Atomic.Avalonia.CodeGen` — don't
   re-introduce the pattern of defaulting new emitter/naming helpers to `public`.
+- **Declare public API changes.** Add each new or changed public member to the project's
+  `PublicAPI.Unshipped.txt`; otherwise the build fails with RS0016. That's intentional: ask
+  "should this be public?" before adding the entry. Move Unshipped entries to Shipped at release.
 
 ## Workflow Conventions (established, don't relitigate)
 
@@ -139,9 +142,6 @@ Each of these has already cost a debugging session. Details in `ARCHITECTURE.md`
   after implementing a feature the user clearly wants shipped. Ask, or wait to be told
   "commit et push" (or the English equivalent). This was corrected once already; don't
   re-introduce it.
-- **Never commit `Examples/Enx.Atomic.Avalonia.Example.App/MainWindow.axaml`** unless explicitly
-  asked — the maintainer edits it directly as a manual/live test bed, and those edits are his,
-  not generated output.
 - **For a new roadmap-sized feature, discuss the design in conversation first** (see this
   session's resource-theming and arbitrary-values features) before writing code — the maintainer
   iterates on API shape (e.g. `Themed<T>`, auto-derived resource keys) through discussion, not

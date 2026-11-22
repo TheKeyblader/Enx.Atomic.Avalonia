@@ -1,0 +1,35 @@
+#nullable enable
+*REMOVED*Enx.Atomic.Avalonia.CodeGen.AtomicCliSettings
+*REMOVED*Enx.Atomic.Avalonia.CodeGen.AtomicCliSettings.AtomicCliSettings() -> void
+*REMOVED*Enx.Atomic.Avalonia.CodeGen.AtomicCliSettings.ClassName.get -> string!
+*REMOVED*Enx.Atomic.Avalonia.CodeGen.AtomicCliSettings.ClassName.init -> void
+*REMOVED*Enx.Atomic.Avalonia.CodeGen.AtomicCliSettings.ContainerName.get -> string!
+*REMOVED*Enx.Atomic.Avalonia.CodeGen.AtomicCliSettings.ContainerName.init -> void
+*REMOVED*Enx.Atomic.Avalonia.CodeGen.AtomicCliSettings.Namespace.get -> string!
+*REMOVED*Enx.Atomic.Avalonia.CodeGen.AtomicCliSettings.Namespace.init -> void
+*REMOVED*Enx.Atomic.Avalonia.CodeGen.AtomicCliSettings.Output.get -> string!
+*REMOVED*Enx.Atomic.Avalonia.CodeGen.AtomicCliSettings.Output.init -> void
+*REMOVED*Enx.Atomic.Avalonia.CodeGen.AtomicCliSettings.ResourcesClassName.get -> string!
+*REMOVED*Enx.Atomic.Avalonia.CodeGen.AtomicCliSettings.ResourcesClassName.init -> void
+*REMOVED*Enx.Atomic.Avalonia.CodeGen.AtomicCliSettings.ResourcesOutput.get -> string?
+*REMOVED*Enx.Atomic.Avalonia.CodeGen.AtomicCliSettings.ResourcesOutput.init -> void
+*REMOVED*Enx.Atomic.Avalonia.CodeGen.AtomicCliSettings.Safelist.get -> string![]!
+*REMOVED*Enx.Atomic.Avalonia.CodeGen.AtomicCliSettings.Safelist.init -> void
+*REMOVED*Enx.Atomic.Avalonia.CodeGen.AtomicCliSettings.Sources.get -> string![]!
+*REMOVED*Enx.Atomic.Avalonia.CodeGen.AtomicCliSettings.Sources.init -> void
+*REMOVED*Enx.Atomic.Avalonia.CodeGen.ProbeSettings
+*REMOVED*Enx.Atomic.Avalonia.CodeGen.ProbeSettings.Control.get -> string?
+*REMOVED*Enx.Atomic.Avalonia.CodeGen.ProbeSettings.Control.init -> void
+*REMOVED*Enx.Atomic.Avalonia.CodeGen.ProbeSettings.Files.get -> string![]!
+*REMOVED*Enx.Atomic.Avalonia.CodeGen.ProbeSettings.Files.init -> void
+*REMOVED*Enx.Atomic.Avalonia.CodeGen.ProbeSettings.Json.get -> bool
+*REMOVED*Enx.Atomic.Avalonia.CodeGen.ProbeSettings.Json.init -> void
+*REMOVED*Enx.Atomic.Avalonia.CodeGen.ProbeSettings.ProbeSettings() -> void
+*REMOVED*Enx.Atomic.Avalonia.CodeGen.ProbeSettings.PseudoClasses.get -> string![]!
+*REMOVED*Enx.Atomic.Avalonia.CodeGen.ProbeSettings.PseudoClasses.init -> void
+*REMOVED*Enx.Atomic.Avalonia.CodeGen.ProbeSettings.Text.get -> string?
+*REMOVED*Enx.Atomic.Avalonia.CodeGen.ProbeSettings.Text.init -> void
+*REMOVED*Enx.Atomic.Avalonia.CodeGen.ProbeSettings.Width.get -> double
+*REMOVED*Enx.Atomic.Avalonia.CodeGen.ProbeSettings.Width.init -> void
+*REMOVED*override Enx.Atomic.Avalonia.CodeGen.AtomicCliSettings.Validate() -> Spectre.Console.ValidationResult!
+*REMOVED*override Enx.Atomic.Avalonia.CodeGen.ProbeSettings.Validate() -> Spectre.Console.ValidationResult!

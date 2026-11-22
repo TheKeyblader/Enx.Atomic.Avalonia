@@ -77,7 +77,7 @@ internal static class CliState<TTheme>
         );
 }
 
-public sealed class AtomicCliSettings : CommandSettings
+internal sealed class AtomicCliSettings : CommandSettings
 {
     [CommandOption("-o|--output <PATH>")]
     [Description("Path to write the generated .g.cs file to.")]

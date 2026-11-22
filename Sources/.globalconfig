@@ -1,0 +1,5 @@
+is_global = true
+
+# API additions and removals must be recorded, including diagnostics without a source location.
+dotnet_diagnostic.RS0016.severity = error
+dotnet_diagnostic.RS0017.severity = error

@@ -31,7 +31,7 @@ public record DarkVariant<TTheme> : VariantBase<TTheme>
 }
 
 /// <summary>Appends a check against the current <see cref="ThemeVariant"/> to the resolved style's selector.</summary>
-public record DarkVariantHandler : VariantHandlerBase
+internal record DarkVariantHandler : VariantHandlerBase
 {
     public override VariantHandlerContext Handle(
         VariantHandlerContext input,

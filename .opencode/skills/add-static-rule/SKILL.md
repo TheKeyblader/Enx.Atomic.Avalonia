@@ -37,6 +37,8 @@ public static class TextWrap
 ```
 
 - Namespace is `Enx.Atomic.Avalonia.Preset.Mini` (not `.Static`), file-scoped.
+- Keep new rule holders internal unless they are intentional public API. Record any new or
+  changed public signatures in the Preset.Mini project's `PublicAPI.Unshipped.txt`.
 - Build values with `property.ToLiteral(value)` (`AvaloniaExtensions`). Static rules never use
   `ToResource` — that's for theme-scale values.
 - **Shared/`AddOwner` properties**: if the same `AvaloniaProperty` instance is exposed by several

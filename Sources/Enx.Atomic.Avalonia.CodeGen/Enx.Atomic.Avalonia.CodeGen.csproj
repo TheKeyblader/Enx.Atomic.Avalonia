@@ -25,5 +25,6 @@
 
     <ItemGroup>
         <PackageReference Include="Spectre.Console.Cli" />
+        <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" PrivateAssets="all" />
     </ItemGroup>
 </Project>

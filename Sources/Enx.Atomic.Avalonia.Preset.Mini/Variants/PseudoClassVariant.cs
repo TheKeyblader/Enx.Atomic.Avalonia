@@ -53,7 +53,7 @@ public record PseudoClassVariant<TTheme> : VariantBase<TTheme>
 }
 
 /// <summary>Appends a fixed Avalonia pseudo-class to the resolved style's selector.</summary>
-public record PseudoClassVariantHandler : VariantHandlerBase
+internal record PseudoClassVariantHandler : VariantHandlerBase
 {
     public required string PseudoClass { get; init; }
 

@@ -663,6 +663,7 @@ public class AtomicGenerator<TTheme>
         ];
     }
 
+#pragma warning disable RS0041 // Keep the shipped nullability of the two Generate overloads.
     /// <summary>Extracts utility tokens from <paramref name="input"/> and resolves them all into styles.</summary>
     /// <param name="input">The source text to scan.</param>
     /// <param name="options">Generation options, including the optional source identifier used during extraction.</param>
@@ -714,6 +715,7 @@ public class AtomicGenerator<TTheme>
 
         return StyleOrdering.Sort(sheet);
     }
+#pragma warning restore RS0041
 
     /// <summary>Options controlling a single <see cref="Generate(string, Options)"/> call.</summary>
     public class Options

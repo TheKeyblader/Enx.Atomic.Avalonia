@@ -50,7 +50,7 @@ public record MyVariant<TTheme> : VariantBase<TTheme>
     }
 }
 
-public record MyVariantHandler : VariantHandlerBase
+internal record MyVariantHandler : VariantHandlerBase
 {
     public override VariantHandlerContext Handle(VariantHandlerContext input, Func<VariantHandlerContext, VariantHandlerContext> next)
     {
@@ -62,6 +62,8 @@ public record MyVariantHandler : VariantHandlerBase
 
 - `Matcher` = the remaining token; `Order` on the variant (try order) / handler (pipeline order,
   lower = outermost).
+- Keep implementation-only types internal. Record new or changed public signatures in the
+  owning project's `PublicAPI.Unshipped.txt`.
 - Theme-driven variants add `where TTheme : class, I...Part` and read `context.Theme`.
 - **`PropertyEquals` on an `AddOwner`'d / inherited property** must pass the public declaring type
   explicitly (`typeof(ThemeVariantScope)` in `DarkVariant`) — `OwnerType` reports the original,
