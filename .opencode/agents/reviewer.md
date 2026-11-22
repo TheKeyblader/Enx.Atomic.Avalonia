@@ -30,6 +30,10 @@ permissions:
   - action: todowrite
     resource: "*"
     effect: allow
+  # Upstream references (UnoCSS, Avalonia) live outside the repo; reading them is safe.
+  - action: external_directory
+    resource: "*"
+    effect: allow
   - action: "roslyn_*"
     resource: "*"
     effect: allow

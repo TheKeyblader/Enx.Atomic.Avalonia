@@ -145,7 +145,7 @@ Each of these has already cost a debugging session. Details in `ARCHITECTURE.md`
 - **For a new roadmap-sized feature, discuss the design in conversation first** (see this
   session's resource-theming and arbitrary-values features) before writing code — the maintainer
   iterates on API shape (e.g. `Themed<T>`, auto-derived resource keys) through discussion, not
-  through a written plan doc.
+  through a written plan doc. `/design <feature>` prepares that discussion.
 - **Update `ARCHITECTURE.md`/root `README.md`/`CHANGELOG.md`/`Preset.Mini/README.md` only when
   asked** ("mets à jour ..."), not proactively after every change — but when asked, update all
   four together, keep the CHANGELOG's `[Unreleased]` section current, and keep the root
@@ -179,44 +179,11 @@ to `dotnet build` + grep rather than skipping the check.
 
 ## MCP Tools (`agent-desktop` server — desktop computer use)
 
-[agent-desktop](https://github.com/vercel-labs/agent-desktop) (`agent-desktop mcp`), configured in
-`opencode.jsonc`. It's installed globally on the maintainer's machine, **not** pinned in
-`dotnet-tools.json`; if it isn't connected, say so instead of installing it. It reads a running app's
-accessibility tree (AT-SPI on Linux) and acts on element refs. Tools are named after the CLI
-commands (`desktop_snapshot`, `desktop_click`, ...) under `tools["agent-desktop"].*` — discover them
-with `search({ namespace: "agent-desktop" })`.
-
-- **Read the guides first**, once per session: `desktop_skills_get` with `name: "desktop"`, then
-  `name: "platform"` (they ship with the binary and match its version). They use CLI syntax:
-  `agent-desktop snapshot --app X` is `desktop_snapshot({ app: "X" })`.
-- **Use it to check a running app, not instead of tests**: launch `Sandbox/` or
-  `Examples/Enx.Atomic.Avalonia.Example.App` (`dotnet run --project ...`, in the background), snapshot the
-  window, and check that a utility actually applied (a visible element, an enabled state, a
-  pointer-over or focus reaction). An Avalonia regression still needs an `[AvaloniaFact]`/codegen test.
-- **Refs belong to their snapshot** (`@<snapshot>:eN`). After any UI change, take a new snapshot
-  instead of reusing old refs. Retry only when `error.disposition.retry` is `safe`.
-- It's headless/semantic by default. Global flags (`--headed`, `--session`, `--wait-for`, `--trace`)
-  are fixed by the `command` in `opencode.jsonc`, not passed per call. Commands that need physical
-  input (`hover`, `drag`, `mouse-*`, `double-click`) return `POLICY_DENIED` as configured. Don't add
-  `--headed` to the config without the user's go-ahead, since it moves their real cursor.
-- **Linux/KDE Wayland**: the server runs with `WAYLAND_DISPLAY` blanked (see `opencode.jsonc`) so
-  it uses X11 against the Xwayland-hosted Avalonia window. That is what makes
-  `desktop_screenshot({ app: "<process name>", path: "/tmp/..." })` capture just the app window
-  (read the PNG to check colors, spacing, rounded corners: the visual check this library needs).
-  Never take a screenshot without `app`/`window_id`: it captures the user's whole desktop.
-  `desktop_press({ combo, app })` only reaches the app while it owns the active window (true right
-  after launch, lost as soon as the user clicks elsewhere), and KWin refuses `focus-window`/`focus`
-  to take it back. If `press` fails with `display_active_window`, don't fight it: drive the UI through
-  semantic ref actions (`desktop_type`, `desktop_click`, `desktop_check`), and keep Enter/shortcut
-  handlers covered by an `[AvaloniaFact]` anyway.
-- **Deep trees**: list items (`ItemsControl` children) can be cut by the default snapshot depth.
-  Take a second `desktop_snapshot({ app, root: "<list ref>" })` to reach them. `desktop_type`
-  inserts at the caret, it doesn't replace: `desktop_clear` first if the field may hold text.
-  On Linux a ref must be unique in its window: identical controls (one unnamed `CheckBox` per list
-  item) are refused with `AMBIGUOUS_TARGET`. Test with a single item, or give each control an
-  accessible name (`AutomationProperties.Name`) in the app under test.
-- Snapshots and screenshots can show private desktop content. Keep them to the app under test and
-  out of commits and logs.
+[agent-desktop](https://github.com/vercel-labs/agent-desktop) drives a running Avalonia window through
+its accessibility tree (configured in `opencode.jsonc`, installed globally, not pinned: if it isn't
+connected, say so instead of installing it). **Load the `debug-style` skill before any
+agent-desktop call**: it holds the KDE/Wayland specifics and the safety rules. In particular,
+never take a screenshot without `app`/`window_id`, because that captures the user's whole desktop.
 
 ## Skills & Commands
 
@@ -230,11 +197,14 @@ the registration order, and the tests expected:
 | `add-variant` | A prefix like `hover:`, `sm:`, `dark:` |
 | `add-value-emitter` | Codegen fails with `No value emitter registered for type ...` |
 | `port-unocss-rule` | Bringing an upstream `@unocss/preset-mini` rule/variant/scale over |
+| `debug-style` | A utility doesn't apply or the wrong one wins, or a change must be checked in the running app (agent-desktop) |
 
 Commands: `/verify` (build + test + format check), `/probe` (resolve tokens and explain matching,
 emission order and effective values, `--json` for agents), `/update-docs` (the four docs together, when
 asked), `/release X.Y.Z` (move `PublicAPI.Unshipped.txt` entries to Shipped, date the CHANGELOG,
-verify, and print the commit/tag commands without running them).
+verify, and print the commit/tag commands without running them), `/design <feature>` (research UnoCSS/Avalonia/this repo and propose 2-3 API
+shapes with a recommendation, no code), `/handoff` (rewrite the local `HANDOFF.md` at the end of a
+session).
 
 Subagents (`.opencode/agents/`): delegate implementation of a validated design to `implementer`
 (pinned to `openai/gpt-6.2-sol`, the maintainer's choice for implementation; its git/gh access is
