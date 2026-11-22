@@ -233,7 +233,14 @@ the registration order, and the tests expected:
 
 Commands: `/verify` (build + test + format check), `/probe` (resolve tokens and explain matching,
 emission order and effective values, `--json` for agents), `/update-docs` (the four docs together, when
-asked).
+asked), `/release X.Y.Z` (move `PublicAPI.Unshipped.txt` entries to Shipped, date the CHANGELOG,
+verify, and print the commit/tag commands without running them).
+
+Subagents (`.opencode/agents/`): delegate implementation of a validated design to `implementer`
+(pinned to `openai/gpt-6.2-sol`, the maintainer's choice for implementation; its git/gh access is
+read-only), then have `reviewer` (read-only, all tools denied except reading and a shell allowlist, checklist built from the Known Pitfalls above) review the result
+before reporting done or opening a PR. Give `implementer` the full design. It starts with fresh
+context and won't redesign.
 
 ## Commands
 

@@ -663,7 +663,6 @@ public class AtomicGenerator<TTheme>
         ];
     }
 
-#pragma warning disable RS0041 // Keep the shipped nullability of the two Generate overloads.
     /// <summary>Extracts utility tokens from <paramref name="input"/> and resolves them all into styles.</summary>
     /// <param name="input">The source text to scan.</param>
     /// <param name="options">Generation options, including the optional source identifier used during extraction.</param>
@@ -672,7 +671,9 @@ public class AtomicGenerator<TTheme>
     /// priority frames by insertion order, so the order a <c>Styles</c> collection is populated in <em>is</em> the
     /// cascade (see <see cref="StyleOrdering"/>).
     /// </remarks>
+#pragma warning disable RS0041 // False positive: nullable-enabled, but reported oblivious ('~' in PublicAPI.Shipped.txt), likely due to the nested Options type.
     public StringifiedUtil[] Generate(string input, Options options)
+#pragma warning restore RS0041
     {
         var transformed = ApplyTransformers(input, options.Id);
         var tokens = ApplyExtractors(transformed, options.Id);
@@ -688,7 +689,9 @@ public class AtomicGenerator<TTheme>
     /// safelist entries are reported to <see cref="Diagnostics"/>; other unmatched inputs are not.
     /// </summary>
     /// <remarks>Utilities are returned in <see cref="StyleOrdering"/>'s canonical emission order.</remarks>
+#pragma warning disable RS0041 // Same false positive as the overload above.
     public StringifiedUtil[] Generate(ISet<string> tokens, Options options)
+#pragma warning restore RS0041
     {
         var safelist = options.IncludeSafelist
             ? ShortcutExpansion
@@ -715,7 +718,6 @@ public class AtomicGenerator<TTheme>
 
         return StyleOrdering.Sort(sheet);
     }
-#pragma warning restore RS0041
 
     /// <summary>Options controlling a single <see cref="Generate(string, Options)"/> call.</summary>
     public class Options
