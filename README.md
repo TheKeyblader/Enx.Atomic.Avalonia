@@ -121,7 +121,9 @@ dotnet run --project Examples/Enx.Atomic.Avalonia.Example.Config -- probe "hover
 `Enx.Atomic.Avalonia.CodeGen` are published to nuget.org whenever a `vX.Y.Z` tag is
 pushed — see [ARCHITECTURE.md](ARCHITECTURE.md#release-pipeline) for how versioning
 and publishing work, and [CHANGELOG.md](CHANGELOG.md) for what shipped in each
-release.
+release. The public API of each package is tracked in its `PublicAPI.Shipped.txt`/
+`PublicAPI.Unshipped.txt`, and the build fails on any undeclared change (see
+[Release pipeline](ARCHITECTURE.md#release-pipeline)).
 
 ## Roadmap
 

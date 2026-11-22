@@ -429,10 +429,22 @@ each `Style` and its `Setter`s directly. It works entirely off data:
   other host supplies a hand-maintained `EmbeddableSource` const — today only
   `GridDefinitions`, whose real static constructor registers the same class handlers so
   the grid utilities also work on the runtime path. `AvaloniaPropertyNaming` then
-  rewrites the property reference to the embedded type's own field name.
+  rewrites the property reference to the embedded type's own field name. A multi-line
+  raw string literal takes the line endings of the file it's written in, so
+  `.gitattributes` checks every `*.cs` out with LF on all platforms: a CRLF checkout on
+  Windows would otherwise change the const's value, and so the code embedded in the
+  generated file, depending on the OS that built the package.
 
 Verified by `Tests/.../CodeGenTests.cs`, which actually **compiles** the emitted text
-with Roslyn (`Microsoft.CodeAnalysis.CSharp`) and asserts no errors, and by
+with Roslyn (`Microsoft.CodeAnalysis.CSharp`) and asserts no errors. Its
+`EveryRegisteredMiniRule_ProducesCorrectlyTypedValuesBeforeAndAfterEmission` resolves
+samples for every rule `AddMiniTheme` registers (each static rule's name, plus the
+dynamic examples listed in `PARITY.md`) and checks that each boxed setter value has the
+exact type of its property, both after resolution and in the compiled styles and
+resource dictionary (Light and Dark). A wrong boxed type (an `int` for a `double`
+property) compiles, and only fails when Avalonia applies the value. The test also fails
+when a registered rule is reached by no sample, so a new dynamic family needs a
+resolving example in `PARITY.md`. The emitted output is also checked by
 `Tests/.../Snapshots/EmittedCodeSnapshotTests.cs`: [Verify](https://github.com/VerifyTests/Verify)
 snapshots of the styles and resource dictionary emitted for one token set covering
 every rule family and variant, so any byte change in the output shows up as a
@@ -590,6 +602,16 @@ reference the assembly it generates into).
   policy configured on nuget.org (repository owner/name + the workflow filename,
   `release.yml`) and a `NUGET_USER` repository secret holding the nuget.org profile
   name used to log in.
+- **Public API**: each shipped project references
+  `Microsoft.CodeAnalysis.PublicApiAnalyzers` (a private, build-time-only dependency)
+  and carries a `PublicAPI.Shipped.txt` (the surface of the last release) and a
+  `PublicAPI.Unshipped.txt` (changes since). `Sources/.globalconfig` makes RS0016
+  (undeclared public symbol) and RS0017 (declared symbol missing) errors, so any change
+  to the public surface, nullability included, fails the build until it's declared.
+  This is what enforces "internal by default": making something public takes a
+  deliberate, reviewable line in the PR. A removal is recorded as `*REMOVED*<entry>`
+  in Unshipped. At release time, Unshipped is folded into Shipped and emptied (the
+  repo's `/release` OpenCode command does this before tagging).
 - Package metadata (`Authors`, `PackageProjectUrl`, `PackageLicenseExpression`,
   symbol packages, source link) is centralized in `Directory.Build.props`; each
   packable project only adds its own `Description` and `PackageTags`.
