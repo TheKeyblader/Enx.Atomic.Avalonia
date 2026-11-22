@@ -1,37 +1,5 @@
 #nullable enable
 Enx.Atomic.Avalonia.CodeGen.AtomicCli
-Enx.Atomic.Avalonia.CodeGen.AtomicCliSettings
-Enx.Atomic.Avalonia.CodeGen.AtomicCliSettings.AtomicCliSettings() -> void
-Enx.Atomic.Avalonia.CodeGen.AtomicCliSettings.ClassName.get -> string!
-Enx.Atomic.Avalonia.CodeGen.AtomicCliSettings.ClassName.init -> void
-Enx.Atomic.Avalonia.CodeGen.AtomicCliSettings.ContainerName.get -> string!
-Enx.Atomic.Avalonia.CodeGen.AtomicCliSettings.ContainerName.init -> void
-Enx.Atomic.Avalonia.CodeGen.AtomicCliSettings.Namespace.get -> string!
-Enx.Atomic.Avalonia.CodeGen.AtomicCliSettings.Namespace.init -> void
-Enx.Atomic.Avalonia.CodeGen.AtomicCliSettings.Output.get -> string!
-Enx.Atomic.Avalonia.CodeGen.AtomicCliSettings.Output.init -> void
-Enx.Atomic.Avalonia.CodeGen.AtomicCliSettings.ResourcesClassName.get -> string!
-Enx.Atomic.Avalonia.CodeGen.AtomicCliSettings.ResourcesClassName.init -> void
-Enx.Atomic.Avalonia.CodeGen.AtomicCliSettings.ResourcesOutput.get -> string?
-Enx.Atomic.Avalonia.CodeGen.AtomicCliSettings.ResourcesOutput.init -> void
-Enx.Atomic.Avalonia.CodeGen.AtomicCliSettings.Safelist.get -> string![]!
-Enx.Atomic.Avalonia.CodeGen.AtomicCliSettings.Safelist.init -> void
-Enx.Atomic.Avalonia.CodeGen.AtomicCliSettings.Sources.get -> string![]!
-Enx.Atomic.Avalonia.CodeGen.AtomicCliSettings.Sources.init -> void
-Enx.Atomic.Avalonia.CodeGen.ProbeSettings
-Enx.Atomic.Avalonia.CodeGen.ProbeSettings.Control.get -> string?
-Enx.Atomic.Avalonia.CodeGen.ProbeSettings.Control.init -> void
-Enx.Atomic.Avalonia.CodeGen.ProbeSettings.Files.get -> string![]!
-Enx.Atomic.Avalonia.CodeGen.ProbeSettings.Files.init -> void
-Enx.Atomic.Avalonia.CodeGen.ProbeSettings.Json.get -> bool
-Enx.Atomic.Avalonia.CodeGen.ProbeSettings.Json.init -> void
-Enx.Atomic.Avalonia.CodeGen.ProbeSettings.ProbeSettings() -> void
-Enx.Atomic.Avalonia.CodeGen.ProbeSettings.PseudoClasses.get -> string![]!
-Enx.Atomic.Avalonia.CodeGen.ProbeSettings.PseudoClasses.init -> void
-Enx.Atomic.Avalonia.CodeGen.ProbeSettings.Text.get -> string?
-Enx.Atomic.Avalonia.CodeGen.ProbeSettings.Text.init -> void
-Enx.Atomic.Avalonia.CodeGen.ProbeSettings.Width.get -> double
-Enx.Atomic.Avalonia.CodeGen.ProbeSettings.Width.init -> void
 Enx.Atomic.Avalonia.CodeGen.ResourceDictionaryEmitter
 Enx.Atomic.Avalonia.CodeGen.StyleEmitter
 Enx.Atomic.Avalonia.CodeGen.Values.BoxShadowsValueEmitter
@@ -106,8 +74,6 @@ Enx.Atomic.Avalonia.CodeGen.Values.ThicknessValueEmitter.ThicknessValueEmitter()
 Enx.Atomic.Avalonia.CodeGen.Values.ValueEmitterRegistry
 Enx.Atomic.Avalonia.CodeGen.Values.ValueEmitterRegistry.Emit(object? value, System.Collections.Generic.ISet<string!>! namespaces) -> string!
 Enx.Atomic.Avalonia.CodeGen.Values.ValueEmitterRegistry.ValueEmitterRegistry(System.Collections.Generic.IEnumerable<Enx.Atomic.Avalonia.CodeGen.Values.IValueEmitter!>? emitters = null) -> void
-override Enx.Atomic.Avalonia.CodeGen.AtomicCliSettings.Validate() -> Spectre.Console.ValidationResult!
-override Enx.Atomic.Avalonia.CodeGen.ProbeSettings.Validate() -> Spectre.Console.ValidationResult!
 static Enx.Atomic.Avalonia.CodeGen.AtomicCli.Run<TTheme>(string![]! args, Enx.Atomic.Avalonia.AtomicConfiguration<TTheme!>! configuration, Spectre.Console.IAnsiConsole? console = null) -> int
 static Enx.Atomic.Avalonia.CodeGen.ResourceDictionaryEmitter.Emit<TTheme>(System.Collections.Generic.IReadOnlyDictionary<string!, Enx.Atomic.Avalonia.StyleValue.Resource!>! resources, TTheme! theme, string! namespaceName, string! className, System.Collections.Generic.IEnumerable<Enx.Atomic.Avalonia.CodeGen.Values.IValueEmitter!>? valueEmitters = null) -> string!
 static Enx.Atomic.Avalonia.CodeGen.StyleEmitter.Emit(System.Collections.Generic.IReadOnlyList<Enx.Atomic.Avalonia.StringifiedUtil!>! utils, string! namespaceName, string! className, string! containerName = "top-level", System.Collections.Generic.IEnumerable<Enx.Atomic.Avalonia.CodeGen.Values.IValueEmitter!>? valueEmitters = null) -> string!

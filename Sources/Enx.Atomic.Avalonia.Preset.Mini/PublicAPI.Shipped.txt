@@ -203,25 +203,10 @@ Enx.Atomic.Avalonia.Preset.Mini.TextWrap
 Enx.Atomic.Avalonia.Preset.Mini.ThemeBuilderExtensions
 Enx.Atomic.Avalonia.Preset.Mini.Variants.BreakpointVariant<TTheme>
 Enx.Atomic.Avalonia.Preset.Mini.Variants.BreakpointVariant<TTheme>.BreakpointVariant() -> void
-Enx.Atomic.Avalonia.Preset.Mini.Variants.BreakpointVariantHandler
-Enx.Atomic.Avalonia.Preset.Mini.Variants.BreakpointVariantHandler.BreakpointVariantHandler() -> void
-Enx.Atomic.Avalonia.Preset.Mini.Variants.BreakpointVariantHandler.BreakpointVariantHandler(Enx.Atomic.Avalonia.Preset.Mini.Variants.BreakpointVariantHandler! original) -> void
-Enx.Atomic.Avalonia.Preset.Mini.Variants.BreakpointVariantHandler.Operator.get -> Avalonia.Styling.StyleQueryComparisonOperator
-Enx.Atomic.Avalonia.Preset.Mini.Variants.BreakpointVariantHandler.Operator.init -> void
-Enx.Atomic.Avalonia.Preset.Mini.Variants.BreakpointVariantHandler.Size.get -> double
-Enx.Atomic.Avalonia.Preset.Mini.Variants.BreakpointVariantHandler.Size.init -> void
 Enx.Atomic.Avalonia.Preset.Mini.Variants.DarkVariant<TTheme>
 Enx.Atomic.Avalonia.Preset.Mini.Variants.DarkVariant<TTheme>.DarkVariant() -> void
-Enx.Atomic.Avalonia.Preset.Mini.Variants.DarkVariantHandler
-Enx.Atomic.Avalonia.Preset.Mini.Variants.DarkVariantHandler.DarkVariantHandler() -> void
-Enx.Atomic.Avalonia.Preset.Mini.Variants.DarkVariantHandler.DarkVariantHandler(Enx.Atomic.Avalonia.Preset.Mini.Variants.DarkVariantHandler! original) -> void
 Enx.Atomic.Avalonia.Preset.Mini.Variants.PseudoClassVariant<TTheme>
 Enx.Atomic.Avalonia.Preset.Mini.Variants.PseudoClassVariant<TTheme>.PseudoClassVariant() -> void
-Enx.Atomic.Avalonia.Preset.Mini.Variants.PseudoClassVariantHandler
-Enx.Atomic.Avalonia.Preset.Mini.Variants.PseudoClassVariantHandler.PseudoClass.get -> string!
-Enx.Atomic.Avalonia.Preset.Mini.Variants.PseudoClassVariantHandler.PseudoClass.init -> void
-Enx.Atomic.Avalonia.Preset.Mini.Variants.PseudoClassVariantHandler.PseudoClassVariantHandler() -> void
-Enx.Atomic.Avalonia.Preset.Mini.Variants.PseudoClassVariantHandler.PseudoClassVariantHandler(Enx.Atomic.Avalonia.Preset.Mini.Variants.PseudoClassVariantHandler! original) -> void
 Enx.Atomic.Avalonia.Preset.Mini.Visibility
 const Enx.Atomic.Avalonia.Preset.Mini.Dynamic.GridDefinitions.EmbeddableSource = "file static class GridDefinitions\n{\n    public static readonly global::Avalonia.AttachedProperty<global::Avalonia.Controls.ColumnDefinitions?> ColumnDefinitionsProperty =\n        global::Avalonia.AvaloniaProperty.RegisterAttached<global::Avalonia.Controls.Grid, global::Avalonia.Controls.ColumnDefinitions?>(\"EnxColumnDefinitions\", typeof(GridDefinitions));\n\n    public static readonly global::Avalonia.AttachedProperty<global::Avalonia.Controls.RowDefinitions?> RowDefinitionsProperty =\n        global::Avalonia.AvaloniaProperty.RegisterAttached<global::Avalonia.Controls.Grid, global::Avalonia.Controls.RowDefinitions?>(\"EnxRowDefinitions\", typeof(GridDefinitions));\n\n    static GridDefinitions()\n    {\n        global::Avalonia.AvaloniaObjectExtensions.AddClassHandler<global::Avalonia.Controls.Grid, global::Avalonia.Controls.ColumnDefinitions?>(\n            ColumnDefinitionsProperty.Changed,\n            (grid, e) =>\n            {\n                grid.ColumnDefinitions.Clear();\n                var newValue = e.NewValue.GetValueOrDefault();\n                if (newValue is not null)\n                {\n                    foreach (var c in newValue)\n                        grid.ColumnDefinitions.Add(new global::Avalonia.Controls.ColumnDefinition(c.Width));\n                }\n            }\n        );\n\n        global::Avalonia.AvaloniaObjectExtensions.AddClassHandler<global::Avalonia.Controls.Grid, global::Avalonia.Controls.RowDefinitions?>(\n            RowDefinitionsProperty.Changed,\n            (grid, e) =>\n            {\n                grid.RowDefinitions.Clear();\n                var newValue = e.NewValue.GetValueOrDefault();\n                if (newValue is not null)\n                {\n                    foreach (var r in newValue)\n                        grid.RowDefinitions.Add(new global::Avalonia.Controls.RowDefinition(r.Height));\n                }\n            }\n        );\n    }\n}" -> string!
 override Enx.Atomic.Avalonia.Preset.Mini.Variants.BreakpointVariant<TTheme>.EqualityContract.get -> System.Type!
@@ -230,45 +215,21 @@ override Enx.Atomic.Avalonia.Preset.Mini.Variants.BreakpointVariant<TTheme>.GetH
 override Enx.Atomic.Avalonia.Preset.Mini.Variants.BreakpointVariant<TTheme>.Match(string! matcher, Enx.Atomic.Avalonia.VariantContext<TTheme!>! context) -> Enx.Atomic.Avalonia.VariantHandlerBase![]!
 override Enx.Atomic.Avalonia.Preset.Mini.Variants.BreakpointVariant<TTheme>.PrintMembers(System.Text.StringBuilder! builder) -> bool
 override Enx.Atomic.Avalonia.Preset.Mini.Variants.BreakpointVariant<TTheme>.ToString() -> string!
-override Enx.Atomic.Avalonia.Preset.Mini.Variants.BreakpointVariantHandler.<Clone>$() -> Enx.Atomic.Avalonia.Preset.Mini.Variants.BreakpointVariantHandler!
-override Enx.Atomic.Avalonia.Preset.Mini.Variants.BreakpointVariantHandler.EqualityContract.get -> System.Type!
-override Enx.Atomic.Avalonia.Preset.Mini.Variants.BreakpointVariantHandler.Equals(object? obj) -> bool
-override Enx.Atomic.Avalonia.Preset.Mini.Variants.BreakpointVariantHandler.GetHashCode() -> int
-override Enx.Atomic.Avalonia.Preset.Mini.Variants.BreakpointVariantHandler.Handle(Enx.Atomic.Avalonia.VariantHandlerContext! input, System.Func<Enx.Atomic.Avalonia.VariantHandlerContext!, Enx.Atomic.Avalonia.VariantHandlerContext!>! next) -> Enx.Atomic.Avalonia.VariantHandlerContext!
-override Enx.Atomic.Avalonia.Preset.Mini.Variants.BreakpointVariantHandler.PrintMembers(System.Text.StringBuilder! builder) -> bool
-override Enx.Atomic.Avalonia.Preset.Mini.Variants.BreakpointVariantHandler.ToString() -> string!
 override Enx.Atomic.Avalonia.Preset.Mini.Variants.DarkVariant<TTheme>.EqualityContract.get -> System.Type!
 override Enx.Atomic.Avalonia.Preset.Mini.Variants.DarkVariant<TTheme>.Equals(object? obj) -> bool
 override Enx.Atomic.Avalonia.Preset.Mini.Variants.DarkVariant<TTheme>.GetHashCode() -> int
 override Enx.Atomic.Avalonia.Preset.Mini.Variants.DarkVariant<TTheme>.Match(string! matcher, Enx.Atomic.Avalonia.VariantContext<TTheme!>! context) -> Enx.Atomic.Avalonia.VariantHandlerBase![]!
 override Enx.Atomic.Avalonia.Preset.Mini.Variants.DarkVariant<TTheme>.PrintMembers(System.Text.StringBuilder! builder) -> bool
 override Enx.Atomic.Avalonia.Preset.Mini.Variants.DarkVariant<TTheme>.ToString() -> string!
-override Enx.Atomic.Avalonia.Preset.Mini.Variants.DarkVariantHandler.<Clone>$() -> Enx.Atomic.Avalonia.Preset.Mini.Variants.DarkVariantHandler!
-override Enx.Atomic.Avalonia.Preset.Mini.Variants.DarkVariantHandler.EqualityContract.get -> System.Type!
-override Enx.Atomic.Avalonia.Preset.Mini.Variants.DarkVariantHandler.Equals(object? obj) -> bool
-override Enx.Atomic.Avalonia.Preset.Mini.Variants.DarkVariantHandler.GetHashCode() -> int
-override Enx.Atomic.Avalonia.Preset.Mini.Variants.DarkVariantHandler.Handle(Enx.Atomic.Avalonia.VariantHandlerContext! input, System.Func<Enx.Atomic.Avalonia.VariantHandlerContext!, Enx.Atomic.Avalonia.VariantHandlerContext!>! next) -> Enx.Atomic.Avalonia.VariantHandlerContext!
-override Enx.Atomic.Avalonia.Preset.Mini.Variants.DarkVariantHandler.PrintMembers(System.Text.StringBuilder! builder) -> bool
-override Enx.Atomic.Avalonia.Preset.Mini.Variants.DarkVariantHandler.ToString() -> string!
 override Enx.Atomic.Avalonia.Preset.Mini.Variants.PseudoClassVariant<TTheme>.EqualityContract.get -> System.Type!
 override Enx.Atomic.Avalonia.Preset.Mini.Variants.PseudoClassVariant<TTheme>.Equals(object? obj) -> bool
 override Enx.Atomic.Avalonia.Preset.Mini.Variants.PseudoClassVariant<TTheme>.GetHashCode() -> int
 override Enx.Atomic.Avalonia.Preset.Mini.Variants.PseudoClassVariant<TTheme>.Match(string! matcher, Enx.Atomic.Avalonia.VariantContext<TTheme!>! context) -> Enx.Atomic.Avalonia.VariantHandlerBase![]!
 override Enx.Atomic.Avalonia.Preset.Mini.Variants.PseudoClassVariant<TTheme>.PrintMembers(System.Text.StringBuilder! builder) -> bool
 override Enx.Atomic.Avalonia.Preset.Mini.Variants.PseudoClassVariant<TTheme>.ToString() -> string!
-override Enx.Atomic.Avalonia.Preset.Mini.Variants.PseudoClassVariantHandler.<Clone>$() -> Enx.Atomic.Avalonia.Preset.Mini.Variants.PseudoClassVariantHandler!
-override Enx.Atomic.Avalonia.Preset.Mini.Variants.PseudoClassVariantHandler.EqualityContract.get -> System.Type!
-override Enx.Atomic.Avalonia.Preset.Mini.Variants.PseudoClassVariantHandler.Equals(object? obj) -> bool
-override Enx.Atomic.Avalonia.Preset.Mini.Variants.PseudoClassVariantHandler.GetHashCode() -> int
-override Enx.Atomic.Avalonia.Preset.Mini.Variants.PseudoClassVariantHandler.Handle(Enx.Atomic.Avalonia.VariantHandlerContext! input, System.Func<Enx.Atomic.Avalonia.VariantHandlerContext!, Enx.Atomic.Avalonia.VariantHandlerContext!>! next) -> Enx.Atomic.Avalonia.VariantHandlerContext!
-override Enx.Atomic.Avalonia.Preset.Mini.Variants.PseudoClassVariantHandler.PrintMembers(System.Text.StringBuilder! builder) -> bool
-override Enx.Atomic.Avalonia.Preset.Mini.Variants.PseudoClassVariantHandler.ToString() -> string!
 override sealed Enx.Atomic.Avalonia.Preset.Mini.Variants.BreakpointVariant<TTheme>.Equals(Enx.Atomic.Avalonia.VariantBase<TTheme!>? other) -> bool
-override sealed Enx.Atomic.Avalonia.Preset.Mini.Variants.BreakpointVariantHandler.Equals(Enx.Atomic.Avalonia.VariantHandlerBase? other) -> bool
 override sealed Enx.Atomic.Avalonia.Preset.Mini.Variants.DarkVariant<TTheme>.Equals(Enx.Atomic.Avalonia.VariantBase<TTheme!>? other) -> bool
-override sealed Enx.Atomic.Avalonia.Preset.Mini.Variants.DarkVariantHandler.Equals(Enx.Atomic.Avalonia.VariantHandlerBase? other) -> bool
 override sealed Enx.Atomic.Avalonia.Preset.Mini.Variants.PseudoClassVariant<TTheme>.Equals(Enx.Atomic.Avalonia.VariantBase<TTheme!>? other) -> bool
-override sealed Enx.Atomic.Avalonia.Preset.Mini.Variants.PseudoClassVariantHandler.Equals(Enx.Atomic.Avalonia.VariantHandlerBase? other) -> bool
 static Enx.Atomic.Avalonia.Preset.Mini.ThemeBuilderExtensions.AddBoxShadowRules<TTheme>(this Enx.Atomic.Avalonia.ThemeBuilder<TTheme!>! builder, Enx.Atomic.Avalonia.AtomicConfiguration<TTheme!>! configuration) -> Enx.Atomic.Avalonia.ThemeBuilder<TTheme!>!
 static Enx.Atomic.Avalonia.Preset.Mini.ThemeBuilderExtensions.AddBreakpointRules<TTheme>(this Enx.Atomic.Avalonia.ThemeBuilder<TTheme!>! builder, Enx.Atomic.Avalonia.AtomicConfiguration<TTheme!>! configuration) -> Enx.Atomic.Avalonia.ThemeBuilder<TTheme!>!
 static Enx.Atomic.Avalonia.Preset.Mini.ThemeBuilderExtensions.AddColorRules<TTheme>(this Enx.Atomic.Avalonia.ThemeBuilder<TTheme!>! builder, Enx.Atomic.Avalonia.AtomicConfiguration<TTheme!>! configuration) -> Enx.Atomic.Avalonia.ThemeBuilder<TTheme!>!
@@ -288,12 +249,6 @@ static Enx.Atomic.Avalonia.Preset.Mini.ThemeBuilderExtensions.AddSpacingRules<TT
 static Enx.Atomic.Avalonia.Preset.Mini.ThemeBuilderExtensions.AddStaticRules<TTheme>(this Enx.Atomic.Avalonia.ThemeBuilder<TTheme!>! builder, Enx.Atomic.Avalonia.AtomicConfiguration<TTheme!>! configuration) -> Enx.Atomic.Avalonia.ThemeBuilder<TTheme!>!
 static Enx.Atomic.Avalonia.Preset.Mini.ThemeBuilderExtensions.AddTypographyLengthRules<TTheme>(this Enx.Atomic.Avalonia.ThemeBuilder<TTheme!>! builder, Enx.Atomic.Avalonia.AtomicConfiguration<TTheme!>! configuration) -> Enx.Atomic.Avalonia.ThemeBuilder<TTheme!>!
 static Enx.Atomic.Avalonia.Preset.Mini.ThemeBuilderExtensions.AddZIndexRules<TTheme>(this Enx.Atomic.Avalonia.ThemeBuilder<TTheme!>! builder, Enx.Atomic.Avalonia.AtomicConfiguration<TTheme!>! configuration) -> Enx.Atomic.Avalonia.ThemeBuilder<TTheme!>!
-static Enx.Atomic.Avalonia.Preset.Mini.Variants.BreakpointVariantHandler.operator !=(Enx.Atomic.Avalonia.Preset.Mini.Variants.BreakpointVariantHandler? left, Enx.Atomic.Avalonia.Preset.Mini.Variants.BreakpointVariantHandler? right) -> bool
-static Enx.Atomic.Avalonia.Preset.Mini.Variants.BreakpointVariantHandler.operator ==(Enx.Atomic.Avalonia.Preset.Mini.Variants.BreakpointVariantHandler? left, Enx.Atomic.Avalonia.Preset.Mini.Variants.BreakpointVariantHandler? right) -> bool
-static Enx.Atomic.Avalonia.Preset.Mini.Variants.DarkVariantHandler.operator !=(Enx.Atomic.Avalonia.Preset.Mini.Variants.DarkVariantHandler? left, Enx.Atomic.Avalonia.Preset.Mini.Variants.DarkVariantHandler? right) -> bool
-static Enx.Atomic.Avalonia.Preset.Mini.Variants.DarkVariantHandler.operator ==(Enx.Atomic.Avalonia.Preset.Mini.Variants.DarkVariantHandler? left, Enx.Atomic.Avalonia.Preset.Mini.Variants.DarkVariantHandler? right) -> bool
-static Enx.Atomic.Avalonia.Preset.Mini.Variants.PseudoClassVariantHandler.operator !=(Enx.Atomic.Avalonia.Preset.Mini.Variants.PseudoClassVariantHandler? left, Enx.Atomic.Avalonia.Preset.Mini.Variants.PseudoClassVariantHandler? right) -> bool
-static Enx.Atomic.Avalonia.Preset.Mini.Variants.PseudoClassVariantHandler.operator ==(Enx.Atomic.Avalonia.Preset.Mini.Variants.PseudoClassVariantHandler? left, Enx.Atomic.Avalonia.Preset.Mini.Variants.PseudoClassVariantHandler? right) -> bool
 static readonly Enx.Atomic.Avalonia.Preset.Mini.Clipping.All -> Enx.Atomic.Avalonia.Rule.Static![]!
 static readonly Enx.Atomic.Avalonia.Preset.Mini.Cursors.All -> Enx.Atomic.Avalonia.Rule.Static![]!
 static readonly Enx.Atomic.Avalonia.Preset.Mini.Direction.All -> Enx.Atomic.Avalonia.Rule.Static![]!
@@ -312,9 +267,6 @@ static readonly Enx.Atomic.Avalonia.Preset.Mini.TextAlign.All -> Enx.Atomic.Aval
 static readonly Enx.Atomic.Avalonia.Preset.Mini.TextDecoration.All -> Enx.Atomic.Avalonia.Rule.Static![]!
 static readonly Enx.Atomic.Avalonia.Preset.Mini.TextWrap.All -> Enx.Atomic.Avalonia.Rule.Static![]!
 static readonly Enx.Atomic.Avalonia.Preset.Mini.Visibility.All -> Enx.Atomic.Avalonia.Rule.Static![]!
-virtual Enx.Atomic.Avalonia.Preset.Mini.Variants.BreakpointVariantHandler.Equals(Enx.Atomic.Avalonia.Preset.Mini.Variants.BreakpointVariantHandler? other) -> bool
-virtual Enx.Atomic.Avalonia.Preset.Mini.Variants.DarkVariantHandler.Equals(Enx.Atomic.Avalonia.Preset.Mini.Variants.DarkVariantHandler? other) -> bool
-virtual Enx.Atomic.Avalonia.Preset.Mini.Variants.PseudoClassVariantHandler.Equals(Enx.Atomic.Avalonia.Preset.Mini.Variants.PseudoClassVariantHandler? other) -> bool
 ~Enx.Atomic.Avalonia.Preset.Mini.Variants.BreakpointVariant<TTheme>.BreakpointVariant(Enx.Atomic.Avalonia.Preset.Mini.Variants.BreakpointVariant<TTheme>! original) -> void
 ~Enx.Atomic.Avalonia.Preset.Mini.Variants.DarkVariant<TTheme>.DarkVariant(Enx.Atomic.Avalonia.Preset.Mini.Variants.DarkVariant<TTheme>! original) -> void
 ~Enx.Atomic.Avalonia.Preset.Mini.Variants.PseudoClassVariant<TTheme>.PseudoClassVariant(Enx.Atomic.Avalonia.Preset.Mini.Variants.PseudoClassVariant<TTheme>! original) -> void
